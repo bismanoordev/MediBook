@@ -99,7 +99,7 @@ export default function Loading() {
               aria-hidden="true"
               className="h-1.5 overflow-hidden rounded-full bg-black/20 ring-1 ring-white/10"
             >
-              <span className="block h-full w-2/5 rounded-full bg-gradient-to-r from-teal-200 via-white to-teal-200 motion-safe:animate-[medibook-loading-progress_2.6s_ease-in-out_infinite]" />
+              <span className="block h-full w-2/5 rounded-full bg-gradient-to-r from-teal-200 via-white to-teal-200 motion-safe:animate-[medibook-loading-progress_3.4s_ease-in-out_infinite]" />
             </div>
             <p className="mt-3 text-xs font-medium text-teal-50/55">
               This will only take a moment
