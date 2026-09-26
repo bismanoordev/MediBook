@@ -11,6 +11,10 @@ These images define the visual direction for MediBook. They are inspiration for 
 5. `05-booking-slots-reference.png` — booking, availability, login, and responsive healthcare flows. Source: [Figma Community](https://www.figma.com/community/file/1383048311382098651/healthcare-appointment-booking-app-ui-kit)
 6. `06-sign-in-reference.png` — spacious desktop healthcare login with an illustrated split layout. Source: [Pinterest](https://in.pinterest.com/pin/medical-login-page--570901690266081417/)
 7. `07-sign-up-reference.png` — dedicated sign-up, sign-in, and onboarding screens for a healthcare app. Source: [Dribbble](https://dribbble.com/shots/26646257-Doctor-Appointment-App-Login-Signup-Page-UI-Design)
+8. `08-loading-screen-reference.jpg` — a minimal loading state with clear branding and a centered progress indicator. Source: [Pinterest](https://in.pinterest.com/pin/1130685050230689898/)
+9. `09-loading-pattern-reference.jpg` — a teal geometric loading treatment that can inspire MediBook's subtle medical-pattern background. Source: [Pinterest](https://in.pinterest.com/pin/100345897934568155/)
+10. `10-admin-signup-reference.jpg` — a desktop admin signup form paired with a dashboard preview and strong split layout. Source: [Pinterest](https://in.pinterest.com/pin/689050811761519172/)
+11. `11-admin-onboarding-reference.jpg` — a spacious multi-step admin registration flow with clear progress and profile setup. Source: [Pinterest](https://in.pinterest.com/pin/569494315391780674/)
 
 ## MediBook's own identity
 
@@ -116,7 +120,21 @@ These rules are the source of truth whenever a MediBook page or component is des
 - Motion should communicate state, not decorate the page unnecessarily.
 - Respect reduced-motion preferences.
 
-### 12. Avoid
+### 12. Loading states
+
+- Keep full-page loading states calm and lightweight: MediBook mark, short reassuring text, and one subtle animated indicator.
+- Prefer teal or soft off-white backgrounds and restrained geometric or medical motifs.
+- Use skeletons for lists, tables, doctor cards, and dashboard content so the layout does not jump when data arrives.
+- Never block the entire page for a small local update; show loading only around the affected control or section.
+
+### 13. Admin signup and onboarding
+
+- Public signup creates patient accounts only. Admin access must never be selectable from the public signup form.
+- If an admin onboarding screen is added later, it must be available only through a secure server-authorized flow.
+- Use a focused desktop split layout or a short multi-step form with visible progress, clear field groups, and an explanation of admin responsibilities.
+- Keep the visual system consistent with the patient experience while making admin context unmistakable through wording and navigation.
+
+### 14. Avoid
 
 - Generic template appearance or copying a reference screen exactly.
 - Too many colors, gradients, shadows, border styles, or card shapes.
