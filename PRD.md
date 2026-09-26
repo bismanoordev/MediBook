@@ -32,6 +32,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 
 ### Admin features
 
+- Create an admin account through an invitation-code protected signup flow.
 - Access an admin-only area at `/admin`.
 - View a dashboard with daily statistics.
 - Add, edit, activate, or hide doctors.
@@ -55,7 +56,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 | --- | --- |
 | `/` | Home page |
 | `/login` | Patient and admin login |
-| `/signup` | Patient account creation |
+| `/signup` | Patient signup and invitation-only admin signup |
 | `/doctors` | Doctors list and filters |
 | `/doctors/[id]` | Doctor details and available slots |
 | `/appointments` | Patient's appointments |

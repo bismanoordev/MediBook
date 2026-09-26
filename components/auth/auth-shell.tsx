@@ -15,6 +15,7 @@ type AuthShellProps = {
   children: ReactNode
   footer?: ReactNode
   showBackHome?: boolean
+  hideHeader?: boolean
 }
 
 const benefits = [
@@ -42,6 +43,7 @@ export function AuthShell({
   children,
   footer,
   showBackHome = false,
+  hideHeader = false,
 }: AuthShellProps) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-background">
@@ -127,17 +129,19 @@ export function AuthShell({
                 </Link>
               ) : null}
 
-              <div className="mb-8 space-y-3">
-                <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-                  {eyebrow}
-                </p>
-                <h1 className="text-3xl font-semibold tracking-tight text-card-foreground">
-                  {title}
-                </h1>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  {description}
-                </p>
-              </div>
+              {!hideHeader ? (
+                <div className="mb-8 space-y-3">
+                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
+                    {eyebrow}
+                  </p>
+                  <h1 className="text-3xl font-semibold tracking-tight text-card-foreground">
+                    {title}
+                  </h1>
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    {description}
+                  </p>
+                </div>
+              ) : null}
 
               {children}
 

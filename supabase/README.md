@@ -4,5 +4,18 @@ These files are the project copy of the approved Supabase scripts.
 
 - Scripts 01–05 have already been run in the Supabase SQL Editor.
 - Do not run them again unless the database is intentionally being rebuilt.
-- Run `06_make_admin.sql` only after signing up through the app. Replace the placeholder email first, then log out and log in again.
-- The app must use only the public/publishable key. Never add the service-role secret to browser code.
+- `06_make_admin.sql` remains available for manually promoting an existing patient account.
+- Patient auth uses only the public/publishable key. Never add the service-role secret to browser code.
+
+## Invite-only admin signup
+
+The `/signup` admin form is handled by a server-only route. Add these values to
+`.env.local` for local development and to the deployment environment in production:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY=your-server-only-service-role-key
+ADMIN_SIGNUP_CODE=use-a-long-random-private-code
+```
+
+The service-role key must remain server-only (do not prefix it with `NEXT_PUBLIC_`).
+Share the admin signup code privately and rotate it when needed.

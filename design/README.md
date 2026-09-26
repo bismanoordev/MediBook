@@ -129,8 +129,8 @@ These rules are the source of truth whenever a MediBook page or component is des
 
 ### 13. Admin signup and onboarding
 
-- Public signup creates patient accounts only. Admin access must never be selectable from the public signup form.
-- If an admin onboarding screen is added later, it must be available only through a secure server-authorized flow.
+- Patient signup remains public. Admin signup may be selectable on the same screen only when it is protected by a secure, server-verified invitation code.
+- Admin role assignment must happen through a server-authorized flow; never trust a role value sent by the browser.
 - Use a focused desktop split layout or a short multi-step form with visible progress, clear field groups, and an explanation of admin responsibilities.
 - Keep the visual system consistent with the patient experience while making admin context unmistakable through wording and navigation.
 
