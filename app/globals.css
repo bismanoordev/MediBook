@@ -131,3 +131,15 @@
     @apply font-sans;
   }
 }
+
+@keyframes medibook-loading-progress {
+  0% {
+    transform: translateX(-115%);
+  }
+  55% {
+    transform: translateX(145%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
