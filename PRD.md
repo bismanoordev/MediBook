@@ -144,3 +144,17 @@ MediBook is complete when all Version 1 features work on the live website, on bo
 - [x] `npm run lint` and `npm run build` pass.
 - [x] Local Git is initialized on `main` with the `project setup` commit.
 - [ ] Create the GitHub repository and push `main` (to be completed by the project owner).
+
+## Phase 4 Checklist
+
+- [x] Supabase database Scripts 1–5 were run successfully by the project owner.
+- [x] The project has browser and server Supabase clients with session refresh.
+- [x] Sign up sends `full_name` and `phone` in `options.data`.
+- [x] Login, signup, forgot-password, reset-password, and logout flows are implemented.
+- [x] `/appointments` and `/profile` require a logged-in user.
+- [x] `/admin` is protected by a server-side admin-role check.
+- [x] The approved SQL is saved in the `supabase/` folder.
+- [x] Public database connectivity returns 6 doctors, 30 schedules, and 5 specialties.
+- [ ] Manually test signup, login, logout, and password reset in the browser.
+- [ ] Run Script 6 for the chosen admin email, then log out and back in.
+- [ ] Confirm a patient cannot open `/admin` and the admin account can.
