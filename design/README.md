@@ -11,10 +11,10 @@ These images define the visual direction for MediBook. They are inspiration for 
 5. `05-booking-slots-reference.png` — booking, availability, login, and responsive healthcare flows. Source: [Figma Community](https://www.figma.com/community/file/1383048311382098651/healthcare-appointment-booking-app-ui-kit)
 6. `06-sign-in-reference.png` — spacious desktop healthcare login with an illustrated split layout. Source: [Pinterest](https://in.pinterest.com/pin/medical-login-page--570901690266081417/)
 7. `07-sign-up-reference.png` — dedicated sign-up, sign-in, and onboarding screens for a healthcare app. Source: [Dribbble](https://dribbble.com/shots/26646257-Doctor-Appointment-App-Login-Signup-Page-UI-Design)
-8. `08-loading-screen-reference.jpg` — a minimal loading state with clear branding and a centered progress indicator. Source: [Pinterest](https://in.pinterest.com/pin/1130685050230689898/)
-9. `09-loading-pattern-reference.jpg` — a teal geometric loading treatment that can inspire MediBook's subtle medical-pattern background. Source: [Pinterest](https://in.pinterest.com/pin/100345897934568155/)
-10. `10-admin-signup-reference.jpg` — a desktop admin signup form paired with a dashboard preview and strong split layout. Source: [Pinterest](https://in.pinterest.com/pin/689050811761519172/)
-11. `11-admin-onboarding-reference.jpg` — a spacious multi-step admin registration flow with clear progress and profile setup. Source: [Pinterest](https://in.pinterest.com/pin/569494315391780674/)
+8. `08-loading-screen-reference.png` — a minimal loading state with clear branding and a centered progress indicator. Source: [Pinterest](https://in.pinterest.com/pin/1130685050230689898/)
+9. `09-loading-pattern-reference.png` — a teal geometric loading treatment that can inspire MediBook's subtle medical-pattern background. Source: [Pinterest](https://in.pinterest.com/pin/100345897934568155/)
+10. `10-admin-signup-reference.png` — a desktop admin signup form paired with a dashboard preview and strong split layout. Source: [Pinterest](https://in.pinterest.com/pin/689050811761519172/)
+11. `11-admin-onboarding-reference.png` — a spacious multi-step admin registration flow with clear progress and profile setup. Source: [Pinterest](https://in.pinterest.com/pin/569494315391780674/)
 
 ## MediBook's own identity
 
