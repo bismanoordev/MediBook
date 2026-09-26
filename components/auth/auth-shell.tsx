@@ -1,6 +1,12 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
-import { CalendarCheck2, Clock3, HeartPulse, ShieldCheck } from "lucide-react"
+import {
+  ArrowLeft,
+  CalendarCheck2,
+  Clock3,
+  HeartPulse,
+  ShieldCheck,
+} from "lucide-react"
 
 type AuthShellProps = {
   eyebrow: string
@@ -8,6 +14,7 @@ type AuthShellProps = {
   description: string
   children: ReactNode
   footer?: ReactNode
+  showBackHome?: boolean
 }
 
 const benefits = [
@@ -34,6 +41,7 @@ export function AuthShell({
   description,
   children,
   footer,
+  showBackHome = false,
 }: AuthShellProps) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-background">
@@ -109,6 +117,16 @@ export function AuthShell({
             </Link>
 
             <div className="rounded-3xl border bg-card p-6 shadow-xl shadow-slate-900/5 sm:p-8">
+              {showBackHome ? (
+                <Link
+                  href="/"
+                  className="mb-6 inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  <ArrowLeft className="size-4" aria-hidden="true" />
+                  Back to home
+                </Link>
+              ) : null}
+
               <div className="mb-8 space-y-3">
                 <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
                   {eyebrow}

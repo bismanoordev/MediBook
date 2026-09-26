@@ -21,6 +21,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       eyebrow="Welcome back"
       title="Log in to MediBook"
       description="Manage your appointments and book your next clinic visit."
+      showBackHome
       footer={<p>New to MediBook? <Link href="/signup" className="font-semibold text-[#0F766E] hover:underline">Create an account</Link></p>}
     >
       <LoginForm next={next} message={safeMessage} />
