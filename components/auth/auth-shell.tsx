@@ -3,9 +3,9 @@ import Link from "next/link"
 import {
   ArrowLeft,
   CalendarCheck2,
-  Clock3,
   HeartPulse,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react"
 
 type AuthShellProps = {
@@ -18,23 +18,7 @@ type AuthShellProps = {
   hideHeader?: boolean
 }
 
-const benefits = [
-  {
-    icon: Clock3,
-    title: "Book in under a minute",
-    description: "Find the right doctor and choose a live available time.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Your information stays private",
-    description: "Secure access keeps your health appointments personal.",
-  },
-  {
-    icon: CalendarCheck2,
-    title: "Everything in one place",
-    description: "Review, manage, and follow every appointment with ease.",
-  },
-]
+const chartBars = [42, 65, 50, 78, 58, 88, 72]
 
 export function AuthShell({
   eyebrow,
@@ -46,114 +30,149 @@ export function AuthShell({
   hideHeader = false,
 }: AuthShellProps) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(20,184,166,0.12),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.10),transparent_30%)]" />
+    <main className="min-h-[100dvh] bg-[#F8FAFC] lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(34rem,1.12fr)]">
+      <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-white px-5 py-10 sm:px-10 lg:px-12 xl:px-20">
+        <div
+          aria-hidden="true"
+          className="absolute -left-24 -top-24 size-64 rounded-full bg-teal-100/60 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute -bottom-28 -right-24 size-72 rounded-full bg-sky-100/55 blur-3xl"
+        />
 
-      <div className="relative mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:px-8">
-        <section className="hidden overflow-hidden py-8 lg:flex">
-          <div className="relative flex w-full flex-col justify-between overflow-hidden rounded-3xl bg-primary p-10 text-primary-foreground shadow-2xl shadow-teal-950/15">
-            <div className="absolute -right-28 -top-28 size-80 rounded-full border border-white/15" />
-            <div className="absolute -right-10 top-10 size-44 rounded-full border border-white/15" />
-            <div className="absolute bottom-14 left-10 size-20 rounded-full bg-white/5" />
+        <div className="relative w-full max-w-md">
+          <Link
+            href="/"
+            className="mb-10 flex w-fit items-center gap-2.5 text-lg font-semibold tracking-tight text-slate-950"
+          >
+            <span className="grid size-10 place-items-center rounded-xl bg-[#0F766E] text-white shadow-sm">
+              <HeartPulse className="size-5" aria-hidden="true" />
+            </span>
+            MediBook
+          </Link>
 
+          {showBackHome ? (
             <Link
               href="/"
-              className="relative flex w-fit items-center gap-3 text-lg font-semibold tracking-tight"
+              className="mb-7 inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
             >
-              <span className="grid size-10 place-items-center rounded-xl bg-white text-primary shadow-lg shadow-teal-950/20">
-                <HeartPulse className="size-5" aria-hidden="true" />
-              </span>
-              MediBook
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Back to home
             </Link>
+          ) : null}
 
-            <div className="relative max-w-xl space-y-8 py-10">
-              <div className="space-y-4">
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-100">
-                  Care made simple
+          {!hideHeader ? (
+            <div className="mb-8 space-y-3">
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#0F766E]">
+                {eyebrow}
+              </p>
+              <h1 className="text-3xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-4xl">
+                {title}
+              </h1>
+              <p className="max-w-sm text-sm leading-6 text-slate-500">
+                {description}
+              </p>
+            </div>
+          ) : null}
+
+          {children}
+
+          {footer ? (
+            <div className="mt-8 border-t border-slate-200 pt-6 text-center text-sm text-slate-500">
+              {footer}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section
+        aria-hidden="true"
+        className="relative hidden min-h-[100dvh] overflow-hidden bg-[#073F3A] px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between xl:px-16 xl:py-12"
+      >
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at center, transparent 28px, rgba(153,246,228,0.14) 29px, transparent 30px)",
+            backgroundSize: "70px 70px",
+          }}
+        />
+        <div className="absolute -right-32 -top-32 size-96 rounded-full border border-white/10" />
+        <div className="absolute -right-16 -top-16 size-64 rounded-full border border-white/10" />
+        <div className="absolute -bottom-44 -left-36 size-[30rem] rounded-full bg-teal-300/10 blur-3xl" />
+
+        <div className="relative flex items-center justify-between text-sm text-teal-50/70">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.07] px-3 py-2 backdrop-blur-sm">
+            <ShieldCheck className="size-4 text-teal-200" />
+            Private and secure
+          </span>
+          <span>Clinic care, simplified</span>
+        </div>
+
+        <div className="relative mx-auto w-full max-w-2xl py-10">
+          <p className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-teal-200">
+            <Sparkles className="size-4" />
+            One calm workspace
+          </p>
+          <h2 className="mt-5 max-w-xl text-4xl font-semibold leading-[1.08] tracking-[-0.04em] xl:text-5xl">
+            Appointments and clinic work, beautifully in sync.
+          </h2>
+          <p className="mt-5 max-w-lg text-base leading-7 text-teal-50/70">
+            Live schedules, secure patient access, and a clearer day for everyone at the clinic.
+          </p>
+
+          <div className="relative mt-10 rounded-[1.75rem] border border-white/20 bg-white p-5 text-slate-950 shadow-[0_32px_80px_-28px_rgba(0,0,0,0.55)] xl:p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0F766E]">
+                  This week
                 </p>
-                <h2 className="text-4xl font-semibold leading-tight tracking-tight xl:text-5xl">
-                  Better care starts with an easier appointment.
-                </h2>
-                <p className="max-w-lg text-base leading-7 text-teal-50/80">
-                  MediBook brings trusted doctors, clear availability, and your
-                  appointments together in one calm experience.
-                </p>
+                <p className="mt-1 text-lg font-semibold">Clinic overview</p>
               </div>
+              <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+                Live
+              </span>
+            </div>
 
-              <div className="grid gap-4">
-                {benefits.map(({ icon: Icon, title: itemTitle, description: itemDescription }) => (
-                  <div
-                    key={itemTitle}
-                    className="flex gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm"
-                  >
-                    <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/15">
-                      <Icon className="size-5" aria-hidden="true" />
-                    </span>
-                    <div>
-                      <p className="font-semibold">{itemTitle}</p>
-                      <p className="mt-1 text-sm leading-6 text-teal-50/75">
-                        {itemDescription}
-                      </p>
-                    </div>
+            <div className="mt-6 grid grid-cols-[1fr_auto] gap-6">
+              <div className="flex h-36 items-end justify-between gap-2 rounded-2xl bg-slate-50 px-4 pb-4 pt-6">
+                {chartBars.map((height, index) => (
+                  <div key={height + index} className="flex h-full flex-1 items-end">
+                    <span
+                      className="w-full rounded-t-md bg-[#0F766E]"
+                      style={{ height: `${height}%`, opacity: 0.52 + index * 0.07 }}
+                    />
                   </div>
                 ))}
               </div>
+
+              <div className="flex w-32 flex-col justify-between rounded-2xl bg-[#F0FDFA] p-4">
+                <CalendarCheck2 className="size-5 text-[#0F766E]" />
+                <div>
+                  <p className="text-3xl font-semibold tracking-tight">24</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">Appointments booked</p>
+                </div>
+              </div>
             </div>
 
-            <p className="relative text-sm text-teal-50/65">
-              Thoughtful scheduling for patients and clinics.
-            </p>
-          </div>
-        </section>
-
-        <section className="flex min-h-screen items-center justify-center px-5 py-10 sm:px-8 lg:min-h-0 lg:px-6">
-          <div className="w-full max-w-md">
-            <Link
-              href="/"
-              className="mb-10 flex w-fit items-center gap-2 text-lg font-semibold tracking-tight lg:hidden"
-            >
-              <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-                <HeartPulse className="size-5" aria-hidden="true" />
-              </span>
-              MediBook
-            </Link>
-
-            <div className="rounded-3xl border bg-card p-6 shadow-xl shadow-slate-900/5 sm:p-8">
-              {showBackHome ? (
-                <Link
-                  href="/"
-                  className="mb-6 inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                >
-                  <ArrowLeft className="size-4" aria-hidden="true" />
-                  Back to home
-                </Link>
-              ) : null}
-
-              {!hideHeader ? (
-                <div className="mb-8 space-y-3">
-                  <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
-                    {eyebrow}
-                  </p>
-                  <h1 className="text-3xl font-semibold tracking-tight text-card-foreground">
-                    {title}
-                  </h1>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {description}
-                  </p>
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <span className="grid size-10 place-items-center rounded-xl bg-teal-50 font-semibold text-[#0F766E]">AK</span>
+                <div>
+                  <p className="text-sm font-semibold">Dr. Ayesha Khan</p>
+                  <p className="text-xs text-slate-500">Next appointment · 10:30 AM</p>
                 </div>
-              ) : null}
-
-              {children}
-
-              {footer ? (
-                <div className="mt-7 border-t pt-6 text-center text-sm text-muted-foreground">
-                  {footer}
-                </div>
-              ) : null}
+              </div>
+              <span className="size-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_5px_rgba(52,211,153,0.15)]" />
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+
+        <p className="relative text-sm text-teal-50/55">
+          Thoughtful scheduling for patients and clinics.
+        </p>
+      </section>
     </main>
   )
 }

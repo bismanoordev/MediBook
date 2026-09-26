@@ -14,6 +14,7 @@ import { PasswordInput } from "@/components/auth/password-input"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getFriendlyAuthError } from "@/lib/auth-errors"
+import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
 
 type SignupRole = "patient" | "admin"
@@ -183,29 +184,52 @@ export function SignupForm() {
       <div
         role="tablist"
         aria-label="Choose account type"
-        className="mb-8 grid grid-cols-2 gap-1 rounded-2xl bg-muted p-1"
+        className="relative mb-8 grid grid-cols-2 rounded-2xl bg-slate-100 p-1.5 shadow-inner shadow-slate-200/70"
       >
+        <span
+          aria-hidden="true"
+          className={cn(
+            "absolute inset-y-1.5 left-1.5 w-[calc(50%-0.375rem)] rounded-xl shadow-sm transition-[transform,background-color,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+            role === "admin"
+              ? "translate-x-full bg-[#0F766E] shadow-teal-900/15"
+              : "translate-x-0 bg-white shadow-slate-300/60",
+          )}
+        />
         <button
+          id="patient-signup-tab"
           type="button"
           role="tab"
           aria-selected={role === "patient"}
+          aria-controls="signup-form-panel"
           onClick={() => selectRole("patient")}
-          className="min-h-11 rounded-xl px-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 aria-selected:bg-card aria-selected:text-primary aria-selected:shadow-sm"
+          className={cn(
+            "relative z-10 min-h-11 rounded-xl px-3 text-sm font-semibold transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none",
+            role === "patient" ? "text-[#0F766E]" : "text-slate-500 hover:text-slate-800",
+          )}
         >
           I&apos;m a patient
         </button>
         <button
+          id="admin-signup-tab"
           type="button"
           role="tab"
           aria-selected={role === "admin"}
+          aria-controls="signup-form-panel"
           onClick={() => selectRole("admin")}
-          className="min-h-11 rounded-xl px-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:shadow-sm"
+          className={cn(
+            "relative z-10 min-h-11 rounded-xl px-3 text-sm font-semibold transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none",
+            role === "admin" ? "text-white" : "text-slate-500 hover:text-slate-800",
+          )}
         >
           I&apos;m an admin
         </button>
       </div>
 
-      <div className="mb-8 space-y-3" aria-live="polite">
+      <div
+        key={`signup-copy-${role}`}
+        className="mb-8 space-y-3 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500"
+        aria-live="polite"
+      >
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">
           {copy.eyebrow}
         </p>
@@ -228,7 +252,14 @@ export function SignupForm() {
           </p>
         </div>
       ) : (
-        <form key={role} className="space-y-4" onSubmit={handleSubmit}>
+        <form
+          key={role}
+          id="signup-form-panel"
+          role="tabpanel"
+          aria-labelledby={`${role}-signup-tab`}
+          className="space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500"
+          onSubmit={handleSubmit}
+        >
           {error ? (
             <div
               role="alert"
