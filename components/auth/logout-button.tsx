@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, LogOut } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
@@ -14,8 +15,15 @@ export function LogoutButton() {
 
   async function handleLogout() {
     setIsSigningOut(true)
-    await supabase.auth.signOut()
-    router.replace("/login")
+    const { error } = await supabase.auth.signOut()
+
+    if (error) {
+      toast.error("We could not log you out. Please try again.")
+      setIsSigningOut(false)
+      return
+    }
+
+    router.replace("/")
     router.refresh()
   }
 
