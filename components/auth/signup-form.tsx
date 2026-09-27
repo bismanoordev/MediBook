@@ -42,7 +42,7 @@ const roleCopy: Record<
 }
 
 const patientSignupSchema = yup.object({
-  fullName: yup.string().trim().min(2, "Enter your full name.").required("Enter your full name."),
+  fullName: yup.string().trim().matches(/^[\p{L}][\p{L}\s.'-]*$/u, "Use letters only in your full name.").min(2, "Enter your full name.").required("Enter your full name."),
   phone: yup.string().matches(/^\d{7,15}$/, "Enter a valid phone number using digits only.").required("Enter your phone number."),
   email: yup.string().trim().email("Enter a valid email address.").required("Enter your email address."),
   password: yup.string().min(8, "Password must contain at least 8 characters.").required("Enter a password."),
@@ -274,6 +274,9 @@ export function SignupForm() {
                 id={`${role}-fullName`}
                 name="fullName"
                 autoComplete="name"
+                onInput={(event) => {
+                  event.currentTarget.value = event.currentTarget.value.replace(/[^\p{L}\s.'-]/gu, "")
+                }}
                 placeholder={role === "admin" ? "Administrator full name" : "Your full name"}
                 className="h-11"
                 required

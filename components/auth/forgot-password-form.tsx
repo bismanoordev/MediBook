@@ -3,11 +3,16 @@
 import { FormEvent, useMemo, useState } from "react"
 import { CheckCircle2, Loader2, Mail } from "lucide-react"
 import { toast } from "sonner"
+import * as yup from "yup"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getFriendlyAuthError } from "@/lib/auth-errors"
 import { createClient } from "@/lib/supabase/client"
+
+const emailSchema = yup.object({
+  email: yup.string().trim().email("Enter a valid email address.").required("Enter your email address."),
+})
 
 export function ForgotPasswordForm() {
   const supabase = useMemo(() => createClient(), [])
@@ -22,6 +27,13 @@ export function ForgotPasswordForm() {
 
     const formData = new FormData(event.currentTarget)
     const email = String(formData.get("email") ?? "").trim()
+    try {
+      await emailSchema.validate({ email })
+    } catch (validationError) {
+      setError(validationError instanceof yup.ValidationError ? validationError.message : "Enter a valid email address.")
+      setIsSubmitting(false)
+      return
+    }
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
       email,
       {

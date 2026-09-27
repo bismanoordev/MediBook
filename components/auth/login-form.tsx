@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Loader2, LogIn } from "lucide-react"
 import { toast } from "sonner"
+import * as yup from "yup"
 
 import { PasswordInput } from "@/components/auth/password-input"
 import { Button } from "@/components/ui/button"
@@ -17,6 +18,11 @@ type LoginFormProps = {
   next?: string
   message?: string
 }
+
+const loginSchema = yup.object({
+  email: yup.string().trim().email("Enter a valid email address.").required("Enter your email address."),
+  password: yup.string().required("Enter your password."),
+})
 
 export function LoginForm({ next, message }: LoginFormProps) {
   const router = useRouter()
@@ -32,6 +38,14 @@ export function LoginForm({ next, message }: LoginFormProps) {
     const formData = new FormData(event.currentTarget)
     const email = String(formData.get("email") ?? "").trim()
     const password = String(formData.get("password") ?? "")
+
+    try {
+      await loginSchema.validate({ email, password })
+    } catch (validationError) {
+      setError(validationError instanceof yup.ValidationError ? validationError.message : "Check your login details.")
+      setIsSubmitting(false)
+      return
+    }
 
     const { data, error: signInError } =
       await supabase.auth.signInWithPassword({ email, password })

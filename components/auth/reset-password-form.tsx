@@ -4,11 +4,17 @@ import { FormEvent, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { KeyRound, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import * as yup from "yup"
 
 import { PasswordInput } from "@/components/auth/password-input"
 import { Button } from "@/components/ui/button"
 import { getFriendlyAuthError } from "@/lib/auth-errors"
 import { createClient } from "@/lib/supabase/client"
+
+const resetPasswordSchema = yup.object({
+  password: yup.string().min(8, "Password must contain at least 8 characters.").required("Enter a password."),
+  confirmPassword: yup.string().oneOf([yup.ref("password")], "Passwords do not match.").required("Confirm your password."),
+})
 
 export function ResetPasswordForm() {
   const router = useRouter()
@@ -24,13 +30,10 @@ export function ResetPasswordForm() {
     const password = String(formData.get("password") ?? "")
     const confirmPassword = String(formData.get("confirmPassword") ?? "")
 
-    if (password.length < 8) {
-      setError("Password must contain at least 8 characters.")
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.")
+    try {
+      await resetPasswordSchema.validate({ password, confirmPassword })
+    } catch (validationError) {
+      setError(validationError instanceof yup.ValidationError ? validationError.message : "Check your new password.")
       return
     }
 
