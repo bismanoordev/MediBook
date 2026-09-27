@@ -9,6 +9,7 @@ import {
   UserPlus,
 } from "lucide-react"
 import { toast } from "sonner"
+import * as yup from "yup"
 
 import { PasswordInput } from "@/components/auth/password-input"
 import { Button } from "@/components/ui/button"
@@ -40,6 +41,14 @@ const roleCopy: Record<
   },
 }
 
+const patientSignupSchema = yup.object({
+  fullName: yup.string().trim().min(2, "Enter your full name.").required("Enter your full name."),
+  phone: yup.string().matches(/^\d{7,15}$/, "Enter a valid phone number using digits only.").required("Enter your phone number."),
+  email: yup.string().trim().email("Enter a valid email address.").required("Enter your email address."),
+  password: yup.string().min(8, "Password must contain at least 8 characters.").required("Enter a password."),
+  confirmPassword: yup.string().oneOf([yup.ref("password")], "Passwords do not match.").required("Confirm your password."),
+})
+
 export function SignupForm() {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
@@ -67,28 +76,15 @@ export function SignupForm() {
     const confirmPassword = String(formData.get("confirmPassword") ?? "")
     const accessCode = String(formData.get("accessCode") ?? "").trim()
 
-    if (fullName.length < 2) {
-      setError("Enter your full name.")
-      return
-    }
-
-    if (phone.length < 7) {
-      setError("Enter a valid phone number.")
+    try {
+      await patientSignupSchema.validate({ fullName, phone, email, password, confirmPassword })
+    } catch (validationError) {
+      setError(validationError instanceof yup.ValidationError ? validationError.message : "Check your account details.")
       return
     }
 
     if (role === "admin" && !accessCode) {
       setError("Enter the admin invitation code provided by your clinic.")
-      return
-    }
-
-    if (password.length < 8) {
-      setError("Password must contain at least 8 characters.")
-      return
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.")
       return
     }
 
@@ -293,7 +289,12 @@ export function SignupForm() {
                 name="phone"
                 type="tel"
                 autoComplete="tel"
-                placeholder="+92 300 1234567"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                onInput={(event) => {
+                  event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "")
+                }}
+                placeholder="03001234567"
                 className="h-11"
                 required
               />
