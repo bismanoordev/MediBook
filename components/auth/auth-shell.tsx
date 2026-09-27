@@ -30,8 +30,8 @@ export function AuthShell({
   hideHeader = false,
 }: AuthShellProps) {
   return (
-    <main className="min-h-[100dvh] bg-[#F8FAFC] lg:grid lg:grid-cols-[minmax(0,0.88fr)_minmax(34rem,1.12fr)]">
-      <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-white px-5 py-10 sm:px-10 lg:px-12 xl:px-20">
+    <main className="min-h-[100dvh] bg-[#F8FAFC] lg:grid lg:grid-cols-[minmax(34rem,1.12fr)_minmax(0,0.88fr)]">
+      <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-white px-5 py-10 sm:px-10 lg:order-2 lg:px-12 xl:px-20">
         <div
           aria-hidden="true"
           className="absolute -left-24 -top-24 size-64 rounded-full bg-teal-100/60 blur-3xl"
@@ -88,7 +88,7 @@ export function AuthShell({
 
       <section
         aria-hidden="true"
-        className="relative hidden min-h-[100dvh] overflow-hidden bg-[#073F3A] px-12 py-10 text-white lg:flex lg:flex-col lg:justify-between xl:px-16 xl:py-12"
+        className="relative hidden min-h-[100dvh] overflow-hidden bg-[#073F3A] px-12 py-10 text-white lg:order-1 lg:flex lg:flex-col lg:justify-between xl:px-16 xl:py-12"
       >
         <div
           className="absolute inset-0 opacity-30"
