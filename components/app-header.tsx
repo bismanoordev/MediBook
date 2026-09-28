@@ -1,13 +1,15 @@
 import Link from "next/link"
 
 import { LogoutButton } from "@/components/auth/logout-button"
+import { NotificationBell } from "@/components/patient/notification-bell"
 
 type AppHeaderProps = {
   name?: string | null
   admin?: boolean
+  userId?: string
 }
 
-export function AppHeader({ name, admin = false }: AppHeaderProps) {
+export function AppHeader({ name, admin = false, userId }: AppHeaderProps) {
   return (
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
@@ -35,6 +37,7 @@ export function AppHeader({ name, admin = false }: AppHeaderProps) {
         </div>
         <div className="flex items-center gap-3">
           {name ? <span className="hidden text-sm text-slate-600 md:inline">{name}</span> : null}
+          {userId ? <NotificationBell userId={userId} /> : null}
           <LogoutButton />
         </div>
       </div>
