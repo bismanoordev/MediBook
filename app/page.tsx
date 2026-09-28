@@ -1,38 +1,86 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, CalendarCheck2, CheckCircle2, Clock3, HeartPulse, Search, ShieldCheck, Stethoscope } from "lucide-react"
+import {
+  ArrowRight,
+  CalendarCheck2,
+  CheckCircle2,
+  Clock3,
+  HeartPulse,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const benefits = [
-  { icon: Clock3, title: "Book in under a minute", text: "Choose a doctor, pick a free time, and you are done." },
-  { icon: CalendarCheck2, title: "Live availability", text: "Only genuine, currently available slots are shown." },
-  { icon: ShieldCheck, title: "Private and secure", text: "Your profile and appointments stay visible only to you." },
+const carePoints = [
+  "See genuine available times",
+  "Book in under one minute",
+  "Manage every visit in one place",
 ]
 
-const steps = [
-  { number: "01", icon: Search, title: "Find the right care", text: "Browse qualified doctors and filter by specialty." },
-  { number: "02", icon: CalendarCheck2, title: "Choose a live slot", text: "See real availability for the next seven days." },
-  { number: "03", icon: CheckCircle2, title: "Book with confidence", text: "Receive a clear appointment request and manage it anytime." },
+const benefits = [
+  { icon: Clock3, title: "Your time, respected", text: "Book appointments when it suits you, without waiting on a call." },
+  { icon: CalendarCheck2, title: "Availability you can trust", text: "Every available slot is checked before you can book it." },
+  { icon: ShieldCheck, title: "Care with privacy", text: "Your profile and appointment history remain securely yours." },
 ]
 
 export default function Home() {
-  return <main className="min-h-screen overflow-hidden bg-[#F8FAFC] text-slate-950">
-    <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:py-6">
-      <Link href="/" className="flex items-center gap-2.5 text-lg font-bold tracking-tight"><span className="grid size-9 place-items-center rounded-xl bg-[#0F766E] text-white shadow-sm"><HeartPulse className="size-5" /></span>MediBook</Link>
-      <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 md:flex"><Link href="/doctors" className="hover:text-[#0F766E]">Find a doctor</Link><a href="#how-it-works" className="hover:text-[#0F766E]">How it works</a><Link href="/appointments" className="hover:text-[#0F766E]">My appointments</Link></nav>
-      <div className="flex items-center gap-1.5 sm:gap-2"><Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "rounded-xl")}>Log in</Link><Link href="/signup" className={cn(buttonVariants(), "rounded-xl bg-[#0F766E] hover:bg-[#0D5F59]")}>Create account</Link></div>
-    </header>
+  return (
+    <main className="min-h-screen bg-[#F8FAFC] text-slate-950">
+      <section className="px-3 py-3 sm:px-6 sm:py-6">
+        <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[2rem] bg-[#E5F2F7] px-5 pb-0 pt-5 sm:px-9 sm:pt-7 lg:min-h-[650px] lg:px-12">
+          <div aria-hidden="true" className="absolute -left-20 top-12 size-64 rounded-full bg-white/45 blur-3xl" />
+          <div aria-hidden="true" className="absolute right-0 top-0 h-full w-[45%] opacity-50 [background-image:radial-gradient(#0F766E_1px,transparent_1px)] [background-size:22px_22px]" />
+          <div aria-hidden="true" className="absolute -right-24 bottom-24 size-72 rounded-full border-[28px] border-[#0F766E]/10" />
 
-    <section className="relative mx-auto grid max-w-7xl gap-10 px-5 pb-14 pt-8 sm:px-8 lg:grid-cols-[1.02fr_.98fr] lg:items-center lg:gap-12 lg:pb-24 lg:pt-12">
-      <div className="relative z-10"><p className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3.5 py-2 text-sm font-semibold text-[#0F766E]"><span className="size-2 rounded-full bg-[#0F766E]" />Care that works around you</p><h1 className="mt-6 max-w-2xl text-5xl font-semibold leading-[.98] tracking-[-.055em] text-slate-950 sm:text-6xl lg:text-7xl">Healthcare made <span className="text-[#0F766E]">simpler.</span></h1><p className="mt-6 max-w-xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">Find trusted doctors, see real appointment times, and book your next visit without calling or waiting.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href="/doctors" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-xl bg-[#0F766E] px-5 hover:bg-[#0D5F59]")}>Find a doctor <ArrowRight className="size-4" /></Link><Link href="#how-it-works" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-12 rounded-xl px-5")}>See how it works</Link></div><div className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-600"><span className="inline-flex items-center gap-2"><CheckCircle2 className="size-4 text-[#0F766E]" />Live appointment slots</span><span className="inline-flex items-center gap-2"><CheckCircle2 className="size-4 text-[#0F766E]" />No double bookings</span></div></div>
-      <div className="relative mx-auto w-full max-w-[35rem] lg:max-w-none"><div className="absolute inset-x-8 inset-y-6 rounded-[2rem] bg-[#CCFBF1]" /><div className="relative h-[31rem] overflow-hidden rounded-[2rem] bg-slate-200 shadow-[0_30px_70px_-32px_rgba(15,118,110,.55)] sm:h-[36rem]"><Image src="/images/medibook-hero-doctor.png" alt="A MediBook clinic doctor" fill priority className="object-cover object-[60%_center]" sizes="(max-width: 1024px) 100vw, 50vw" /><div className="absolute inset-0 bg-gradient-to-t from-[#073f3a]/40 via-transparent to-transparent" /><div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/40 bg-white/90 p-4 shadow-lg backdrop-blur-sm sm:left-7 sm:right-auto sm:w-72"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E]"><CalendarCheck2 className="size-5" /></span><div><p className="text-xs font-medium text-slate-500">Appointments made easy</p><p className="text-sm font-semibold text-slate-900">Your time matters here.</p></div></div></div></div><div className="absolute -left-2 top-10 hidden rounded-2xl border border-white/70 bg-white/95 p-3 shadow-xl sm:block"><p className="text-xs font-semibold text-[#0F766E]">Available today</p><p className="mt-1 text-sm font-semibold">10:30 AM</p></div></div>
-    </section>
+          <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between gap-4">
+            <Link href="/" className="flex items-center gap-2 text-base font-bold tracking-tight sm:text-lg">
+              <span className="grid size-9 place-items-center rounded-xl bg-[#0F766E] text-white shadow-sm"><HeartPulse className="size-5" /></span>
+              MediBook
+            </Link>
+            <nav className="hidden items-center gap-6 text-xs font-semibold text-slate-700 lg:flex">
+              <Link href="/doctors" className="hover:text-[#0F766E]">Doctors</Link>
+              <a href="#why-medibook" className="hover:text-[#0F766E]">Why MediBook</a>
+              <a href="#how-it-works" className="hover:text-[#0F766E]">How it works</a>
+            </nav>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "rounded-xl")}>Log in</Link>
+              <Link href="/signup" className={cn(buttonVariants(), "rounded-xl bg-[#0F766E] hover:bg-[#0D5F59]")}>Get started</Link>
+            </div>
+          </header>
 
-    <section className="border-y border-teal-900/10 bg-[#0F766E] text-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-7 gap-y-2 px-5 py-4 text-sm font-semibold tracking-wide sm:px-8"><span>Thoughtful</span><span className="text-teal-200">•</span><span>Trusted</span><span className="text-teal-200">•</span><span>Simple</span><span className="text-teal-200">•</span><span>Patient-first</span><span className="text-teal-200">•</span><span>Secure</span></div></section>
-    <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-28"><div className="max-w-xl"><p className="text-sm font-semibold uppercase tracking-[.18em] text-[#0F766E]">A calmer way to book</p><h2 className="mt-4 text-3xl font-semibold tracking-[-.035em] sm:text-4xl">From search to appointment in three clear steps.</h2></div><div className="mt-10 grid gap-4 md:grid-cols-3">{steps.map(({ number, icon: Icon, title, text }) => <article key={number} className="relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><span className="absolute right-6 top-5 text-sm font-semibold text-slate-300">{number}</span><span className="grid size-11 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><Icon className="size-5" /></span><h3 className="mt-6 text-lg font-semibold">{title}</h3><p className="mt-2 leading-6 text-slate-600">{text}</p></article>)}</div></section>
-    <section className="mx-auto grid max-w-7xl gap-4 px-5 pb-20 sm:px-8 md:grid-cols-3">{benefits.map(({ icon: Icon, title, text }) => <article key={title} className="rounded-2xl border border-slate-200 bg-white p-6"><Icon className="size-6 text-[#0F766E]" /><h2 className="mt-5 font-semibold">{title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{text}</p></article>)}</section>
-    <section className="mx-5 mb-5 rounded-[2rem] bg-[#073F3A] px-6 py-14 text-center text-white sm:mx-8 sm:px-10 lg:mx-auto lg:mb-8 lg:max-w-7xl"><Stethoscope className="mx-auto size-7 text-teal-200" /><h2 className="mx-auto mt-5 max-w-2xl text-3xl font-semibold tracking-[-.04em] sm:text-4xl">Your next appointment is only a few clicks away.</h2><p className="mx-auto mt-4 max-w-xl leading-7 text-teal-50/75">Start with a doctor you trust and a time that fits your day.</p><Link href="/doctors" className={cn(buttonVariants({ size: "lg" }), "mt-7 h-12 rounded-xl bg-white px-5 text-[#0F766E] hover:bg-teal-50")}>Browse doctors <ArrowRight className="size-4" /></Link></section>
-  </main>
+          <div className="relative z-10 mx-auto grid max-w-7xl gap-3 pt-14 lg:grid-cols-[.92fr_1.08fr] lg:pt-20">
+            <div className="pb-14 lg:pb-24">
+              <p className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-xs font-bold text-[#0F766E] shadow-sm ring-1 ring-white"><Sparkles className="size-3.5" />Simple, reliable clinic care</p>
+              <h1 className="mt-5 max-w-xl text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl xl:text-7xl">Care that fits your <span className="text-[#0F766E]">life.</span></h1>
+              <p className="mt-6 max-w-md text-base leading-7 text-slate-600">Choose a doctor, see live appointment times, and organise your visits with a calmer, clearer experience.</p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link href="/doctors" className={cn(buttonVariants({ size: "lg" }), "h-11 rounded-xl bg-[#0F766E] px-5 hover:bg-[#0D5F59]")}>Book an appointment <ArrowRight className="size-4" /></Link>
+                <Link href="/doctors" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-11 rounded-xl border-white bg-white/70 px-5 hover:bg-white")}>Browse doctors</Link>
+              </div>
+              <div className="mt-9 flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium text-slate-700">{carePoints.map((point) => <span key={point} className="inline-flex items-center gap-1.5"><CheckCircle2 className="size-4 text-[#0F766E]" />{point}</span>)}</div>
+            </div>
+
+            <div className="relative min-h-[360px] sm:min-h-[470px] lg:min-h-[540px]">
+              <div className="absolute bottom-0 left-1/2 h-[92%] w-[min(31rem,90%)] -translate-x-1/2 overflow-hidden rounded-t-[9rem] bg-[#C9E7EB]" />
+              <Image src="/images/medibook-hero-doctor.png" alt="A MediBook clinic doctor" fill priority className="object-cover object-[62%_31%] [clip-path:inset(0_4%_0_4%_round_9rem_9rem_0_0)]" sizes="(max-width: 1024px) 100vw, 55vw" />
+              <div className="absolute bottom-7 left-2 right-2 rounded-2xl border border-white/70 bg-white/90 p-3 shadow-xl backdrop-blur-sm sm:bottom-9 sm:left-8 sm:right-auto sm:w-72"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E]"><CalendarCheck2 className="size-5" /></span><div><p className="text-xs text-slate-500">Next available time</p><p className="text-sm font-semibold">Today at 10:30 AM</p></div></div></div>
+              <div className="absolute right-1 top-8 hidden rounded-2xl bg-[#0F766E] px-4 py-3 text-white shadow-xl sm:block"><p className="text-xs text-teal-100">Live schedule</p><p className="mt-0.5 text-sm font-semibold">Slots updated</p></div>
+            </div>
+          </div>
+          <div className="relative z-20 -mx-5 flex min-h-12 items-center overflow-hidden bg-[#0F766E] px-5 text-sm font-semibold text-white sm:-mx-9 sm:px-9 lg:-mx-12 lg:px-12"><div className="flex min-w-max items-center gap-6 sm:gap-9"><span>Thoughtful care</span><span className="text-teal-200">✦</span><span>Trusted doctors</span><span className="text-teal-200">✦</span><span>Live availability</span><span className="text-teal-200">✦</span><span>Private by design</span></div></div>
+        </div>
+      </section>
+
+      <section id="why-medibook" className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-[.8fr_1fr] lg:items-center lg:gap-20 lg:py-28">
+        <div className="relative mx-auto w-full max-w-md overflow-hidden rounded-[2rem] bg-[#DDF3F3]"><Image src="/images/medibook-hero-doctor.png" alt="" width={1024} height={1536} className="aspect-[.82] object-cover object-[55%_30%]" /><div className="absolute inset-x-5 bottom-5 rounded-2xl bg-white/90 p-4 shadow-lg backdrop-blur"><p className="text-xs font-semibold uppercase tracking-[.15em] text-[#0F766E]">Care, simplified</p><p className="mt-1 text-sm font-medium text-slate-800">Everything you need before your visit.</p></div></div>
+        <div><p className="text-sm font-semibold uppercase tracking-[.18em] text-[#0F766E]">Designed around your day</p><h2 className="mt-4 max-w-xl text-3xl font-semibold tracking-[-.04em] sm:text-4xl">A more reassuring way to stay on top of your health.</h2><p className="mt-5 max-w-xl leading-7 text-slate-600">MediBook brings appointment discovery, availability, and visit management into one welcoming place—so looking after yourself feels a little easier.</p><div className="mt-8 grid max-w-xl gap-4 sm:grid-cols-2"><div className="border-r-0 border-slate-200 sm:border-r"><p className="text-4xl font-semibold tracking-[-.05em] text-[#0F766E]">7 days</p><p className="mt-2 text-sm text-slate-600">of forward availability</p></div><div><p className="text-4xl font-semibold tracking-[-.05em] text-[#0F766E]">1 place</p><p className="mt-2 text-sm text-slate-600">to manage your appointments</p></div></div><Link href="/doctors" className={cn(buttonVariants({ variant: "outline" }), "mt-8 h-11 rounded-xl")}>Find your doctor <ArrowRight className="size-4" /></Link></div>
+      </section>
+
+      <section id="how-it-works" className="bg-white py-20"><div className="mx-auto max-w-7xl px-5 sm:px-8"><div className="max-w-xl"><p className="text-sm font-semibold uppercase tracking-[.18em] text-[#0F766E]">How it works</p><h2 className="mt-4 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">Three simple steps to your next visit.</h2></div><div className="mt-10 grid gap-4 md:grid-cols-3">{benefits.map(({ icon: Icon, title, text }, index) => <article key={title} className="rounded-2xl border border-slate-200 bg-[#F8FAFC] p-6"><span className="text-sm font-bold text-slate-300">0{index + 1}</span><span className="mt-6 grid size-11 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E]"><Icon className="size-5" /></span><h3 className="mt-5 text-lg font-semibold">{title}</h3><p className="mt-2 leading-6 text-slate-600">{text}</p></article>)}</div></div></section>
+
+      <section className="mx-auto grid max-w-7xl gap-6 px-5 py-20 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-center"><div><p className="text-sm font-semibold uppercase tracking-[.18em] text-[#0F766E]">Ready when you are</p><h2 className="mt-3 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">Find care that works with your schedule.</h2></div><Link href="/doctors" className={cn(buttonVariants({ size: "lg" }), "h-12 rounded-xl bg-[#0F766E] px-5 hover:bg-[#0D5F59]")}>Explore doctors <ArrowRight className="size-4" /></Link></section>
+    </main>
+  )
 }
