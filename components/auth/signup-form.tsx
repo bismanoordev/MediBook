@@ -44,7 +44,7 @@ const roleCopy: Record<
 const patientSignupSchema = yup.object({
   fullName: yup.string().trim().matches(/^[\p{L}][\p{L}\s.'-]*$/u, "Use letters only in your full name.").min(2, "Enter your full name.").required("Enter your full name."),
   phone: yup.string().matches(/^\d{7,15}$/, "Enter a valid phone number using digits only.").required("Enter your phone number."),
-  email: yup.string().trim().email("Enter a valid email address.").required("Enter your email address."),
+  email: yup.string().trim().matches(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, "Enter a complete email address, for example name@gmail.com.").required("Enter your email address."),
   password: yup.string().min(8, "Password must contain at least 8 characters.").required("Enter a password."),
   confirmPassword: yup.string().oneOf([yup.ref("password")], "Passwords do not match.").required("Confirm your password."),
 })
@@ -55,6 +55,7 @@ export function SignupForm() {
   const [role, setRole] = useState<SignupRole>("patient")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [checkEmail, setCheckEmail] = useState(false)
 
   function selectRole(nextRole: SignupRole) {
@@ -77,9 +78,11 @@ export function SignupForm() {
     const accessCode = String(formData.get("accessCode") ?? "").trim()
 
     try {
-      await patientSignupSchema.validate({ fullName, phone, email, password, confirmPassword })
+      await patientSignupSchema.validate({ fullName, phone, email, password, confirmPassword }, { abortEarly: false })
     } catch (validationError) {
-      setError(validationError instanceof yup.ValidationError ? validationError.message : "Check your account details.")
+      if (validationError instanceof yup.ValidationError) {
+        setFieldErrors(Object.fromEntries(validationError.inner.map((issue) => [issue.path ?? "form", issue.message])))
+      }
       return
     }
 
@@ -281,6 +284,7 @@ export function SignupForm() {
                 className="h-11"
                 required
               />
+              {fieldErrors.fullName ? <p className="text-sm text-red-600">{fieldErrors.fullName}</p> : null}
             </div>
 
             <div className="space-y-2 sm:col-span-2">
@@ -301,6 +305,7 @@ export function SignupForm() {
                 className="h-11"
                 required
               />
+              {fieldErrors.phone ? <p className="text-sm text-red-600">{fieldErrors.phone}</p> : null}
             </div>
 
             <div className="space-y-2 sm:col-span-2">
@@ -316,6 +321,7 @@ export function SignupForm() {
                 className="h-11"
                 required
               />
+              {fieldErrors.email ? <p className="text-sm text-red-600">{fieldErrors.email}</p> : null}
             </div>
 
             {role === "admin" ? (
@@ -347,6 +353,7 @@ export function SignupForm() {
               minLength={8}
               required
             />
+            {fieldErrors.password ? <p className="-mt-2 text-sm text-red-600">{fieldErrors.password}</p> : null}
 
             <PasswordInput
               id={`${role}-confirmPassword`}
@@ -357,6 +364,7 @@ export function SignupForm() {
               minLength={8}
               required
             />
+            {fieldErrors.confirmPassword ? <p className="-mt-2 text-sm text-red-600">{fieldErrors.confirmPassword}</p> : null}
           </div>
 
           <Button

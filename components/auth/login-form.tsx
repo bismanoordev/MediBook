@@ -20,7 +20,7 @@ type LoginFormProps = {
 }
 
 const loginSchema = yup.object({
-  email: yup.string().trim().email("Enter a valid email address.").required("Enter your email address."),
+  email: yup.string().trim().matches(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, "Enter a complete email address, for example name@gmail.com.").required("Enter your email address."),
   password: yup.string().required("Enter your password."),
 })
 
