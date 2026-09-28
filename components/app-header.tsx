@@ -37,7 +37,7 @@ export function AppHeader({ name, admin = false, userId }: AppHeaderProps) {
         </div>
         <div className="flex items-center gap-3">
           {name ? <span className="hidden text-sm text-slate-600 md:inline">{name}</span> : null}
-          {userId ? <NotificationBell userId={userId} /> : null}
+          {userId ? <NotificationBell userId={userId} href={admin ? "/admin/notifications" : "/notifications"} /> : null}
           <LogoutButton />
         </div>
       </div>
