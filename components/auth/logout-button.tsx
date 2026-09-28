@@ -1,30 +1,23 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useTransition } from "react"
 import { Loader2, LogOut } from "lucide-react"
 import { toast } from "sonner"
 
+import { signOut } from "@/app/auth/actions"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@/lib/supabase/client"
 
 export function LogoutButton() {
-  const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
-  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [isSigningOut, startTransition] = useTransition()
 
-  async function handleLogout() {
-    setIsSigningOut(true)
-    const { error } = await supabase.auth.signOut()
+  function handleLogout() {
+    startTransition(async () => {
+      const result = await signOut()
 
-    if (error) {
-      toast.error("We could not log you out. Please try again.")
-      setIsSigningOut(false)
-      return
-    }
-
-    router.replace("/")
-    router.refresh()
+      if (result.error) {
+        toast.error(result.error)
+      }
+    })
   }
 
   return (
