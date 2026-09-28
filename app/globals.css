@@ -121,6 +121,12 @@
 }
 
 @layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href] {
+    cursor: pointer;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
