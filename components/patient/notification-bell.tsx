@@ -2,6 +2,7 @@
 
 import { Bell, X } from "lucide-react"
 import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 import { createClient } from "@/lib/supabase/client"
 
@@ -18,7 +19,12 @@ export function NotificationBell({ userId }: { userId: string }) {
       setItems(data ?? [])
     }
     void load()
-    const channel = supabase.channel(`patient-notifications-${userId}`).on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` }, () => void load()).subscribe()
+    const channel = supabase.channel(`patient-notifications-${userId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` }, (payload) => {
+      const notification = payload.new as Notification
+
+      setItems((current) => current.some((item) => item.id === notification.id) ? current : [notification, ...current].slice(0, 8))
+      toast.info(notification.title, { description: notification.message })
+    }).subscribe()
     return () => { void supabase.removeChannel(channel) }
   }, [userId])
 
