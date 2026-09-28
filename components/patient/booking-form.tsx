@@ -11,6 +11,7 @@ export function BookingForm({ doctorId, date, time }: { doctorId: string; date: 
   const router = useRouter()
   async function book(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const form = event.currentTarget
     setLoading(true)
     const response = await fetch("/api/appointments", {
       method: "POST",
@@ -21,7 +22,7 @@ export function BookingForm({ doctorId, date, time }: { doctorId: string; date: 
     setLoading(false)
     if (response.status === 401) { router.push(`/login?next=${encodeURIComponent(`/doctors/${doctorId}`)}`); return }
     if (!response.ok) return toast.error(result.error ?? "We could not save your appointment. Please try again.")
-    event.currentTarget.closest("details")?.removeAttribute("open")
+    form.closest("details")?.removeAttribute("open")
     setReason("")
     toast.success("Appointment booked. Opening your appointments…")
     window.setTimeout(() => router.replace("/appointments"), 900)
