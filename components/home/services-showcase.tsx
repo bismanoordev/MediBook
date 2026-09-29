@@ -18,7 +18,14 @@ const services = [
 
 export function ServicesShowcase() {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [slideDirection, setSlideDirection] = useState<"forward" | "backward">("forward")
   const service = services[activeIndex]
+
+  function selectService(index: number) {
+    if (index === activeIndex) return
+    setSlideDirection(index > activeIndex ? "forward" : "backward")
+    setActiveIndex(index)
+  }
 
   return (
     <section id="services" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-28">
@@ -29,10 +36,10 @@ export function ServicesShowcase() {
       <div className="mt-11 grid gap-8 lg:grid-cols-[.34fr_.66fr] lg:items-center">
         <div className="flex overflow-x-auto pb-1 lg:block lg:space-y-1" role="tablist" aria-label="MediBook services">
           {services.map((item, index) => (
-            <button key={item.name} type="button" role="tab" aria-selected={activeIndex === index} onClick={() => setActiveIndex(index)} className={cn("shrink-0 cursor-pointer rounded-xl px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] lg:block lg:w-full", activeIndex === index ? "bg-[#CCFBF1] text-[#0F766E]" : "text-slate-600 hover:bg-slate-50 hover:text-[#0F766E]")}>{item.name}</button>
+            <button key={item.name} type="button" role="tab" aria-selected={activeIndex === index} onClick={() => selectService(index)} className={cn("shrink-0 cursor-pointer rounded-xl px-4 py-3 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] lg:block lg:w-full", activeIndex === index ? "bg-[#CCFBF1] text-[#0F766E]" : "text-slate-600 hover:bg-slate-50 hover:text-[#0F766E]")}>{item.name}</button>
           ))}
         </div>
-        <article className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,118,110,.10)] sm:grid-cols-2">
+        <article key={service.name} className={cn("service-card-enter grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,118,110,.10)] sm:grid-cols-2", slideDirection === "forward" ? "service-card-forward" : "service-card-backward")}>
           <div className="relative min-h-72 bg-[#DDF3F3]">
             <Image key={service.image} src={service.image} alt={service.alt} fill className={cn("object-cover", service.position)} sizes="(max-width: 640px) 100vw, 40vw" />
           </div>
