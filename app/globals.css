@@ -191,6 +191,14 @@ html {
   [data-landing-page] .motion-float {
     animation: medibook-float 6s ease-in-out infinite;
   }
+
+  [data-landing-page] .motion-float-late {
+    animation-delay: -2s;
+  }
+
+  [data-landing-page] .motion-float-later {
+    animation-delay: -4s;
+  }
 }
 
 @keyframes medibook-float {
