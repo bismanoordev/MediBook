@@ -16,6 +16,7 @@ type AuthShellProps = {
   description: string
   children: ReactNode
   footer?: ReactNode
+  footerWithoutDivider?: boolean
   showBackHome?: boolean
   hideHeader?: boolean
 }
@@ -26,6 +27,7 @@ export function AuthShell({
   description,
   children,
   footer,
+  footerWithoutDivider = false,
   showBackHome = false,
   hideHeader = false,
 }: AuthShellProps) {
@@ -79,7 +81,7 @@ export function AuthShell({
           {children}
 
           {footer ? (
-            <div className="mt-8 border-t border-slate-200 pt-6 text-center text-sm text-slate-500">
+            <div className={footerWithoutDivider ? "mt-8 text-center text-sm text-slate-500" : "mt-8 border-t border-slate-200 pt-6 text-center text-sm text-slate-500"}>
               {footer}
             </div>
           ) : null}
