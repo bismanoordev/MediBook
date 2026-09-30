@@ -1,18 +1,21 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import * as yup from "yup"
 
 import { requireAdmin } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
 
 const statuses = new Set(["pending", "confirmed", "cancelled", "completed"])
+const doctorSchema = yup.object({ fullName: yup.string().trim().matches(/^[\p{L}][\p{L}\s.'-]*$/u, "Enter a valid doctor name.").required("Enter the doctor’s full name."), fee: yup.number().typeError("Enter a valid consultation fee.").min(0, "Consultation fee cannot be negative.").required("Enter a consultation fee.") })
+const scheduleSchema = yup.object({ start: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid start time.").required("Choose a start time."), end: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid end time.").required("Choose an end time."), minutes: yup.number().oneOf([15, 20, 30, 60], "Choose 15, 20, 30, or 60 minutes.").required() })
 
 export async function createDoctor(formData: FormData) {
   await requireAdmin()
   const name = String(formData.get("full_name") ?? "").trim()
   const fee = Number(formData.get("fee"))
   const specialtyId = Number(formData.get("specialty_id"))
-  if (!name || !Number.isFinite(fee) || fee < 0) return
+  if (!(await doctorSchema.isValid({ fullName: name, fee }))) return
   const supabase = await createClient()
   await supabase.from("doctors").insert({ full_name: name, fee, specialty_id: Number.isInteger(specialtyId) && specialtyId > 0 ? specialtyId : null, bio: String(formData.get("bio") ?? "").trim() || null, photo_url: String(formData.get("photo_url") ?? "").trim() || null })
   revalidatePath("/admin/doctors")
@@ -25,7 +28,7 @@ export async function updateDoctor(formData: FormData) {
   const name = String(formData.get("full_name") ?? "").trim()
   const fee = Number(formData.get("fee"))
   const specialtyId = Number(formData.get("specialty_id"))
-  if (!id || !name || !Number.isFinite(fee) || fee < 0) return
+  if (!id || !(await doctorSchema.isValid({ fullName: name, fee }))) return
   const supabase = await createClient()
   await supabase.from("doctors").update({ full_name: name, fee, specialty_id: Number.isInteger(specialtyId) && specialtyId > 0 ? specialtyId : null, bio: String(formData.get("bio") ?? "").trim() || null }).eq("id", id)
   revalidatePath("/admin/doctors")
@@ -59,7 +62,7 @@ export async function saveSchedule(formData: FormData) {
     revalidatePath(`/doctors/${doctorId}`)
     return
   }
-  if (!/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || ![15, 20, 30, 60].includes(minutes)) return
+  if (!(await scheduleSchema.isValid({ start, end, minutes })) || end <= start) return
   await supabase.from("doctor_schedules").upsert({ doctor_id: doctorId, day_of_week: day, start_time: start, end_time: end, slot_minutes: minutes }, { onConflict: "doctor_id,day_of_week" })
   revalidatePath(`/admin/doctors/${doctorId}/schedule`)
   revalidatePath(`/doctors/${doctorId}`)
