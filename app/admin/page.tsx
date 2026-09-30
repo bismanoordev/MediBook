@@ -1,30 +1,30 @@
 import Link from "next/link"
 import { CalendarDays, Clock3, Stethoscope, Users } from "lucide-react"
-
+import { requireAdmin } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
 
+const statusClass: Record<string, string> = { pending: "bg-amber-100 text-amber-800", confirmed: "bg-green-100 text-green-800", cancelled: "bg-red-100 text-red-800", completed: "bg-slate-200 text-slate-700" }
+const dayFormatter = new Intl.DateTimeFormat("en-PK", { weekday: "short" })
+const timeFormatter = new Intl.DateTimeFormat("en-PK", { hour: "numeric", minute: "2-digit" })
+const isoDate = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+function pakistanToday() { const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Karachi", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date()); const part = (name: string) => parts.find((item) => item.type === name)?.value ?? "01"; return new Date(`${part("year")}-${part("month")}-${part("day")}T12:00:00`) }
+
 export default async function AdminPage() {
+  await requireAdmin()
   const supabase = await createClient()
-  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Karachi" }).format(new Date())
-  const [todayResult, pendingResult, patientsResult, doctorsResult, recentResult] = await Promise.all([
+  const todayDate = pakistanToday(), today = isoDate(todayDate)
+  const dates = Array.from({ length: 7 }, (_, index) => { const date = new Date(todayDate); date.setDate(todayDate.getDate() - 6 + index); return date })
+  const [todayResult, pendingResult, patientsResult, doctorsResult, appointmentsResult, chartResult] = await Promise.all([
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("appointment_date", today),
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "patient"),
     supabase.from("doctors").select("id", { count: "exact", head: true }).eq("is_active", true),
-    supabase.from("appointments").select("id, status, doctors(full_name), profiles(full_name)").order("created_at", { ascending: false }).limit(5),
+    supabase.from("appointments").select("id, start_time, status, doctors(full_name), profiles!appointments_patient_id_fkey(full_name)").eq("appointment_date", today).order("start_time"),
+    supabase.from("appointments").select("appointment_date").gte("appointment_date", isoDate(dates[0])).lte("appointment_date", today),
   ])
-  const cards = [
-    { label: "Today’s appointments", value: todayResult.count ?? 0, icon: CalendarDays, href: "/admin/appointments" },
-    { label: "Awaiting review", value: pendingResult.count ?? 0, icon: Clock3, href: "/admin/appointments" },
-    { label: "Patients", value: patientsResult.count ?? 0, icon: Users, href: "/admin/patients" },
-    { label: "Active doctors", value: doctorsResult.count ?? 0, icon: Stethoscope, href: "/admin/doctors" },
-  ]
-
-  return <main className="mx-auto max-w-7xl px-5 py-10 sm:px-8">
-    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#0F766E]">Admin area</p>
-    <h1 className="mt-3 text-4xl font-semibold tracking-tight">Clinic dashboard</h1>
-    <p className="mt-3 text-slate-600">Keep today&apos;s clinic work clear, timely, and organised.</p>
-    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{cards.map(({ label, value, icon: Icon, href }) => <Link href={href} key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"><Icon className="size-5 text-[#0F766E]" /><p className="mt-5 text-sm text-slate-500">{label}</p><p className="mt-1 text-3xl font-semibold">{value}</p></Link>)}</div>
-    <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between gap-4"><div><h2 className="font-semibold">Recent bookings</h2><p className="mt-1 text-sm text-slate-500">New requests appear here and in the notification bell.</p></div><Link href="/admin/appointments" className="text-sm font-semibold text-[#0F766E] hover:underline">View all</Link></div>{recentResult.data?.length ? <div className="mt-5 divide-y divide-slate-100">{recentResult.data.map((appointment) => { const doctor = appointment.doctors as unknown as { full_name: string } | null; const patient = appointment.profiles as unknown as { full_name: string } | null; return <div key={appointment.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm"><span><strong>{patient?.full_name ?? "Patient"}</strong> booked {doctor?.full_name ?? "a doctor"}</span><span className="capitalize text-slate-500">{appointment.status}</span></div> })}</div> : <p className="mt-5 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No bookings yet.</p>}</section>
-  </main>
+  const cards = [{ label: "Today’s appointments", value: todayResult.count ?? 0, icon: CalendarDays, href: "/admin/appointments" }, { label: "Pending appointments", value: pendingResult.count ?? 0, icon: Clock3, href: "/admin/appointments?status=pending" }, { label: "Total patients", value: patientsResult.count ?? 0, icon: Users, href: "/admin/patients" }, { label: "Active doctors", value: doctorsResult.count ?? 0, icon: Stethoscope, href: "/admin/doctors" }]
+  const chart = dates.map((date) => ({ date: isoDate(date), label: dayFormatter.format(date), count: (chartResult.data ?? []).filter((item) => item.appointment_date === isoDate(date)).length }))
+  const max = Math.max(1, ...chart.map((item) => item.count))
+  const hasError = [todayResult, pendingResult, patientsResult, doctorsResult, appointmentsResult, chartResult].some((item) => item.error)
+  return <main className="mx-auto max-w-7xl px-5 py-10 sm:px-8"><p className="text-sm font-semibold uppercase tracking-[.18em] text-[#0F766E]">Admin area</p><h1 className="mt-3 text-4xl font-semibold tracking-tight">Clinic dashboard</h1><p className="mt-3 text-slate-600">Keep today’s clinic work clear, timely, and organised.</p>{hasError ? <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Some dashboard information couldn’t be loaded. Please refresh and try again.</div> : null}<div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{cards.map(({ label, value, icon: Icon, href }) => <Link href={href} key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md"><Icon className="size-5 text-[#0F766E]" /><p className="mt-5 text-sm text-slate-500">{label}</p><p className="mt-1 text-3xl font-semibold">{value}</p></Link>)}</div><div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.85fr)]"><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between gap-4"><div><h2 className="font-semibold">Today’s appointments</h2><p className="mt-1 text-sm text-slate-500">Patient, clinician, time and booking status.</p></div><Link href="/admin/appointments" className="text-sm font-semibold text-[#0F766E] hover:underline">View all</Link></div>{appointmentsResult.error ? <p className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">Today’s appointments couldn’t be loaded. Please refresh and try again.</p> : appointmentsResult.data?.length ? <div className="mt-5 divide-y divide-slate-100">{appointmentsResult.data.map((appointment) => { const patient = appointment.profiles as unknown as { full_name: string } | null; const doctor = appointment.doctors as unknown as { full_name: string } | null; return <div key={appointment.id} className="grid gap-1 py-4 text-sm sm:grid-cols-[1.1fr_1.1fr_auto_auto] sm:items-center sm:gap-4"><strong>{patient?.full_name ?? "Patient"}</strong><span className="text-slate-600">{doctor?.full_name ?? "Clinic doctor"}</span><span className="text-slate-600">{timeFormatter.format(new Date(`2000-01-01T${appointment.start_time}`))}</span><span className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusClass[appointment.status]}`}>{appointment.status}</span></div> })}</div> : <div className="mt-5 rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">No appointments are scheduled for today.</div>}</section><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="font-semibold">Bookings over 7 days</h2><p className="mt-1 text-sm text-slate-500">Appointments by scheduled date.</p>{chartResult.error ? <p className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">Booking activity couldn’t be loaded. Please refresh and try again.</p> : <div className="mt-8 grid h-44 grid-cols-7 items-end gap-2" aria-label="Bookings over the last 7 days">{chart.map((item) => <div key={item.date} className="flex h-full min-w-0 flex-col justify-end text-center"><span className="mb-2 text-xs font-semibold text-slate-600">{item.count}</span><div className="min-h-1 rounded-t-lg bg-[#0F766E]" style={{ height: `${Math.max(4, Math.round((item.count / max) * 100))}%` }} title={`${item.count} bookings`} /><span className="mt-2 text-xs text-slate-500">{item.label}</span></div>)}</div>}</section></div></main>
 }
