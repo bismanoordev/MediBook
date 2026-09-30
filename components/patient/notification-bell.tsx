@@ -15,7 +15,7 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
   useEffect(() => {
     const supabase = createClient()
     const load = async () => {
-      const { data } = await supabase.from("notifications").select("id, title, message, is_read").eq("user_id", userId).order("created_at", { ascending: false }).limit(8)
+      const { data } = await supabase.from("notifications").select("id, title, message, is_read").eq("user_id", userId).order("created_at", { ascending: false })
       setItems(data ?? [])
     }
     void load()

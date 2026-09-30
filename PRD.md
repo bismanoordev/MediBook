@@ -32,7 +32,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 
 ### Admin features
 
-- Create an admin account through an invitation-code protected signup flow.
+- Admin accounts are provisioned by the project owner in Supabase.
 - Access an admin-only area at `/admin`.
 - View a dashboard with daily statistics.
 - Add, edit, activate, or hide doctors.
@@ -56,7 +56,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 | --- | --- |
 | `/` | Home page |
 | `/login` | Patient and admin login |
-| `/signup` | Patient signup and invitation-only admin signup |
+| `/signup` | Patient signup |
 | `/doctors` | Doctors list and filters |
 | `/doctors/[id]` | Doctor details and available slots |
 | `/appointments` | Patient's appointments |
@@ -157,5 +157,5 @@ MediBook is complete when all Version 1 features work on the live website, on bo
 - [x] The approved SQL is saved in the `supabase/` folder.
 - [x] Public database connectivity returns 6 doctors, 30 schedules, and 5 specialties.
 - [ ] Manually test signup, login, logout, and password reset in the browser.
-- [ ] Run Script 6 for the chosen admin email, then log out and back in.
+- [ ] Provision the chosen admin account in Supabase, then log out and back in.
 - [ ] Confirm a patient cannot open `/admin` and the admin account can.

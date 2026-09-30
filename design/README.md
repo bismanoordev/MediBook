@@ -127,12 +127,11 @@ These rules are the source of truth whenever a MediBook page or component is des
 - Use skeletons for lists, tables, doctor cards, and dashboard content so the layout does not jump when data arrives.
 - Never block the entire page for a small local update; show loading only around the affected control or section.
 
-### 13. Admin signup and onboarding
+### 13. Admin provisioning
 
-- Patient signup remains public. Admin signup may be selectable on the same screen only when it is protected by a secure, server-verified invitation code.
-- Admin role assignment must happen through a server-authorized flow; never trust a role value sent by the browser.
-- Use a focused desktop split layout or a short multi-step form with visible progress, clear field groups, and an explanation of admin responsibilities.
-- Keep the visual system consistent with the patient experience while making admin context unmistakable through wording and navigation.
+- Patient signup is public; admin accounts are provisioned by the project owner in Supabase.
+- Never expose an admin role selector or role-assignment flow in the browser.
+- Keep admin navigation and page context distinct, while retaining the same visual system.
 
 ### 14. Avoid
 
