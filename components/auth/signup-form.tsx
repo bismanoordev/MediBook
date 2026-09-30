@@ -140,9 +140,11 @@ export function SignupForm() {
                 }}
                 placeholder="Your full name"
                 className="h-11"
+                aria-invalid={Boolean(fieldErrors.fullName)} aria-describedby={fieldErrors.fullName ? "signup-name-error" : undefined}
+                onChange={() => setFieldErrors((current) => ({ ...current, fullName: "" }))}
                 required
               />
-              {fieldErrors.fullName ? <p className="text-sm text-red-600">{fieldErrors.fullName}</p> : null}
+              {fieldErrors.fullName ? <p id="signup-name-error" className="text-sm text-red-600">{fieldErrors.fullName}</p> : null}
             </div>
 
             <div className="space-y-2 sm:col-span-2">
@@ -161,9 +163,11 @@ export function SignupForm() {
                 }}
                 placeholder="03001234567"
                 className="h-11"
+                aria-invalid={Boolean(fieldErrors.phone)} aria-describedby={fieldErrors.phone ? "signup-phone-error" : undefined}
+                onChange={() => setFieldErrors((current) => ({ ...current, phone: "" }))}
                 required
               />
-              {fieldErrors.phone ? <p className="text-sm text-red-600">{fieldErrors.phone}</p> : null}
+              {fieldErrors.phone ? <p id="signup-phone-error" className="text-sm text-red-600">{fieldErrors.phone}</p> : null}
             </div>
 
             <div className="space-y-2 sm:col-span-2">
@@ -177,9 +181,11 @@ export function SignupForm() {
                 autoComplete="email"
                 placeholder="you@example.com"
                 className="h-11"
+                aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? "signup-email-error" : undefined}
+                onChange={() => setFieldErrors((current) => ({ ...current, email: "" }))}
                 required
               />
-              {fieldErrors.email ? <p className="text-sm text-red-600">{fieldErrors.email}</p> : null}
+              {fieldErrors.email ? <p id="signup-email-error" className="text-sm text-red-600">{fieldErrors.email}</p> : null}
             </div>
 
             <PasswordInput
@@ -189,9 +195,11 @@ export function SignupForm() {
               autoComplete="new-password"
               placeholder="At least 8 characters"
               minLength={8}
+              aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? "signup-password-error" : undefined}
+              onChange={() => setFieldErrors((current) => ({ ...current, password: "" }))}
               required
             />
-            {fieldErrors.password ? <p className="-mt-2 text-sm text-red-600">{fieldErrors.password}</p> : null}
+            {fieldErrors.password ? <p id="signup-password-error" className="-mt-2 text-sm text-red-600">{fieldErrors.password}</p> : null}
 
             <PasswordInput
               id="patient-confirmPassword"
@@ -200,9 +208,11 @@ export function SignupForm() {
               autoComplete="new-password"
               placeholder="Repeat password"
               minLength={8}
+              aria-invalid={Boolean(fieldErrors.confirmPassword)} aria-describedby={fieldErrors.confirmPassword ? "signup-confirm-error" : undefined}
+              onChange={() => setFieldErrors((current) => ({ ...current, confirmPassword: "" }))}
               required
             />
-            {fieldErrors.confirmPassword ? <p className="-mt-2 text-sm text-red-600">{fieldErrors.confirmPassword}</p> : null}
+            {fieldErrors.confirmPassword ? <p id="signup-confirm-error" className="-mt-2 text-sm text-red-600">{fieldErrors.confirmPassword}</p> : null}
           </div>
 
           <Button

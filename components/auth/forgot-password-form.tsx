@@ -19,6 +19,7 @@ export function ForgotPasswordForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldError, setFieldError] = useState("")
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -30,7 +31,7 @@ export function ForgotPasswordForm() {
     try {
       await emailSchema.validate({ email })
     } catch (validationError) {
-      setError(validationError instanceof yup.ValidationError ? validationError.message : "Enter a valid email address.")
+      setFieldError(validationError instanceof yup.ValidationError ? validationError.message : "Enter a valid email address.")
       setIsSubmitting(false)
       return
     }
@@ -89,8 +90,11 @@ export function ForgotPasswordForm() {
           autoComplete="email"
           placeholder="you@example.com"
           className="h-11"
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? "forgot-email-error" : undefined}
+          onChange={() => setFieldError("")}
           required
         />
+        {fieldError ? <p id="forgot-email-error" className="text-sm text-red-600">{fieldError}</p> : null}
       </div>
 
       <Button

@@ -21,6 +21,7 @@ export function ResetPasswordForm() {
   const supabase = useMemo(() => createClient(), [])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -31,9 +32,9 @@ export function ResetPasswordForm() {
     const confirmPassword = String(formData.get("confirmPassword") ?? "")
 
     try {
-      await resetPasswordSchema.validate({ password, confirmPassword })
+      await resetPasswordSchema.validate({ password, confirmPassword }, { abortEarly: false })
     } catch (validationError) {
-      setError(validationError instanceof yup.ValidationError ? validationError.message : "Check your new password.")
+      if (validationError instanceof yup.ValidationError) setFieldErrors(Object.fromEntries(validationError.inner.map((issue) => [issue.path ?? "form", issue.message])))
       return
     }
 
@@ -72,8 +73,11 @@ export function ResetPasswordForm() {
         autoComplete="new-password"
         placeholder="At least 8 characters"
         minLength={8}
+        aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? "reset-password-error" : undefined}
+        onChange={() => setFieldErrors((current) => ({ ...current, password: "" }))}
         required
       />
+      {fieldErrors.password ? <p id="reset-password-error" className="-mt-3 text-sm text-red-600">{fieldErrors.password}</p> : null}
 
       <PasswordInput
         id="confirmPassword"
@@ -82,8 +86,11 @@ export function ResetPasswordForm() {
         autoComplete="new-password"
         placeholder="Repeat your new password"
         minLength={8}
+        aria-invalid={Boolean(fieldErrors.confirmPassword)} aria-describedby={fieldErrors.confirmPassword ? "reset-confirm-error" : undefined}
+        onChange={() => setFieldErrors((current) => ({ ...current, confirmPassword: "" }))}
         required
       />
+      {fieldErrors.confirmPassword ? <p id="reset-confirm-error" className="-mt-3 text-sm text-red-600">{fieldErrors.confirmPassword}</p> : null}
 
       <Button
         type="submit"
