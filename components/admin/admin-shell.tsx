@@ -49,7 +49,7 @@ export function AdminShell({ children, name, userId }: { children: React.ReactNo
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 bg-white px-4 py-5 lg:flex lg:flex-col">
-        <Link href="/admin" className="flex items-center gap-3 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">
+        <Link href="/" className="flex items-center gap-3 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">
           <span className="grid size-9 place-items-center rounded-xl bg-[#0F766E] text-sm font-bold text-white">M</span>
           <span><span className="block font-bold tracking-tight text-slate-900">MediBook</span><span className="block text-[11px] font-medium text-slate-500">Clinic administration</span></span>
         </Link>
@@ -65,7 +65,7 @@ export function AdminShell({ children, name, userId }: { children: React.ReactNo
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8">
             <div className="flex min-w-0 items-center gap-3">
-              <Link href="/admin" className="flex items-center gap-2 rounded-xl font-bold tracking-tight text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] lg:hidden">
+              <Link href="/" className="flex items-center gap-2 rounded-xl font-bold tracking-tight text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] lg:hidden">
                 <span className="grid size-8 place-items-center rounded-lg bg-[#0F766E] text-xs text-white">M</span>
                 MediBook
               </Link>

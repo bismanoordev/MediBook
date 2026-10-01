@@ -20,7 +20,7 @@ export function AppHeader({ name, admin = false, userId }: AppHeaderProps) {
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
         <div className="flex items-center gap-7">
-          <Link href={admin ? "/admin" : "/doctors"} className="flex items-center gap-2 font-bold tracking-tight">
+          <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
             <span className="grid size-8 place-items-center rounded-xl bg-[#0F766E] text-sm text-white">M</span>
             MediBook
           </Link>
