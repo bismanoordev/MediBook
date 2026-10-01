@@ -150,6 +150,18 @@
   }
 }
 
+@keyframes medibook-navigation-progress {
+  0% {
+    transform: translateX(-115%);
+  }
+  50% {
+    transform: translateX(95%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
