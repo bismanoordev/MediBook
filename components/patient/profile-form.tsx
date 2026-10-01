@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import * as yup from "yup"
 
@@ -11,6 +12,7 @@ import { createClient } from "@/lib/supabase/client"
 const profileSchema = yup.object({ fullName: yup.string().trim().matches(/^[\p{L}][\p{L}\s.'-]*$/u, "Use letters only in your full name.").min(2, "Enter your full name.").required("Enter your full name."), phone: yup.string().matches(/^\d{7,15}$/, "Enter a valid phone number using digits only.").required("Enter your phone number.") })
 
 export function ProfileForm({ userId, fullName, phone }: { userId: string; fullName: string; phone: string }) {
+  const router = useRouter()
   const [name, setName] = useState(fullName)
   const [phoneValue, setPhone] = useState(phone)
   const [saving, setSaving] = useState(false)
@@ -23,6 +25,7 @@ export function ProfileForm({ userId, fullName, phone }: { userId: string; fullN
     setSaving(false)
     if (error) return toast.error("We could not save your profile. Please try again.")
     toast.success("Your profile has been updated.")
+    router.refresh()
   }
   return <form onSubmit={save} className="mt-7 grid gap-5 sm:grid-cols-2">
     <label className="grid gap-2 text-sm font-medium text-slate-800">Full name<Input value={name} onChange={(event) => { setName(event.target.value); setErrors((current) => ({ ...current, fullName: "" })) }} aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName ? "profile-name-error" : undefined} required />{errors.fullName ? <span id="profile-name-error" role="alert" className="text-sm font-normal text-red-600">{errors.fullName}</span> : null}</label>
