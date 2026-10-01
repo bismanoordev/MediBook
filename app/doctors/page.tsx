@@ -27,7 +27,7 @@ export default async function DoctorsPage({ searchParams }: DoctorsPageProps) {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {user ? (
-        <AppHeader name={profile?.full_name} userId={user.id} />
+        <AppHeader name={profile?.full_name} email={user.email} userId={user.id} />
       ) : (
         <header className="border-b border-slate-200 bg-white">
           <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between px-5 sm:px-8">

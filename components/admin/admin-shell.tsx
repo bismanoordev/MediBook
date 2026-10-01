@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BarChart3, CalendarDays, Menu, Stethoscope, Users } from "lucide-react"
 
-import { LogoutButton } from "@/components/auth/logout-button"
+import { AccountMenu } from "@/components/auth/account-menu"
 import { NotificationBell } from "@/components/patient/notification-bell"
 import { cn } from "@/lib/utils"
 
@@ -45,7 +45,7 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
   )
 }
 
-export function AdminShell({ children, name, userId }: { children: React.ReactNode; name?: string | null; userId: string }) {
+export function AdminShell({ children, name, email, userId }: { children: React.ReactNode; name?: string | null; email?: string | null; userId: string }) {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 bg-white px-4 py-5 lg:flex lg:flex-col">
@@ -72,9 +72,8 @@ export function AdminShell({ children, name, userId }: { children: React.ReactNo
               <div className="hidden lg:block"><p className="text-sm font-semibold text-slate-900">Clinic operations</p><p className="text-xs text-slate-500">Overview and today&apos;s activity</p></div>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <span className="hidden max-w-40 truncate text-sm text-slate-600 sm:inline">{name ?? "Administrator"}</span>
               <NotificationBell userId={userId} href="/admin/notifications" />
-              <LogoutButton />
+              <AccountMenu name={name} email={email} role="admin" />
               <details className="relative lg:hidden">
                 <summary className="grid size-9 cursor-pointer list-none place-items-center rounded-xl text-slate-600 hover:bg-teal-50 hover:text-[#0F766E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E]"><Menu className="size-5" /><span className="sr-only">Open admin navigation</span></summary>
                 <div className="absolute right-0 top-11 z-40 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl"><NavigationLinks mobile /></div>

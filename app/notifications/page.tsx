@@ -15,7 +15,7 @@ export default async function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <AppHeader name={profile?.full_name} userId={user.id} />
+      <AppHeader name={profile?.full_name} email={user.email} userId={user.id} />
       <main className="mx-auto max-w-4xl px-5 py-12 sm:px-8">
         <div className="flex justify-end"><MarkNotificationsRead userId={user.id} hasUnread={Boolean(data?.some((item) => !item.is_read))} /></div>
         <NotificationsList notifications={data as NotificationItem[] | null} error={Boolean(error)} />

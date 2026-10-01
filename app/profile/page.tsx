@@ -22,7 +22,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <AppHeader name={fullName || undefined} userId={user.id} />
+      <AppHeader name={fullName || undefined} email={user.email} userId={user.id} />
 
       <main className="mx-auto max-w-4xl px-5 py-8 sm:px-8 sm:py-12">
         <div className="max-w-2xl">
