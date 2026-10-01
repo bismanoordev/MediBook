@@ -73,7 +73,7 @@ export function AdminShell({ children, name, email, userId }: { children: React.
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <NotificationBell userId={userId} href="/admin/notifications" />
-              <AccountMenu name={name} email={email} role="admin" />
+              <AccountMenu userId={userId} name={name} email={email} role="admin" />
               <details className="relative lg:hidden">
                 <summary className="grid size-9 cursor-pointer list-none place-items-center rounded-xl text-slate-600 hover:bg-teal-50 hover:text-[#0F766E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E]"><Menu className="size-5" /><span className="sr-only">Open admin navigation</span></summary>
                 <div className="absolute right-0 top-11 z-40 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl"><NavigationLinks mobile /></div>

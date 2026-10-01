@@ -4,8 +4,10 @@ import { useEffect, useId, useRef, useState } from "react"
 import { ChevronDown, UserRound } from "lucide-react"
 
 import { LogoutButton } from "@/components/auth/logout-button"
+import { createClient } from "@/lib/supabase/client"
 
 type AccountMenuProps = {
+  userId: string
   name?: string | null
   email?: string | null
   role?: "patient" | "admin"
@@ -23,13 +25,35 @@ function getInitials(name?: string | null) {
   return initials?.toUpperCase() || "M"
 }
 
-export function AccountMenu({ name, email, role = "patient" }: AccountMenuProps) {
+export function AccountMenu({ userId, name, email, role = "patient" }: AccountMenuProps) {
   const [open, setOpen] = useState(false)
+  const [profileName, setProfileName] = useState(name?.trim() ?? "")
   const menuId = useId()
   const containerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
-  const displayName = name?.trim() || "My account"
+  const displayName = profileName || "My account"
   const roleLabel = role === "admin" ? "Admin account" : "Patient account"
+
+  useEffect(() => {
+    let active = true
+
+    async function loadProfileName() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || user.id !== userId) return
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", user.id)
+        .maybeSingle()
+
+      if (active) setProfileName(data?.full_name?.trim() ?? "")
+    }
+
+    void loadProfileName()
+    return () => { active = false }
+  }, [name, userId])
 
   useEffect(() => {
     if (!open) return
@@ -64,7 +88,7 @@ export function AccountMenu({ name, email, role = "patient" }: AccountMenuProps)
         onClick={() => setOpen((current) => !current)}
         className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-1.5 pr-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-teal-200 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
       >
-        <span className="grid size-7 place-items-center rounded-full bg-[#CCFBF1] text-xs font-bold text-[#0F766E]" aria-hidden="true">{getInitials(name)}</span>
+        <span className="grid size-7 place-items-center rounded-full bg-[#CCFBF1] text-xs font-bold text-[#0F766E]" aria-hidden="true">{getInitials(profileName)}</span>
         <span className="max-w-24 truncate">My account</span>
         <ChevronDown className={`size-4 text-slate-500 transition ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
