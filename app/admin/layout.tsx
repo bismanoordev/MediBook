@@ -1,13 +1,8 @@
-import { AppHeader } from "@/components/app-header"
+import { AdminShell } from "@/components/admin/admin-shell"
 import { requireAdmin } from "@/lib/auth"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, profile } = await requireAdmin()
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <AppHeader name={profile?.full_name} admin userId={user.id} />
-      {children}
-    </div>
-  )
+  return <AdminShell name={profile?.full_name} userId={user.id}>{children}</AdminShell>
 }
