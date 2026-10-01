@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { ArrowLeft } from "lucide-react"
 
 import { AppHeader } from "@/components/app-header"
 import { DoctorPhoto } from "@/components/doctor-photo"
@@ -34,6 +35,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   const days = dates.map((date, index) => {
     const schedule = schedules?.find((item) => item.day_of_week === date.getDay())
     const taken = new Set((booked[index].data ?? []).map((item) => item.start_time))
+
     return {
       date: isoDate(date),
       day: index === 0 ? "Today" : dayName.format(date),
@@ -43,7 +45,45 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
         : [],
     }
   })
-  const specialty = (doctor.specialties as unknown as { name: string } | null)?.name
+  const specialty = (doctor.specialties as unknown as { name: string } | null)?.name ?? "Clinic doctor"
+  const fee = Number(doctor.fee)
 
-  return <div className="min-h-screen bg-[#F8FAFC]">{user ? <AppHeader name={profile?.full_name} userId={user.id} /> : <header className="border-b border-slate-200 bg-white"><div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between px-5 sm:px-8"><Link href="/doctors" className="font-bold text-[#0F766E]">MediBook</Link><Link href={`/login?next=${encodeURIComponent(`/doctors/${id}`)}`} className={cn(buttonVariants(), "rounded-xl bg-[#0F766E] hover:bg-[#0D5F59]")}>Log in to book</Link></div></header>}<main className="mx-auto max-w-5xl px-5 py-10 pb-28 sm:px-8 lg:pb-10"><Link href="/doctors" className="text-sm font-semibold text-[#0F766E] hover:underline">← All doctors</Link><section className="mt-5 flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-start"><DoctorPhoto fullName={doctor.full_name} photoUrl={doctor.photo_url} className="size-24 rounded-2xl" sizes="96px" priority /><div><p className="text-sm font-semibold text-[#0F766E]">{specialty ?? "Clinic doctor"}</p><h1 className="mt-2 text-3xl font-semibold tracking-tight">{doctor.full_name}</h1><p className="mt-3 max-w-2xl leading-6 text-slate-600">{doctor.bio ?? "Professional, patient-centered care."}</p><p className="mt-5 text-sm font-semibold text-slate-700">Consultation fee: Rs. {Number(doctor.fee).toLocaleString()}</p></div></section><DoctorBookingFlow doctorId={id} days={days} loggedIn={Boolean(user)} /></main></div>
+  return (
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {user ? (
+        <AppHeader name={profile?.full_name} userId={user.id} />
+      ) : (
+        <header className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
+            <Link href="/doctors" className="font-bold text-[#0F766E]">MediBook</Link>
+            <Link href={`/login?next=${encodeURIComponent(`/doctors/${id}`)}`} className={cn(buttonVariants(), "rounded-xl bg-[#0F766E] hover:bg-[#0D5F59]")}>Log in to book</Link>
+          </div>
+        </header>
+      )}
+
+      <main className="mx-auto max-w-6xl px-5 py-8 pb-28 sm:px-8 sm:py-10 lg:pb-12">
+        <Link href="/doctors" className="inline-flex items-center gap-1.5 rounded-lg text-sm font-semibold text-[#0F766E] transition hover:text-[#0D5F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          All doctors
+        </Link>
+
+        <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
+            <DoctorPhoto fullName={doctor.full_name} photoUrl={doctor.photo_url} className="size-24 rounded-2xl text-xl sm:size-28" sizes="112px" priority />
+            <div className="min-w-0">
+              <p className="inline-flex max-w-full break-words rounded-full bg-[#CCFBF1] px-3 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p>
+              <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">{doctor.full_name}</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">{doctor.bio ?? "Professional, patient-centered care."}</p>
+            </div>
+            <div className="rounded-xl border border-teal-100 bg-teal-50/70 px-4 py-3 md:text-right">
+              <p className="text-xs font-medium text-slate-500">Consultation fee</p>
+              <p className="mt-1 text-lg font-semibold text-slate-900">{Number.isFinite(fee) ? `Rs. ${fee.toLocaleString()}` : "Contact clinic"}</p>
+            </div>
+          </div>
+        </section>
+
+        <DoctorBookingFlow doctorId={id} days={days} loggedIn={Boolean(user)} />
+      </main>
+    </div>
+  )
 }
