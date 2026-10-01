@@ -1,14 +1,16 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Suspense } from "react"
-import { ArrowRight, HeartPulse, Menu, MessageCircleHeart, Search, ShieldCheck } from "lucide-react"
+import { ArrowRight, HeartPulse, MessageCircleHeart, Search, ShieldCheck } from "lucide-react"
 
+import { LandingHeader } from "@/components/home/landing-header"
 import { SpecialtyCards, SpecialtyCardsLoading } from "@/components/home/specialty-cards"
 import { HomeDoctorCards, HomeDoctorHero } from "@/components/home/home-doctors"
 import { buttonVariants } from "@/components/ui/button"
 import { LandingPageEffects } from "@/components/home/landing-page-effects"
 import { ServicesShowcase } from "@/components/home/services-showcase"
 import { createClient } from "@/lib/supabase/server"
+import { getAuthState } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 const testimonials = [
@@ -17,6 +19,7 @@ const testimonials = [
 ]
 
 export default async function Home() {
+  const { user, profile } = await getAuthState()
   const supabase = await createClient()
   const { data: doctors, error: doctorsError } = await supabase
     .from("doctors")
@@ -31,11 +34,7 @@ export default async function Home() {
       <section className="relative bg-[#E7F7F5]">
         <div aria-hidden className="absolute -left-28 top-28 size-80 rounded-full bg-[#B8EEE8]/70 blur-3xl" />
         <div aria-hidden className="absolute right-[8%] top-24 size-64 rounded-full border-[32px] border-white/40" />
-        <header className="relative z-10 mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-2.5 font-bold tracking-tight"><span className="grid size-9 place-items-center rounded-xl bg-[#0F766E] text-white"><HeartPulse className="size-5" /></span><span>MediBook<span className="block text-[9px] font-medium tracking-[.14em] text-[#0F766E]">YOUR CARE, CLEARLY</span></span></Link>
-          <nav className="hidden items-center gap-7 text-sm font-medium text-slate-600 lg:flex"><Link href="/doctors" className="transition hover:text-[#0F766E]">Find a doctor</Link><a href="#services" className="transition hover:text-[#0F766E]">Services</a><a href="#about" className="transition hover:text-[#0F766E]">Why MediBook</a><a href="#team" className="transition hover:text-[#0F766E]">Our team</a></nav>
-          <div className="flex items-center gap-2"><Link href="/login" className={cn(buttonVariants({ variant: "ghost" }), "hidden rounded-xl sm:inline-flex")}>Log in</Link><Link href="/signup" className={cn(buttonVariants(), "rounded-xl bg-[#0F766E] hover:bg-[#0D5F59]")}>Get started</Link><button aria-label="Open navigation" className="grid size-10 place-items-center rounded-xl border border-teal-800/10 text-[#0F766E] lg:hidden"><Menu className="size-5" /></button></div>
-        </header>
+        <LandingHeader userId={user?.id} role={profile?.role} />
         <div className="relative z-[1] mx-auto grid max-w-7xl gap-8 px-5 pb-14 pt-10 sm:px-8 lg:grid-cols-[.88fr_1.12fr] lg:items-center lg:pb-0 lg:pt-14">
           <div className="pb-2 lg:pb-20"><p className="text-sm font-bold uppercase tracking-[.16em] text-[#0F766E]">Healthcare made simple</p><h1 className="mt-4 max-w-xl text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">Exceptional care,<br /><span className="text-[#0F9E96]">every time.</span></h1><p className="mt-6 max-w-md text-base leading-7 text-slate-600">Discover trusted doctors, view live availability, and book your next appointment from one reassuring place.</p><div className="mt-8 flex flex-wrap gap-3"><Link href="/doctors" className={cn(buttonVariants({ size: "lg" }), "h-11 rounded-xl bg-[#0F766E] px-5 hover:bg-[#0D5F59]")}>Book an appointment <ArrowRight className="size-4" /></Link><Link href="/doctors" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "h-11 rounded-xl border-teal-900/10 bg-white px-5 hover:bg-white")}><Search className="size-4" /> Find a doctor</Link></div><div className="mt-9 flex items-center gap-3"><div className="flex -space-x-2">{["A", "J", "L", "S"].map((person, index) => <span key={person} className={cn("grid size-8 place-items-center rounded-full border-2 border-[#E7F7F5] text-[10px] font-bold text-white", ["bg-teal-600", "bg-sky-500", "bg-amber-500", "bg-rose-500"][index])}>{person}</span>)}</div><p className="text-sm text-slate-600"><strong className="text-slate-950">12k+</strong> people book with confidence</p></div></div>
           <HomeDoctorHero doctors={homeDoctors} error={Boolean(doctorsError)} />
