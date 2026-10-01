@@ -1,8 +1,9 @@
 import Link from "next/link"
 
-import { HeartPulse, Menu } from "lucide-react"
+import { HeartPulse } from "lucide-react"
 
 import { AccountMenu } from "@/components/auth/account-menu"
+import { MobileNavigationDrawer } from "@/components/mobile-navigation-drawer"
 import { NotificationBell } from "@/components/patient/notification-bell"
 
 type AppHeaderProps = {
@@ -28,9 +29,9 @@ export function AppHeader({ name, email, admin = false, userId }: AppHeaderProps
           <nav className="hidden items-center gap-5 text-sm text-slate-600 sm:flex">{links.map((link) => <Link key={link.href} href={link.href} className="hover:text-[#0F766E]">{link.label}</Link>)}</nav>
         </div>
         <div className="flex items-center gap-3">
-          {userId ? <NotificationBell userId={userId} href={admin ? "/admin/notifications" : "/notifications"} /> : null}
+          {userId ? <div className="hidden sm:block"><NotificationBell userId={userId} href={admin ? "/admin/notifications" : "/notifications"} /></div> : null}
           {userId ? <AccountMenu userId={userId} name={name} email={email} role={admin ? "admin" : "patient"} /> : null}
-          <details className="relative sm:hidden"><summary className="grid size-9 cursor-pointer list-none place-items-center rounded-xl text-slate-600 hover:bg-teal-50 hover:text-[#0F766E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E]"><Menu className="size-5" /><span className="sr-only">Open navigation</span></summary><nav className="absolute right-0 top-11 z-30 grid w-48 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg">{links.map((link) => <Link key={link.href} href={link.href} className="rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-teal-50 hover:text-[#0F766E]">{link.label}</Link>)}</nav></details>
+          <MobileNavigationDrawer links={links} userId={userId} notificationsHref={admin ? "/admin/notifications" : "/notifications"} />
         </div>
       </div>
     </header>
