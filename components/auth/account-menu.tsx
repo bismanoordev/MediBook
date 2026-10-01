@@ -89,7 +89,7 @@ export function AccountMenu({ userId, name, email, role = "patient" }: AccountMe
         className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-1.5 pr-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-teal-200 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
       >
         <span className="grid size-7 place-items-center rounded-full bg-[#CCFBF1] text-xs font-bold text-[#0F766E]" aria-hidden="true">{getInitials(profileName)}</span>
-        <span className="max-w-24 truncate">My account</span>
+        <span className="max-w-24 truncate">{displayName}</span>
         <ChevronDown className={`size-4 text-slate-500 transition ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
 
