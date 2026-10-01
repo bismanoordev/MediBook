@@ -48,10 +48,10 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
       <Link
         href={`/doctors/${doctor.id}`}
         aria-label={`View availability for ${fullName}`}
-        className="group flex h-full min-h-[18rem] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-lg hover:shadow-teal-900/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
+        className="group flex h-full min-h-[16rem] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-lg hover:shadow-teal-900/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
       >
         {hasPhoto ? (
-          <div className="relative h-40 shrink-0 overflow-hidden bg-teal-50">
+          <div className="relative h-36 shrink-0 overflow-hidden bg-teal-50">
             <DoctorPhoto fullName={fullName} photoUrl={photoUrl} fallbackImageUrl={characterImage} fallbackAlt={`Illustrated ${specialty} clinician`} className="size-full rounded-none text-lg" sizes={sizes} />
             <div aria-hidden className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-slate-950/20 to-transparent" />
           </div>
