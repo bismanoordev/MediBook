@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MediBook
 
-## Getting Started
+MediBook is a responsive healthcare appointment platform for finding doctors, viewing live availability, booking appointments, and managing clinic operations.
 
-First, run the development server:
+## Features
+
+- Patient sign-up, login, password reset, profile management, and safe return redirects.
+- Doctor discovery by specialty and name, with doctor photos and accessible initials fallbacks.
+- Seven-day availability, protected booking, duplicate-slot handling, and patient appointment cancellation more than two hours before a visit.
+- Patient and admin notifications with Supabase Realtime.
+- Admin dashboard, doctor directory, photo upload, schedules, appointments, and patient history.
+
+## Stack
+
+- Next.js App Router, TypeScript, Tailwind CSS, shadcn/ui, and lucide-react.
+- Supabase Auth, Postgres, Storage, Row Level Security, and Realtime.
+
+## Screenshots
+
+Add deployment screenshots here when available:
+
+- `docs/screenshots/home.png` — home and specialty discovery.
+- `docs/screenshots/doctors.png` — doctor cards and availability.
+- `docs/screenshots/booking.png` — booking confirmation dialog.
+- `docs/screenshots/admin.png` — admin dashboard and doctor management.
+
+## Local setup
+
+1. Install Node.js 20 or newer.
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Create `.env.local` with public Supabase configuration:
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+   # Or, for older Supabase projects only:
+   # NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   ```
+
+4. Run the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000).
+
+## Database setup
+
+The approved SQL scripts are in [`supabase/`](./supabase). They define the tables, RLS policies, booking validation, triggers, Realtime publication, and `doctor-photos` bucket.
+
+Scripts `01` through `05` are intended to be run once for a new project. Do not rerun them against an existing production database. Create an admin by signing up normally, then use `06_make_admin.sql` in the Supabase SQL Editor.
+
+## Quality checks
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Security notes
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Never commit `.env.local`, service-role secrets, or admin invitation codes.
+- The browser uses only the public Supabase publishable/anon key.
+- RLS limits patients to their own appointments and notifications; admin actions verify the role on the server.
+- Doctor photo uploads use the existing `doctor-photos` bucket. Storage policies limit uploads to authenticated admins.
+- Configure only trusted local and production redirect URLs in Supabase Auth before deployment.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy to Vercel and configure the same public environment variable names from the setup section. Add the deployed URL to Supabase Auth redirect URLs, then test signup, login, booking, cancellation, photo upload, and realtime notifications with separate patient and admin accounts.
