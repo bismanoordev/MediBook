@@ -6,8 +6,9 @@ import { toast } from "sonner"
 
 import { signOut } from "@/app/auth/actions"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
-export function LogoutButton() {
+export function LogoutButton({ className, role }: { className?: string; role?: string }) {
   const [isSigningOut, startTransition] = useTransition()
 
   function handleLogout() {
@@ -23,6 +24,8 @@ export function LogoutButton() {
   return (
     <Button
       variant="outline"
+      role={role}
+      className={cn(className)}
       onClick={handleLogout}
       disabled={isSigningOut}
     >
