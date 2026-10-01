@@ -24,7 +24,7 @@ function formatFee(fee: number) {
   return Number.isFinite(amount) ? amount.toLocaleString() : "Contact clinic"
 }
 
-export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw", variant = "standard" }: DoctorCardProps) {
+export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw", variant = "directory" }: DoctorCardProps) {
   const fullName = doctor.full_name.trim() || "Clinic doctor"
   const specialty = doctor.specialties?.name ?? "Clinic doctor"
   const photoUrl = doctor.photo_url?.trim() || null
