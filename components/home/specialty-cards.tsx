@@ -29,7 +29,7 @@ export function SpecialtyCardsLoading() {
           <h2 className="mt-2 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">Easily book your doctor</h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-teal-50/80">Loading available specialties…</p>
         </div>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-44 animate-pulse rounded-2xl border border-white/15 bg-white/10" />)}
         </div>
       </div>
@@ -52,7 +52,7 @@ export async function SpecialtyCards() {
         {error ? (
           <p className="mx-auto mt-8 max-w-xl rounded-2xl border border-white/20 bg-white/10 p-4 text-center text-sm text-teal-50">Specialties couldn&apos;t load right now. Please refresh and try again.</p>
         ) : specialties?.length ? (
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {specialties.map((specialty, index) => {
               const Icon = getSpecialtyIcon(specialty.name)
 
