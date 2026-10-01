@@ -24,12 +24,24 @@ function formatFee(fee: number) {
   return Number.isFinite(amount) ? `Rs. ${amount.toLocaleString()}` : "Contact clinic"
 }
 
+function getDoctorCharacter(specialty: string) {
+  const normalizedSpecialty = specialty.toLocaleLowerCase()
+
+  if (normalizedSpecialty.includes("cardio") || normalizedSpecialty.includes("heart")) return "/images/doctor-character-cardiologist.png"
+  if (normalizedSpecialty.includes("dent")) return "/images/doctor-character-dentist.png"
+  if (normalizedSpecialty.includes("dermat") || normalizedSpecialty.includes("skin")) return "/images/doctor-character-dermatologist.png"
+  if (normalizedSpecialty.includes("paediat") || normalizedSpecialty.includes("pediat") || normalizedSpecialty.includes("child")) return "/images/doctor-character-pediatrician.png"
+
+  return "/images/doctor-character-general.png"
+}
+
 export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" }: DoctorCardProps) {
   const fullName = doctor.full_name.trim() || "Clinic doctor"
   const specialty = doctor.specialties?.name.trim() || "Clinic doctor"
   const photoUrl = doctor.photo_url?.trim() || null
   const bio = doctor.bio?.trim() || "Professional care tailored to your needs."
   const hasPhoto = Boolean(photoUrl)
+  const characterImage = getDoctorCharacter(specialty)
 
   return (
     <article className="h-full">
@@ -40,12 +52,12 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
       >
         {hasPhoto ? (
           <div className="relative h-52 shrink-0 overflow-hidden bg-teal-50">
-            <DoctorPhoto fullName={fullName} photoUrl={photoUrl} className="size-full rounded-none text-lg" sizes={sizes} />
+            <DoctorPhoto fullName={fullName} photoUrl={photoUrl} fallbackImageUrl={characterImage} fallbackAlt={`Illustrated ${specialty} clinician`} className="size-full rounded-none text-lg" sizes={sizes} />
             <div aria-hidden className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-slate-950/20 to-transparent" />
           </div>
         ) : (
           <div className="flex min-h-24 items-center gap-4 border-b border-slate-100 px-5 py-4">
-            <DoctorPhoto fullName={fullName} className="size-16 rounded-full text-sm" sizes="64px" />
+            <DoctorPhoto fullName={fullName} fallbackImageUrl={characterImage} fallbackAlt={`Illustrated ${specialty} clinician`} className="size-16 rounded-full text-sm" sizes="64px" />
             <div className="min-w-0">
               <h2 className="break-words text-xl font-semibold tracking-tight text-slate-900">{fullName}</h2>
               <p className="mt-1 line-clamp-2 w-fit max-w-full break-words rounded-full bg-[#CCFBF1] px-2.5 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p>
