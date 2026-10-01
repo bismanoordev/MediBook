@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
 import { AppHeader } from "@/components/app-header"
+import { getDoctorCharacter } from "@/components/doctor-card"
 import { DoctorPhoto } from "@/components/doctor-photo"
 import { DoctorBookingFlow } from "@/components/patient/doctor-booking-flow"
 import { buttonVariants } from "@/components/ui/button"
@@ -69,7 +70,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
 
         <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
-            <DoctorPhoto fullName={doctor.full_name} photoUrl={doctor.photo_url} className="size-24 rounded-2xl text-xl sm:size-28" sizes="112px" priority />
+            <DoctorPhoto fullName={doctor.full_name} photoUrl={doctor.photo_url} fallbackImageUrl={getDoctorCharacter(specialty)} fallbackAlt={`Illustrated ${specialty} clinician`} className="size-24 rounded-2xl text-xl sm:size-28" sizes="112px" priority />
             <div className="min-w-0">
               <p className="inline-flex max-w-full break-words rounded-full bg-[#CCFBF1] px-3 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p>
               <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">{doctor.full_name}</h1>

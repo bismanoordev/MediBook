@@ -24,7 +24,7 @@ function formatFee(fee: number) {
   return Number.isFinite(amount) ? `Rs. ${amount.toLocaleString()}` : "Contact clinic"
 }
 
-function getDoctorCharacter(specialty: string) {
+export function getDoctorCharacter(specialty: string) {
   const normalizedSpecialty = specialty.toLocaleLowerCase()
 
   if (normalizedSpecialty.includes("cardio") || normalizedSpecialty.includes("heart")) return "/images/doctor-character-cardiologist.png"
