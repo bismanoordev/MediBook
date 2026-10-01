@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, CalendarDays, Menu, Stethoscope, Users } from "lucide-react"
+import { BarChart3, CalendarDays, HeartPulse, Menu, Stethoscope, Users } from "lucide-react"
 
 import { AccountMenu } from "@/components/auth/account-menu"
 import { NotificationBell } from "@/components/patient/notification-bell"
@@ -50,7 +50,7 @@ export function AdminShell({ children, name, email, userId }: { children: React.
     <div className="min-h-screen bg-[#F8FAFC]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 bg-white px-4 py-5 lg:flex lg:flex-col">
         <Link href="/" className="flex items-center gap-3 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">
-          <span className="grid size-9 place-items-center rounded-xl bg-[#0F766E] text-sm font-bold text-white">M</span>
+          <span className="grid size-9 place-items-center rounded-xl bg-[#0F766E] text-white"><HeartPulse className="size-5" aria-hidden="true" /></span>
           <span><span className="block font-bold tracking-tight text-slate-900">MediBook</span><span className="block text-[11px] font-medium text-slate-500">Clinic administration</span></span>
         </Link>
         <p className="mt-9 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Workspace</p>
@@ -66,7 +66,7 @@ export function AdminShell({ children, name, email, userId }: { children: React.
           <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-5 sm:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <Link href="/" className="flex items-center gap-2 rounded-xl font-bold tracking-tight text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] lg:hidden">
-                <span className="grid size-8 place-items-center rounded-lg bg-[#0F766E] text-xs text-white">M</span>
+                <span className="grid size-8 place-items-center rounded-lg bg-[#0F766E] text-white"><HeartPulse className="size-4" aria-hidden="true" /></span>
                 MediBook
               </Link>
               <div className="hidden lg:block"><p className="text-sm font-semibold text-slate-900">Clinic operations</p><p className="text-xs text-slate-500">Overview and today&apos;s activity</p></div>

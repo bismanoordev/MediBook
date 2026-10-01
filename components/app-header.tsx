@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { Menu } from "lucide-react"
+import { HeartPulse, Menu } from "lucide-react"
 
 import { AccountMenu } from "@/components/auth/account-menu"
 import { NotificationBell } from "@/components/patient/notification-bell"
@@ -22,7 +22,7 @@ export function AppHeader({ name, email, admin = false, userId }: AppHeaderProps
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
         <div className="flex items-center gap-7">
           <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">
-            <span className="grid size-8 place-items-center rounded-xl bg-[#0F766E] text-sm text-white">M</span>
+            <span className="grid size-8 place-items-center rounded-xl bg-[#0F766E] text-white"><HeartPulse className="size-4" aria-hidden="true" /></span>
             MediBook
           </Link>
           <nav className="hidden items-center gap-5 text-sm text-slate-600 sm:flex">{links.map((link) => <Link key={link.href} href={link.href} className="hover:text-[#0F766E]">{link.label}</Link>)}</nav>
