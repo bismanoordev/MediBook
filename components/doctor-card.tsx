@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Calendar } from "lucide-react"
 
 import { DoctorPhoto } from "@/components/doctor-photo"
 import { cn } from "@/lib/utils"
@@ -35,13 +35,58 @@ export function getDoctorCharacter(specialty: string) {
   return "/images/doctor-character-general.png"
 }
 
-export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" }: DoctorCardProps) {
+export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw", variant }: DoctorCardProps) {
   const fullName = doctor.full_name.trim() || "Clinic doctor"
   const specialty = doctor.specialties?.name.trim() || "Clinic doctor"
   const photoUrl = doctor.photo_url?.trim() || null
   const bio = doctor.bio?.trim() || "Professional care tailored to your needs."
   const hasPhoto = Boolean(photoUrl)
   const characterImage = getDoctorCharacter(specialty)
+
+  if (variant === "directory") {
+    return (
+      <article className="group relative flex h-full min-h-[22rem] rounded-2xl bg-white">
+        <Link
+          href={`/doctors/${doctor.id}`}
+          aria-label={`View profile for ${fullName}`}
+          className="absolute inset-0 z-0 rounded-2xl border border-slate-200 bg-white transition duration-200 group-hover:-translate-y-0.5 group-hover:border-teal-200 group-hover:shadow-md group-hover:shadow-teal-900/5 focus-visible:-translate-y-0.5 focus-visible:border-[#0F766E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
+        >
+          <span className="sr-only">View profile for {fullName}</span>
+        </Link>
+        <div className="pointer-events-none relative z-10 flex w-full flex-col p-5 sm:p-6">
+          <div className="flex items-center gap-4">
+            <div className="grid size-[72px] shrink-0 place-items-center rounded-full bg-[#CCFBF1] p-1.5 sm:size-[88px]">
+              <DoctorPhoto fullName={fullName} photoUrl={photoUrl} className="size-full rounded-full text-sm sm:text-base" sizes="88px" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="line-clamp-2 break-words text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">{fullName}</h2>
+              <p className="mt-2 inline-flex max-w-full break-words rounded-full bg-[#CCFBF1] px-2.5 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex min-h-10 gap-3">
+            <span aria-hidden className="w-1 shrink-0 rounded-full bg-[#0F766E]" />
+            <p className="line-clamp-2 text-sm leading-5 text-slate-600">{bio}</p>
+          </div>
+
+          <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-5">
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-slate-500">Consultation fee</p>
+              <p className="mt-1 text-base font-semibold text-slate-900">{formatFee(doctor.fee)}</p>
+            </div>
+            <Link
+              href={`/doctors/${doctor.id}`}
+              aria-label={`View availability for ${fullName}`}
+              className="pointer-events-auto inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl bg-[#0F766E] px-3 text-sm font-semibold text-white transition-colors hover:bg-[#0D5F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
+            >
+              View availability
+              <Calendar className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </article>
+    )
+  }
 
   return (
     <article className="h-full">
