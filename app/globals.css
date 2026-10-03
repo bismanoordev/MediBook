@@ -166,6 +166,17 @@ html {
   scroll-behavior: smooth;
 }
 
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   [data-scroll-reveal] {
     opacity: 0;
