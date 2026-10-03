@@ -46,6 +46,13 @@ export async function POST(request: Request) {
   })
 
   if (error) {
+    console.error("Appointment booking failed", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+    })
+
     const message = error.message.toLowerCase()
     if (message.includes("duplicate key") || message.includes("double booking")) {
       return NextResponse.json({ error: "That slot was just booked. Please select another time." }, { status: 409 })
@@ -55,6 +62,12 @@ export async function POST(request: Request) {
     }
     if (message.includes("valid slot") || message.includes("does not work") || message.includes("not available")) {
       return NextResponse.json({ error: "That slot is no longer available. Please select another time." }, { status: 409 })
+    }
+    if (error.code === "23503") {
+      return NextResponse.json({ error: "Your account is not ready for booking yet. Please sign out and sign in again, then try once more." }, { status: 409 })
+    }
+    if (error.code === "42501") {
+      return NextResponse.json({ error: "You do not have permission to book this appointment. Please sign in again and try once more." }, { status: 403 })
     }
 
     return NextResponse.json({ error: "We could not save your appointment. Please try again." }, { status: 500 })

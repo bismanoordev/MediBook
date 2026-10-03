@@ -52,12 +52,23 @@ export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: stri
     }
 
     setLoading(true)
-    const response = await fetch("/api/appointments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ doctorId, date: day.date, time: selectedTime, reason }),
-    })
-    const result = await response.json().catch(() => ({ error: "We could not save your appointment. Please try again." })) as { error?: string }
+
+    let response: Response
+    let result: { error?: string }
+
+    try {
+      response = await fetch("/api/appointments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ doctorId, date: day.date, time: selectedTime, reason }),
+      })
+      result = await response.json().catch(() => ({ error: "We could not save your appointment. Please try again." })) as { error?: string }
+    } catch {
+      setLoading(false)
+      toast.error("We could not reach the booking service. Please check your connection and try again.")
+      return
+    }
+
     setLoading(false)
 
     if (response.status === 401) {
