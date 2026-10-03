@@ -141,7 +141,7 @@ export function ServicesShowcase() {
                 tabIndex={activeIndex === index ? 0 : -1}
                 onClick={() => selectService(index)}
                 onKeyDown={(event) => handleTabKeyDown(event, index)}
-                className={cn("min-h-11 shrink-0 snap-start cursor-pointer whitespace-nowrap rounded-full border px-4 py-2.5 text-left text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none lg:block lg:w-full lg:rounded-xl lg:px-4 lg:py-3 lg:shadow-none", activeIndex === index ? "border-[#0F766E] bg-[#0F766E] text-white hover:bg-[#0D5F59] lg:border-transparent lg:bg-[#CCFBF1] lg:text-[#0F766E] lg:hover:bg-[#CCFBF1]" : "border-slate-200 bg-white text-slate-700 hover:border-[#0F766E] hover:bg-teal-50 hover:text-[#0F766E] lg:border-transparent lg:bg-transparent lg:hover:bg-teal-50")}
+                className={cn("min-h-11 shrink-0 snap-start cursor-pointer whitespace-nowrap rounded-full border px-4 py-2.5 text-left text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none lg:block lg:w-full lg:rounded-xl lg:px-4 lg:py-3 lg:shadow-none", activeIndex === index ? "border-[#0F766E] bg-[#0F766E] text-white hover:bg-[#0D5F59] lg:border-transparent lg:bg-[#CCFBF1] lg:text-[#0F766E] lg:hover:bg-[#CCFBF1]" : "border-slate-200 bg-white text-slate-700 hover:bg-teal-50 hover:text-[#0F766E] lg:border-transparent lg:bg-transparent lg:hover:bg-teal-50")}
               >
                 {item.name}
               </button>
