@@ -24,7 +24,7 @@ export function MobileNavigationDrawer({ links, userId, notificationsHref }: { l
 
   return (
     <div className="sm:hidden">
-      <button type="button" aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} aria-controls="mobile-navigation-drawer" onClick={() => setOpen(true)} className="grid size-9 place-items-center rounded-xl text-slate-600 transition hover:bg-teal-50 hover:text-[#0F766E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E]">
+      <button type="button" aria-label={open ? "Close navigation" : "Open navigation"} aria-expanded={open} aria-controls="mobile-navigation-drawer" onClick={() => setOpen((current) => !current)} className="grid size-9 place-items-center rounded-xl text-slate-600 transition hover:bg-teal-50 hover:text-[#0F766E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E]">
         <Menu className="size-5" aria-hidden="true" />
       </button>
 
