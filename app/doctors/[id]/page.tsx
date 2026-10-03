@@ -54,7 +54,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
       {user ? (
         <AppHeader name={profile?.full_name} email={user.email} userId={user.id} />
       ) : (
-        <header className="border-b border-slate-200 bg-white">
+        <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
             <Link href="/doctors" className="font-bold text-[#0F766E]">MediBook</Link>
             <Link href={`/login?next=${encodeURIComponent(`/doctors/${id}`)}`} className={cn(buttonVariants(), "rounded-xl bg-[#0F766E] hover:bg-[#0D5F59]")}>Log in to book</Link>

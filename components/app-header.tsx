@@ -19,7 +19,7 @@ export function AppHeader({ name, email, admin = false, userId }: AppHeaderProps
     : [{ href: "/doctors", label: "Doctors" }, { href: "/appointments", label: "Appointments" }, { href: "/profile", label: "Profile" }]
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
         <div className="flex items-center gap-7">
           <Link href="/" className="flex items-center gap-2 font-bold tracking-tight">

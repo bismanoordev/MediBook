@@ -29,7 +29,7 @@ export default async function DoctorsPage({ searchParams }: DoctorsPageProps) {
       {user ? (
         <AppHeader name={profile?.full_name} email={user.email} userId={user.id} />
       ) : (
-        <header className="border-b border-slate-200 bg-white">
+        <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
             <Link href="/" className="font-bold text-[#0F766E]">MediBook</Link>
             <Link href="/login?next=/doctors" className={cn(buttonVariants(), "rounded-full bg-[#0F766E] hover:bg-[#115E59]")}>Log in</Link>
