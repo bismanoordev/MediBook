@@ -45,7 +45,7 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
 
   if (variant === "directory" || variant === undefined) {
     return (
-      <article className="group relative flex h-full min-h-[19rem] rounded-2xl bg-white">
+      <article className="group relative flex h-full min-h-[16rem] rounded-2xl bg-white sm:min-h-[19rem]">
         <Link
           href={`/doctors/${doctor.id}`}
           aria-label={`View profile for ${fullName}`}
