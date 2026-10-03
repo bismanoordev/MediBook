@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, ChevronRight } from "lucide-react"
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react"
 import { type KeyboardEvent, useEffect, useRef, useState } from "react"
 
 import { buttonVariants } from "@/components/ui/button"
@@ -19,7 +19,8 @@ const services = [
 export function ServicesShowcase() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [slideDirection, setSlideDirection] = useState<"forward" | "backward">("forward")
-  const [hasHiddenCategories, setHasHiddenCategories] = useState(false)
+  const [canScrollPrevious, setCanScrollPrevious] = useState(false)
+  const [canScrollNext, setCanScrollNext] = useState(false)
   const tabsRef = useRef<HTMLDivElement>(null)
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
   const service = services[activeIndex]
@@ -28,20 +29,33 @@ export function ServicesShowcase() {
     const tabs = tabsRef.current
     if (!tabs) return
 
-    const updateScrollHint = () => {
-      setHasHiddenCategories(tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - 1)
+    const updateScrollState = () => {
+      const scrollEnd = tabs.scrollWidth - tabs.clientWidth
+      setCanScrollPrevious(tabs.scrollLeft > 1)
+      setCanScrollNext(tabs.scrollLeft < scrollEnd - 1)
     }
 
-    const resizeObserver = new ResizeObserver(updateScrollHint)
+    const resizeObserver = new ResizeObserver(updateScrollState)
     resizeObserver.observe(tabs)
-    tabs.addEventListener("scroll", updateScrollHint, { passive: true })
-    updateScrollHint()
+    tabs.addEventListener("scroll", updateScrollState, { passive: true })
+    updateScrollState()
 
     return () => {
       resizeObserver.disconnect()
-      tabs.removeEventListener("scroll", updateScrollHint)
+      tabs.removeEventListener("scroll", updateScrollState)
     }
   }, [])
+
+  function scrollCategories(direction: "previous" | "next") {
+    const tabs = tabsRef.current
+    if (!tabs) return
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    tabs.scrollBy({
+      left: (direction === "next" ? 1 : -1) * Math.max(tabs.clientWidth * 0.8, 160),
+      behavior: reducedMotion ? "auto" : "smooth",
+    })
+  }
 
   function selectService(index: number) {
     if (index !== activeIndex) {
@@ -78,10 +92,20 @@ export function ServicesShowcase() {
         <h2 className="mt-2 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">Facilities and services</h2>
       </div>
       <div className="mt-11 grid gap-8 lg:grid-cols-[.34fr_.66fr] lg:items-center">
-        <div className="relative min-w-0 overflow-hidden md:overflow-visible">
+        <div className="flex min-w-0 items-center gap-2">
+          {canScrollPrevious && (
+            <button
+              type="button"
+              onClick={() => scrollCategories("previous")}
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[#0F766E] shadow-sm transition-colors hover:border-[#0F766E] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none"
+              aria-label="Show previous services"
+            >
+              <ChevronLeft className="size-5" aria-hidden="true" />
+            </button>
+          )}
           <div
             ref={tabsRef}
-            className="scrollbar-none flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth pb-1 [-webkit-overflow-scrolling:touch] [touch-action:pan-x] md:flex-wrap md:overflow-visible md:pb-0 lg:block lg:space-y-1"
+            className="scrollbar-none flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth px-0.5 py-1 [-webkit-overflow-scrolling:touch] [touch-action:pan-x]"
             role="tablist"
             aria-label="MediBook services"
           >
@@ -97,16 +121,21 @@ export function ServicesShowcase() {
                 tabIndex={activeIndex === index ? 0 : -1}
                 onClick={() => selectService(index)}
                 onKeyDown={(event) => handleTabKeyDown(event, index)}
-                className={cn("min-h-11 shrink-0 snap-start cursor-pointer rounded-xl px-4 py-3 text-left text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] motion-reduce:transition-none md:shrink md:snap-none lg:block lg:w-full", activeIndex === index ? "bg-[#0F766E] text-white" : "text-slate-600 hover:bg-slate-50 hover:text-[#0F766E]")}
+                className={cn("min-h-11 shrink-0 snap-start cursor-pointer whitespace-nowrap rounded-full border px-4 py-2.5 text-left text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none", activeIndex === index ? "border-[#0F766E] bg-[#0F766E] text-white hover:bg-[#0D5F59]" : "border-slate-200 bg-white text-slate-700 hover:border-[#0F766E] hover:bg-teal-50 hover:text-[#0F766E]")}
               >
                 {item.name}
               </button>
             ))}
           </div>
-          {hasHiddenCategories && (
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex w-14 items-center justify-end bg-gradient-to-l from-[#F8FAFC] via-[#F8FAFC]/90 to-transparent pr-1 md:hidden" aria-hidden="true">
-              <ChevronRight className="size-4 text-[#0F766E]" />
-            </div>
+          {canScrollNext && (
+            <button
+              type="button"
+              onClick={() => scrollCategories("next")}
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-[#0F766E] shadow-sm transition-colors hover:border-[#0F766E] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none"
+              aria-label="Show more services"
+            >
+              <ChevronRight className="size-5" aria-hidden="true" />
+            </button>
           )}
         </div>
         <article id="service-panel" role="tabpanel" aria-labelledby={`service-tab-${activeIndex}`} key={service.name} className={cn("service-card-enter grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_35px_rgba(15,118,110,.10)] sm:grid-cols-2", slideDirection === "forward" ? "service-card-forward" : "service-card-backward")}>
