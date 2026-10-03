@@ -16,6 +16,8 @@ const services = [
   { name: "Radiology services", label: "Specialist guidance", title: "Know what comes next.", text: "Connect with the right care team when imaging or specialist follow-up is part of your health plan.", image: "/images/service-radiology.png", alt: "Radiologist explaining a scan to a patient", position: "object-[65%_35%]" },
 ]
 
+const SCROLL_TOLERANCE = 4
+
 export function ServicesShowcase() {
   const [activeIndex, setActiveIndex] = useState(0)
   const [slideDirection, setSlideDirection] = useState<"forward" | "backward">("forward")
@@ -23,6 +25,7 @@ export function ServicesShowcase() {
   const [canScrollNext, setCanScrollNext] = useState(false)
   const tabsRef = useRef<HTMLDivElement>(null)
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
+  const updateScrollStateRef = useRef<() => void>(() => {})
   const service = services[activeIndex]
 
   useEffect(() => {
@@ -30,19 +33,35 @@ export function ServicesShowcase() {
     if (!tabs) return
 
     const updateScrollState = () => {
-      const scrollEnd = tabs.scrollWidth - tabs.clientWidth
-      setCanScrollPrevious(tabs.scrollLeft > 1)
-      setCanScrollNext(tabs.scrollLeft < scrollEnd - 1)
+      const showPrevious = tabs.scrollLeft > SCROLL_TOLERANCE
+      const showNext = tabs.scrollLeft + tabs.clientWidth < tabs.scrollWidth - SCROLL_TOLERANCE
+
+      setCanScrollPrevious((current) => current === showPrevious ? current : showPrevious)
+      setCanScrollNext((current) => current === showNext ? current : showNext)
     }
+
+    updateScrollStateRef.current = updateScrollState
 
     const resizeObserver = new ResizeObserver(updateScrollState)
     resizeObserver.observe(tabs)
+    Array.from(tabs.children).forEach((tab) => resizeObserver.observe(tab))
+
+    const mutationObserver = new MutationObserver(() => {
+      Array.from(tabs.children).forEach((tab) => resizeObserver.observe(tab))
+      updateScrollState()
+    })
+    mutationObserver.observe(tabs, { childList: true, subtree: true, characterData: true })
+
     tabs.addEventListener("scroll", updateScrollState, { passive: true })
+    window.addEventListener("resize", updateScrollState)
     updateScrollState()
 
     return () => {
       resizeObserver.disconnect()
+      mutationObserver.disconnect()
       tabs.removeEventListener("scroll", updateScrollState)
+      window.removeEventListener("resize", updateScrollState)
+      updateScrollStateRef.current = () => {}
     }
   }, [])
 
@@ -55,6 +74,7 @@ export function ServicesShowcase() {
       left: (direction === "next" ? 1 : -1) * Math.max(tabs.clientWidth * 0.8, 160),
       behavior: reducedMotion ? "auto" : "smooth",
     })
+    window.requestAnimationFrame(() => updateScrollStateRef.current())
   }
 
   function selectService(index: number) {
