@@ -17,6 +17,9 @@ export function AppHeader({ name, email, admin = false, userId }: AppHeaderProps
   const links = admin
     ? [{ href: "/admin", label: "Dashboard" }, { href: "/admin/doctors", label: "Doctors" }, { href: "/admin/appointments", label: "Appointments" }, { href: "/admin/patients", label: "Patients" }]
     : [{ href: "/doctors", label: "Doctors" }, { href: "/appointments", label: "Appointments" }, { href: "/profile", label: "Profile" }]
+  const mobileLinks = admin
+    ? links
+    : [{ href: "/", label: "Home" }, { href: "/doctors", label: "Find a doctor" }, { href: "/appointments", label: "My appointments" }, { href: "/profile", label: "Profile" }]
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -30,8 +33,8 @@ export function AppHeader({ name, email, admin = false, userId }: AppHeaderProps
         </div>
         <div className="flex items-center gap-3">
           {userId ? <div className="hidden sm:block"><NotificationBell userId={userId} href={admin ? "/admin/notifications" : "/notifications"} /></div> : null}
-          {userId ? <AccountMenu userId={userId} name={name} email={email} role={admin ? "admin" : "patient"} /> : null}
-          <MobileNavigationDrawer links={links} userId={userId} notificationsHref={admin ? "/admin/notifications" : "/notifications"} />
+          {userId ? <div className="hidden sm:block"><AccountMenu userId={userId} name={name} email={email} role={admin ? "admin" : "patient"} /></div> : null}
+          <MobileNavigationDrawer links={mobileLinks} userId={userId} name={name} email={email} role={admin ? "admin" : "patient"} notificationsHref={admin ? "/admin/notifications" : "/notifications"} />
         </div>
       </div>
     </header>
