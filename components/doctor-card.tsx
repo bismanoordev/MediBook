@@ -45,7 +45,7 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
 
   if (variant === "directory") {
     return (
-      <article className="group relative flex h-full min-h-[22rem] rounded-2xl bg-white">
+      <article className="group relative flex h-full min-h-[19rem] rounded-2xl bg-white">
         <Link
           href={`/doctors/${doctor.id}`}
           aria-label={`View profile for ${fullName}`}
@@ -56,7 +56,7 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
         <div className="pointer-events-none relative z-10 flex w-full flex-col p-5 sm:p-6">
           <div className="flex items-center gap-4">
             <div className="grid size-[72px] shrink-0 place-items-center rounded-full bg-[#CCFBF1] p-1.5 sm:size-[88px]">
-              <DoctorPhoto fullName={fullName} photoUrl={photoUrl} className="size-full rounded-full text-sm sm:text-base" sizes="88px" />
+              <DoctorPhoto fullName={fullName} photoUrl={photoUrl} fallbackImageUrl={characterImage} fallbackAlt={`Illustrated ${specialty} clinician`} className="size-full rounded-full text-sm sm:text-base" sizes="88px" />
             </div>
             <div className="min-w-0">
               <h2 className="line-clamp-2 break-words text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">{fullName}</h2>
@@ -64,10 +64,7 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
             </div>
           </div>
 
-          <div className="mt-5 flex min-h-10 gap-3">
-            <span aria-hidden className="w-1 shrink-0 rounded-full bg-[#0F766E]" />
-            <p className="line-clamp-2 text-sm leading-5 text-slate-600">{bio}</p>
-          </div>
+          <p className="mt-5 min-h-10 line-clamp-2 text-sm leading-5 text-slate-600">{bio}</p>
 
           <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-5">
             <div className="min-w-0">
