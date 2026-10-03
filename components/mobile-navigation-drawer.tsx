@@ -69,10 +69,6 @@ export function MobileNavigationDrawer({ links, userId, name, email, role, notif
     }
   }, [open])
 
-  useEffect(() => {
-    if (open) setOpen(false)
-  }, [userId, role])
-
   return (
     <div className={desktopBreakpoint === "lg" ? "lg:hidden" : "sm:hidden"}>
       <button

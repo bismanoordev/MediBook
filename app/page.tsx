@@ -8,7 +8,6 @@ import { SiteFooter } from "@/components/site-footer"
 import { SpecialtyCards, SpecialtyCardsLoading } from "@/components/home/specialty-cards"
 import { HomeDoctorCards, HomeDoctorHero } from "@/components/home/home-doctors"
 import { buttonVariants } from "@/components/ui/button"
-import { LandingPageEffects } from "@/components/home/landing-page-effects"
 import { ServicesShowcase } from "@/components/home/services-showcase"
 import { createClient } from "@/lib/supabase/server"
 import { getAuthState } from "@/lib/auth"
@@ -48,7 +47,6 @@ export default async function Home() {
       <section className="bg-[#087D78] py-20 text-white"><div className="mx-auto max-w-7xl px-5 sm:px-8"><div className="text-center"><p className="text-sm font-bold uppercase tracking-[.16em] text-teal-100">Stories from MediBook</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.04em] sm:text-4xl">What patients are saying</h2></div><div className="mx-auto mt-10 grid max-w-4xl gap-5 md:grid-cols-2">{testimonials.map((item) => <article className="rounded-2xl bg-white p-6 text-slate-900 shadow-lg" key={item.name}><span className="text-4xl font-serif leading-none text-[#0F9E96]">“</span><p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p><div className="mt-5 flex items-center gap-3"><span className="grid size-9 place-items-center rounded-full bg-[#CCFBF1] text-xs font-bold text-[#0F766E]">{item.initials}</span><div><p className="text-sm font-bold">{item.name}</p><p className="text-xs text-slate-500">MediBook patient</p></div></div></article>)}</div></div></section>
       <HomeDoctorCards doctors={homeDoctors} error={Boolean(doctorsError)} />
       <SiteFooter authenticated={Boolean(user)} />
-      <LandingPageEffects />
     </main>
   )
 }
