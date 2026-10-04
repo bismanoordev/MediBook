@@ -41,7 +41,7 @@ export function SignupForm() {
   const [checkEmail, setCheckEmail] = useState(false)
 
   useEffect(() => {
-    if (accountType !== "doctor" || specialties.length || specialtiesError || isLoadingSpecialties) return
+    if (accountType !== "doctor" || specialties.length || specialtiesError) return
 
     let cancelled = false
     async function loadSpecialties() {
@@ -57,7 +57,7 @@ export function SignupForm() {
 
     void loadSpecialties()
     return () => { cancelled = true }
-  }, [accountType, isLoadingSpecialties, specialties.length, specialtiesError, supabase])
+  }, [accountType, specialties.length, specialtiesError, supabase])
 
   function chooseAccountType(nextType: AccountType) {
     setAccountType(nextType)
