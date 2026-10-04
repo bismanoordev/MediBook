@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/auth"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
 
-const statuses = new Set(["pending", "confirmed", "cancelled", "completed"])
+const statuses = new Set(["confirmed", "cancelled", "completed"])
 const doctorSchema = yup.object({ fullName: yup.string().trim().matches(/^[\p{L}][\p{L}\s.'-]*$/u, "Enter a valid doctor name.").required("Enter the doctor’s full name."), fee: yup.number().typeError("Enter a valid consultation fee.").min(0, "Consultation fee cannot be negative.").required("Enter a consultation fee.") })
 const scheduleSchema = yup.object({ start: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid start time.").required("Choose a start time."), end: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid end time.").required("Choose an end time."), minutes: yup.number().oneOf([15, 20, 30, 60], "Choose 15, 20, 30, or 60 minutes.").required() })
 const bucketPath = "/storage/v1/object/public/doctor-photos/"
@@ -93,10 +93,16 @@ export async function updateAppointmentStatus(formData: FormData) {
   const status = String(formData.get("status") ?? "")
   if (!id || !statuses.has(status)) return
   const supabase = await createClient()
-  await supabase.from("appointments").update({ status: status as "pending" | "confirmed" | "cancelled" | "completed" }).eq("id", id)
+  await supabase.rpc("set_appointment_status", {
+    p_appointment_id: id,
+    p_status: status,
+    p_cancel_reason: String(formData.get("cancel_reason") ?? "").trim() || null,
+  })
   revalidatePath("/admin")
   revalidatePath("/admin/appointments")
   revalidatePath("/appointments")
+  revalidatePath("/doctor")
+  revalidatePath("/doctor/appointments")
 }
 
 export async function reviewDoctorApplication(input: { doctorId: string; decision: "approved" | "rejected" | "changes_requested"; note?: string }): Promise<ReviewResult> {

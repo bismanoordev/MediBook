@@ -174,7 +174,7 @@ Goal: `/doctor` after approval.
 - Loading skeletons, empty and error states, mobile-friendly cards.
 Test: numbers match the data in Supabase.
 
-### Step 8 — Doctor appointments
+### [x] Step 8 — Doctor appointments
 Goal: `/doctor/appointments`.
 - Tabs: Pending, Upcoming, Completed, Cancelled. Table (cards on mobile) with patient name, phone, date, time, reason, and status badge. Paginate 20 per page.
 - Buttons: **Confirm**, **Decline** (with confirmation dialog and optional reason), **Mark completed** (only for confirmed appointments whose time has started). All through `rpc('set_appointment_status')`.
@@ -227,7 +227,7 @@ Tick each step when it is finished and committed.
 - [x] Step 5 — Doctor onboarding
 - [x] Step 6 — Admin: review applications
 - [x] Step 7 — Doctor dashboard
-- [ ] Step 8 — Doctor appointments
+- [x] Step 8 — Doctor appointments
 - [ ] Step 9 — Availability
 - [ ] Step 10 — Doctor profile changes
 - [ ] Step 11 — Doctor documents page
