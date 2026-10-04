@@ -167,7 +167,7 @@ Goal: `/admin/doctors/applications` (add "Applications" to the admin navigation 
 - Server-side admin checks on every action.
 Test: approving makes the doctor appear in `/doctors` (needs an active schedule to show slots); rejecting shows the reason to the doctor; the doctor gets a notification each time.
 
-### Step 7 — Doctor dashboard
+### [x] Step 7 — Doctor dashboard
 Goal: `/doctor` after approval.
 - Greeting, 4 stat cards (today's appointments, pending requests, total patients, profile completeness %), today's appointments table, and a "Next appointment" card.
 - Patient names and phones come from the doctor's allowed access to patients who booked them.
@@ -226,7 +226,7 @@ Tick each step when it is finished and committed.
 - [x] Step 4 — Doctor shell and route protection
 - [x] Step 5 — Doctor onboarding
 - [x] Step 6 — Admin: review applications
-- [ ] Step 7 — Doctor dashboard
+- [x] Step 7 — Doctor dashboard
 - [ ] Step 8 — Doctor appointments
 - [ ] Step 9 — Availability
 - [ ] Step 10 — Doctor profile changes
