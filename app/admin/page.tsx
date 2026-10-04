@@ -34,7 +34,7 @@ export default async function AdminPage() {
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("appointment_date", today),
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "patient"),
-    supabase.from("doctors").select("id", { count: "exact", head: true }).eq("is_active", true),
+    supabase.from("doctors").select("id", { count: "exact", head: true }).eq("is_active", true).eq("approval_status", "approved"),
     supabase.from("appointments").select("id, start_time, status, doctors(full_name), profiles!appointments_patient_id_fkey(full_name)").eq("appointment_date", today).order("start_time"),
     supabase.from("appointments").select("appointment_date").gte("appointment_date", isoDate(dates[0])).lte("appointment_date", today),
   ])

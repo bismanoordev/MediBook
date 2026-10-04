@@ -124,9 +124,9 @@ Goal: the app knows about doctors, without any visible UI change yet.
 
 ### Step 2 — Patient side shows only approved doctors
 Goal: unapproved doctors never leak to patients.
-- Add `.eq("is_active", true).eq("approval_status", "approved")` to every patient-facing doctor query: `app/page.tsx`, `app/doctors/page.tsx`, `app/doctors/[id]/page.tsx` (show not-found otherwise), and anywhere else doctors are listed for patients.
-- Admin pages keep seeing every doctor. In `app/admin/page.tsx` the "doctors" count counts only `approved` + active doctors.
-Test: existing 6 doctors still show everywhere. (Draft doctors will be tested in Step 4.)
+- [x] Add `.eq("is_active", true).eq("approval_status", "approved")` to every patient-facing doctor query: `app/page.tsx`, `app/doctors/page.tsx`, `app/doctors/[id]/page.tsx` (show not-found otherwise), and anywhere else doctors are listed for patients.
+- [x] Admin pages keep seeing every doctor. In `app/admin/page.tsx` the "doctors" count counts only `approved` + active doctors.
+- [x] Test: existing 6 doctors still show everywhere. (Draft doctors will be tested in Step 4.)
 
 ### Step 3 — Signup: patient or doctor
 Goal: `/signup` has an "I'm a patient / I'm a doctor" toggle.
@@ -221,7 +221,7 @@ Tick each step when it is finished and committed.
 
 - [x] Step 0 — owner ran SQL scripts 07, 08, 09
 - [x] Step 1 — Types and auth plumbing
-- [ ] Step 2 — Patient side shows only approved doctors
+- [x] Step 2 — Patient side shows only approved doctors
 - [ ] Step 3 — Signup: patient or doctor
 - [ ] Step 4 — Doctor shell and route protection
 - [ ] Step 5 — Doctor onboarding

@@ -25,6 +25,7 @@ export default async function Home() {
     .from("doctors")
     .select("id, full_name, bio, fee, photo_url, specialties(name)")
     .eq("is_active", true)
+    .eq("approval_status", "approved")
     .order("full_name")
     .limit(3)
   const homeDoctors = (doctors ?? []).map((doctor) => ({ ...doctor, specialties: doctor.specialties as unknown as { name: string } | null }))

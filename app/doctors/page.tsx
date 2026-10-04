@@ -15,7 +15,7 @@ export default async function DoctorsPage({ searchParams }: DoctorsPageProps) {
   const supabase = await createClient()
   const [{ data: specialties, error: specialtiesError }, { data: doctors, error: doctorsError }] = await Promise.all([
     supabase.from("specialties").select("id, name").order("name"),
-    supabase.from("doctors").select("id, specialty_id, full_name, bio, fee, photo_url, specialties(name)").order("full_name"),
+    supabase.from("doctors").select("id, specialty_id, full_name, bio, fee, photo_url, specialties(name)").eq("is_active", true).eq("approval_status", "approved").order("full_name"),
   ])
   const selectedSpecialty = specialty && /^\d+$/.test(specialty) ? Number(specialty) : undefined
   const searchTerm = q.trim().toLocaleLowerCase()

@@ -20,7 +20,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   const { user, profile } = await getAuthState()
   const supabase = await createClient()
   const [{ data: doctor }, { data: schedules }] = await Promise.all([
-    supabase.from("doctors").select("id, full_name, bio, fee, photo_url, specialties(name)").eq("id", id).maybeSingle(),
+    supabase.from("doctors").select("id, full_name, bio, fee, photo_url, specialties(name)").eq("id", id).eq("is_active", true).eq("approval_status", "approved").maybeSingle(),
     supabase.from("doctor_schedules").select("day_of_week, start_time, end_time, slot_minutes").eq("doctor_id", id),
   ])
   if (!doctor) notFound()
