@@ -10,9 +10,15 @@ Patients have to call the clinic to book an appointment. Phone lines can be busy
 
 - Finds a doctor and books an appointment.
 
+### Doctor
+
+- Registers on MediBook, completes onboarding, and waits for admin approval.
+- Manages their own appointments, availability, profile, and documents.
+
 ### Admin
 
 - Manages doctors, schedules, patients, and appointments.
+- Reviews and approves doctor applications and doctor profile changes.
 
 ## 3. Goal
 
@@ -30,9 +36,22 @@ A patient can book an appointment in under one minute, with no double bookings.
 - Receive live notifications from the bell icon.
 - Edit their profile information.
 
+### Doctor features
+
+- Sign up as a doctor from `/signup` by choosing "I'm a doctor".
+- Complete a 5-step onboarding: personal info, documents, qualifications, specialty and languages, fee and review. Progress saves automatically.
+- Upload a CNIC and PMDC license (required) and a degree certificate (optional) to a private storage area.
+- Wait for admin approval. Until approved, the doctor is not visible to patients.
+- Use a doctor dashboard with today's appointments, pending requests, total patients, and profile completeness.
+- Confirm, decline, or complete their own appointments.
+- Set weekly working hours and block days off.
+- Edit their profile. Changes go live only after admin review.
+- Receive live notifications for new bookings, cancellations, and approval decisions.
+
 ### Admin features
 
 - Admin accounts are provisioned by the project owner in Supabase.
+- Review doctor applications and profile changes: approve, reject with a reason, or ask for changes.
 - Access an admin-only area at `/admin`.
 - View a dashboard with daily statistics.
 - Add, edit, activate, or hide doctors.
@@ -45,8 +64,9 @@ A patient can book an appointment in under one minute, with no double bookings.
 
 - Online payments.
 - Video calls.
-- Doctor login.
 - Emails.
+- Request expiry (appointment requests do not expire).
+- Doctor verification levels or badges beyond "approved".
 
 ## 6. Pages
 
@@ -62,11 +82,25 @@ A patient can book an appointment in under one minute, with no double bookings.
 | `/appointments` | Patient's appointments |
 | `/profile` | Patient profile |
 
+### Doctor pages
+
+| Route | Purpose |
+| --- | --- |
+| `/signup` | Includes the patient or doctor choice |
+| `/doctor/onboarding` | 5-step registration form |
+| `/doctor` | Doctor dashboard |
+| `/doctor/appointments` | Pending, upcoming, completed, and cancelled appointments |
+| `/doctor/availability` | Weekly hours and days off |
+| `/doctor/profile` | Edit public profile (sent for admin review) |
+| `/doctor/documents` | Upload and track required documents |
+| `/doctor/notifications` | Doctor notifications |
+
 ### Admin pages
 
 | Route | Purpose |
 | --- | --- |
 | `/admin` | Admin dashboard |
+| `/admin/doctors/applications` | Review doctor applications and profile changes |
 | `/admin/doctors` | Manage doctors |
 | `/admin/doctors/[id]/schedule` | Manage a doctor's schedule |
 | `/admin/appointments` | Manage appointments |
@@ -76,10 +110,13 @@ A patient can book an appointment in under one minute, with no double bookings.
 
 | Table | Stores |
 | --- | --- |
-| `profiles` | Name, phone number, and role (`patient` or `admin`) |
+| `profiles` | Name, phone number, and role (`patient`, `doctor`, or `admin`) |
 | `specialties` | Medical specialties such as Dentist and Cardiologist |
-| `doctors` | Name, specialty, fee, photo, bio, and active status |
+| `doctors` | Name, specialty, fee, photo, bio, active status, linked login user, and approval status |
 | `doctor_schedules` | Working day, start time, end time, and slot length |
+| `doctor_documents` | Uploaded CNIC, PMDC license, and degree files with review status |
+| `doctor_time_off` | Days a doctor is away |
+| `doctor_profile_changes` | Profile edits waiting for admin review |
 | `appointments` | Patient, doctor, date, time, status, and reason |
 | `notifications` | A message for a user and whether it has been read |
 
@@ -91,7 +128,15 @@ A patient can book an appointment in under one minute, with no double bookings.
 4. Patients can cancel an appointment only when it is more than 2 hours away.
 5. Only admins can change doctors, schedules, and other users' bookings.
 6. An appointment status change sends a notification to the patient.
-7. A new booking sends a notification to admins.
+7. A new booking sends a notification to admins and to the doctor.
+8. A new doctor stays hidden from patients until an admin approves the application.
+9. A doctor must upload a CNIC and a PMDC license before submitting for review. A degree certificate is optional.
+10. A doctor can see and manage only their own appointments, schedule, documents, and profile.
+11. Either the doctor or an admin can confirm an appointment. The first confirmation is final, and the patient is notified.
+12. A doctor's profile changes go live only after admin approval. The old profile stays visible until then.
+13. Doctor documents are private and never publicly accessible. Only the doctor and admins can open them.
+14. A doctor's days off are hidden from patients and cannot be booked.
+15. Users can never choose the `admin` role from the browser. Doctor sign-up creates a `doctor` role only.
 
 ## 9. Done When
 
@@ -112,6 +157,12 @@ MediBook is complete when all Version 1 features work on the live website, on bo
 - Components: shadcn/ui with Tailwind CSS. Icons: lucide-react.
 - Mobile first. Every page must remain attractive, readable, and easy to use on phone and laptop.
 - The saved screenshots are inspiration for composition, spacing, and interaction patterns only; do not reproduce any reference exactly.
+
+### Doctor portal design
+
+- The doctor portal uses the same MediBook look as the rest of the app: teal `#0F766E`, background `#F8FAFC`, Inter, and the same status colors. Do not copy the brown and gold colors of the reference website.
+- Layout inspiration: a sidebar dashboard (becomes a mobile menu), a multi-step onboarding with a progress ring, and tab filters for appointments.
+- Document statuses use clear words and icons: Verified, Pending, Needs action, and Missing.
 
 ### Reference images
 

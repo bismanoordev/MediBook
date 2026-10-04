@@ -131,6 +131,8 @@ These rules are the source of truth whenever a MediBook page or component is des
 
 - Patient signup is public; admin accounts are provisioned by the project owner in Supabase.
 - Never expose an admin role selector or role-assignment flow in the browser.
+- Doctor signup is public but creates a `doctor` role only, and doctors stay hidden until an admin approves them.
+- The doctor portal keeps the MediBook teal theme and the same sidebar, cards, tables, and status colors as the admin area.
 - Keep admin navigation and page context distinct, while retaining the same visual system.
 
 ### 14. Avoid
