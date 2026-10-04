@@ -11,6 +11,7 @@ import { PasswordInput } from "@/components/auth/password-input"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getFriendlyAuthError } from "@/lib/auth-errors"
+import { getHomePath } from "@/lib/home-path"
 import { getSafeRedirectPath } from "@/lib/safe-redirect"
 import { createClient } from "@/lib/supabase/client"
 
@@ -65,7 +66,10 @@ export function LoginForm({ next, message }: LoginFormProps) {
       .eq("id", data.user.id)
       .maybeSingle()
 
-    const fallback = profile?.role === "admin" ? "/admin" : "/doctors"
+    const { data: doctor } = profile?.role === "doctor"
+      ? await supabase.from("doctors").select("approval_status").eq("user_id", data.user.id).maybeSingle()
+      : { data: null }
+    const fallback = getHomePath(profile?.role, doctor?.approval_status)
     const destination = getSafeRedirectPath(next, fallback)
 
     toast.success("Welcome back to MediBook.")

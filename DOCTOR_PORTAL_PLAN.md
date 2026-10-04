@@ -116,11 +116,11 @@ Do not start Step 1 until the owner confirms the scripts ran.
 
 ### Step 1 — Types and auth plumbing
 Goal: the app knows about doctors, without any visible UI change yet.
-- Update `lib/supabase/database.types.ts` for the new columns, tables, and RPC functions (use `npx supabase gen types typescript --project-id <id>` if available, otherwise edit by hand to match the SQL exactly).
-- `lib/auth.ts`: `UserRole` becomes `"patient" | "doctor" | "admin"`. Add `requireDoctor()` (redirects guests to `/login?next=%2Fdoctor`, and non-doctors to `/doctors`). Add `getDoctorRecord()` (cached, returns the signed-in doctor's `doctors` row). Update `requireAdmin()` so doctors are redirected to `/doctor`.
-- Add one shared helper, for example `getHomePath(role, approvalStatus)`, that implements the "where each role lands" table. Use it in `redirectAuthenticatedUser()`, `components/auth/login-form.tsx`, and `app/auth/callback/route.ts` (respect the safe `next` parameter).
-- Block doctors from patient-only pages (`/appointments`, `/profile`): redirect them to `/doctor`.
-Test: patient and admin logins still land where they did before; lint and build pass.
+- [x] Update `lib/supabase/database.types.ts` for the new columns, tables, and RPC functions (use `npx supabase gen types typescript --project-id <id>` if available, otherwise edit by hand to match the SQL exactly).
+- [x] `lib/auth.ts`: `UserRole` becomes `"patient" | "doctor" | "admin"`. Add `requireDoctor()` (redirects guests to `/login?next=%2Fdoctor`, and non-doctors to `/doctors`). Add `getDoctorRecord()` (cached, returns the signed-in doctor's `doctors` row). Update `requireAdmin()` so doctors are redirected to `/doctor`.
+- [x] Add one shared helper, for example `getHomePath(role, approvalStatus)`, that implements the "where each role lands" table. Use it in `redirectAuthenticatedUser()`, `components/auth/login-form.tsx`, and `app/auth/callback/route.ts` (respect the safe `next` parameter).
+- [x] Block doctors from patient-only pages (`/appointments`, `/profile`): redirect them to `/doctor`.
+- [x] Test: patient and admin logins still land where they did before; lint and build pass.
 
 ### Step 2 — Patient side shows only approved doctors
 Goal: unapproved doctors never leak to patients.
@@ -220,7 +220,7 @@ Test: patient books → doctor bell +1 without refresh; admin approves → docto
 Tick each step when it is finished and committed.
 
 - [x] Step 0 — owner ran SQL scripts 07, 08, 09
-- [ ] Step 1 — Types and auth plumbing
+- [x] Step 1 — Types and auth plumbing
 - [ ] Step 2 — Patient side shows only approved doctors
 - [ ] Step 3 — Signup: patient or doctor
 - [ ] Step 4 — Doctor shell and route protection

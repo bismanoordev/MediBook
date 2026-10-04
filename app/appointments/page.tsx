@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 
 import { AppHeader } from "@/components/app-header"
 import { CancelAppointmentButton } from "@/components/patient/cancel-appointment-button"
@@ -14,6 +15,7 @@ export default async function AppointmentsPage({ searchParams }: { searchParams:
   const { tab } = await searchParams
   const activeTab = tab === "past" ? "past" : "upcoming"
   const { user, profile } = await requireUser("/appointments")
+  if (profile?.role === "doctor") redirect("/doctor")
   const supabase = await createClient()
   const { data: appointments, error } = await supabase.from("appointments").select("id, appointment_date, start_time, status, reason, doctors(full_name, specialties(name))").eq("patient_id", user.id).order("appointment_date", { ascending: activeTab === "upcoming" }).order("start_time", { ascending: activeTab === "upcoming" })
   const today = pakistanToday()

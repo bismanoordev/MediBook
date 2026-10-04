@@ -1,6 +1,7 @@
 import { ProfileForm } from "@/components/patient/profile-form"
 import { AppHeader } from "@/components/app-header"
 import { requireUser } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 function getInitials(fullName: string) {
   const initials = fullName
@@ -16,6 +17,7 @@ function getInitials(fullName: string) {
 
 export default async function ProfilePage() {
   const { user, profile } = await requireUser("/profile")
+  if (profile?.role === "doctor") redirect("/doctor")
   const fullName = profile?.full_name?.trim() ?? ""
   const phone = profile?.phone?.trim() ?? ""
   const needsDetails = !fullName || !phone
