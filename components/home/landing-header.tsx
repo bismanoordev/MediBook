@@ -38,12 +38,7 @@ export function LandingHeader({ userId, name, email, role }: LandingHeaderProps)
   const links = authenticated ? (admin ? adminLinks : patientLinks) : guestLinks
   const mobileLinks = authenticated
     ? (admin ? adminLinks : [{ href: "/", label: "Home" }, { href: "/doctors", label: "Find a doctor" }, { href: "/appointments", label: "My appointments" }, { href: "/profile", label: "Profile" }])
-    : [
-        { href: "/doctors", label: "Find a doctor" },
-        { href: "#services", label: "Services" },
-        { href: "#about", label: "Why MediBook" },
-        { href: "#team", label: "Our team" },
-      ]
+    : [{ href: "/", label: "Home" }, { href: "/doctors", label: "Find a doctor" }, { href: "#about", label: "How it works" }]
 
   return (
     <header className="sticky top-0 z-40 mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-4 bg-[#E7F7F5]/95 px-5 backdrop-blur sm:px-8">
