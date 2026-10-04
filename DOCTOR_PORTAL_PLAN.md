@@ -130,12 +130,12 @@ Goal: unapproved doctors never leak to patients.
 
 ### Step 3 — Signup: patient or doctor
 Goal: `/signup` has an "I'm a patient / I'm a doctor" toggle.
-- Patient flow stays exactly as it is.
-- Doctor flow fields: full name, email, phone, **specialty** (select from `specialties`), password, confirm password, terms checkbox. Same validation style as the patient form (yup).
-- Doctor `signUp` sends `data: { full_name, phone, role: "doctor", specialty_id }` and `emailRedirectTo` `/auth/callback?next=/doctor/onboarding`.
-- If email confirmation is on, show the same "Check your email" screen. If a session is returned, go to `/doctor/onboarding`.
-- Never expose an admin option anywhere.
-Test: a new doctor account creates a `profiles` row with role `doctor` and a `doctors` row with status `draft`; a patient signup is unchanged.
+- [x] Patient flow stays exactly as it is.
+- [x] Doctor flow fields: full name, email, phone, **specialty** (select from `specialties`), password, confirm password, terms checkbox. Same validation style as the patient form (yup).
+- [x] Doctor `signUp` sends `data: { full_name, phone, role: "doctor", specialty_id }` and `emailRedirectTo` `/auth/callback?next=/doctor/onboarding`.
+- [x] If email confirmation is on, show the same "Check your email" screen. If a session is returned, go to `/doctor/onboarding`.
+- [x] Never expose an admin option anywhere.
+- [x] Test: a new doctor account creates a `profiles` row with role `doctor` and a `doctors` row with status `draft`; a patient signup is unchanged.
 
 ### Step 4 — Doctor shell and route protection
 Goal: `/doctor/*` pages exist inside a proper layout.
@@ -222,7 +222,7 @@ Tick each step when it is finished and committed.
 - [x] Step 0 — owner ran SQL scripts 07, 08, 09
 - [x] Step 1 — Types and auth plumbing
 - [x] Step 2 — Patient side shows only approved doctors
-- [ ] Step 3 — Signup: patient or doctor
+- [x] Step 3 — Signup: patient or doctor
 - [ ] Step 4 — Doctor shell and route protection
 - [ ] Step 5 — Doctor onboarding
 - [ ] Step 6 — Admin: review applications
