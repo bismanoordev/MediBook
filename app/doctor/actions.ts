@@ -3,11 +3,24 @@
 import { revalidatePath } from "next/cache"
 
 import { getDoctorRecord, requireDoctor } from "@/lib/auth"
+import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
 
 type AppointmentMutationResult = { error?: string; success?: true }
 type AppointmentStatus = "confirmed" | "cancelled" | "completed"
 type AvailabilityResult = { error?: string; success?: true }
+type ProfileResult = { error?: string; success?: true }
+type Qualification = { degree: string; institution: string; year: string }
+type ProfileInput = { fullName: string; phone: string; bio: string; fee: string; photoUrl: string; specialtyId: string; experienceYears: string; languages: string[]; clinicName: string; city: string; qualifications: Qualification[] }
+
+function validDoctorPhotoUrl(value: string) {
+  if (!value) return true
+  try {
+    const candidate = new URL(value)
+    const configured = new URL(getSupabaseEnv().url)
+    return candidate.origin === configured.origin && candidate.pathname.startsWith("/storage/v1/object/public/doctor-photos/")
+  } catch { return false }
+}
 
 function friendlyAppointmentError(message: string) {
   const normalized = message.toLowerCase()
@@ -93,5 +106,57 @@ export async function removeDoctorTimeOff(id: number): Promise<AvailabilityResul
   if (error) return { error: "We couldn't remove those days off. Please try again." }
   revalidatePath("/doctor/availability")
   revalidatePath(`/doctors/${doctor.id}`)
+  return { success: true }
+}
+
+export async function submitDoctorProfileChanges(input: ProfileInput): Promise<ProfileResult> {
+  const auth = await requireDoctor()
+  const doctor = await getDoctorRecord()
+  if (!doctor || doctor.approval_status !== "approved") return { error: "Your profile can be edited after your application is approved." }
+  const fullName = input.fullName.trim()
+  const phone = input.phone.trim()
+  const bio = input.bio.trim()
+  const fee = Number(input.fee)
+  const specialtyId = input.specialtyId ? Number(input.specialtyId) : null
+  const experienceYears = input.experienceYears ? Number(input.experienceYears) : null
+  const languages = input.languages.map((language) => language.trim()).filter(Boolean)
+  const qualifications = input.qualifications.filter((item) => item.degree.trim() || item.institution.trim() || item.year.trim()).map((item) => ({ degree: item.degree.trim(), institution: item.institution.trim(), year: item.year.trim() }))
+  if (!fullName || !phone || !validDoctorPhotoUrl(input.photoUrl) || !Number.isFinite(fee) || fee < 0 || (specialtyId !== null && (!Number.isInteger(specialtyId) || specialtyId < 1)) || (experienceYears !== null && (!Number.isInteger(experienceYears) || experienceYears < 0))) return { error: "Please check your profile details and try again." }
+
+  const changes: Record<string, unknown> = {}
+  if (fullName !== doctor.full_name) changes.full_name = fullName
+  if (bio !== (doctor.bio ?? "")) changes.bio = bio || null
+  if (fee !== Number(doctor.fee)) changes.fee = fee
+  if (input.photoUrl !== (doctor.photo_url ?? "")) changes.photo_url = input.photoUrl || null
+  if (specialtyId !== doctor.specialty_id) changes.specialty_id = specialtyId
+  if (experienceYears !== doctor.experience_years) changes.experience_years = experienceYears
+  if (JSON.stringify(languages) !== JSON.stringify(doctor.languages)) changes.languages = languages
+  if (input.clinicName.trim() !== (doctor.clinic_name ?? "")) changes.clinic_name = input.clinicName.trim() || null
+  if (input.city.trim() !== (doctor.city ?? "")) changes.city = input.city.trim() || null
+  if (JSON.stringify(qualifications) !== JSON.stringify(doctor.qualifications)) changes.qualifications = qualifications
+
+  const supabase = await createClient()
+  const currentPhone = auth.profile?.phone ?? ""
+  if (phone !== currentPhone) {
+    const { error } = await supabase.from("profiles").update({ phone }).eq("id", auth.user.id)
+    if (error) return { error: "We couldn't update your phone number. Please try again." }
+  }
+  if (!Object.keys(changes).length) return { success: true }
+  const { error } = await supabase.from("doctor_profile_changes").insert({ doctor_id: doctor.id, changes: changes as never })
+  if (error) return { error: "We couldn't send your profile changes for review. Please try again." }
+  revalidatePath("/doctor/profile")
+  revalidatePath("/admin/doctors/applications")
+  return { success: true }
+}
+
+export async function withdrawDoctorProfileChange(changeId: string): Promise<ProfileResult> {
+  await requireDoctor()
+  const doctor = await getDoctorRecord()
+  if (!doctor || !changeId) return { error: "We couldn't withdraw this profile change. Please try again." }
+  const supabase = await createClient()
+  const { error } = await supabase.from("doctor_profile_changes").delete().eq("id", changeId).eq("doctor_id", doctor.id).eq("status", "pending")
+  if (error) return { error: "We couldn't withdraw this profile change. Please try again." }
+  revalidatePath("/doctor/profile")
+  revalidatePath("/admin/doctors/applications")
   return { success: true }
 }

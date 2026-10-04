@@ -156,3 +156,22 @@ export async function reviewDoctorDocument(input: { documentId: string; status: 
   revalidatePath("/admin/doctors/applications")
   return { success: true }
 }
+
+export async function reviewProfileChange(input: { changeId: string; approve: boolean; note?: string }): Promise<ReviewResult> {
+  await requireAdmin()
+  const changeId = input.changeId.trim()
+  const note = input.note?.trim() ?? ""
+  if (!changeId) return { error: "Please choose a profile change to review." }
+  if (!input.approve && !note) return { error: "Please add a note before rejecting these profile changes." }
+  const supabase = await createClient()
+  const { error } = await supabase.rpc("review_profile_change", { p_change_id: changeId, p_approve: input.approve, p_note: note || null })
+  if (error) {
+    if (error.message.toLowerCase().includes("already reviewed")) return { error: "Someone already reviewed this. Refresh the page." }
+    return { error: "We couldn't save this profile review. Please try again." }
+  }
+  revalidatePath("/admin")
+  revalidatePath("/admin/doctors/applications")
+  revalidatePath("/doctor/profile")
+  revalidatePath("/doctors")
+  return { success: true }
+}

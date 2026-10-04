@@ -189,7 +189,7 @@ Goal: `/doctor/availability`.
 - Patient booking page (`app/doctors/[id]/page.tsx` and `components/patient/doctor-booking-flow.tsx`): read `doctor_time_off`, hide or disable those dates, and show "Doctor is away".
 Test: a day off disappears from patient slots; booking a blocked day directly is refused with the friendly message.
 
-### Step 10 — Doctor profile (changes go to review)
+### [x] Step 10 — Doctor profile (changes go to review)
 Goal: `/doctor/profile`.
 - Form: photo, name, bio, fee, specialty, experience, languages, clinic, city, qualifications. Phone is edited directly in `profiles`.
 - For an **approved** doctor, "Send for review" inserts a row in `doctor_profile_changes` containing only changed fields. Show a "Changes waiting for review" notice, with a Withdraw action. Disable the form while a change is pending.
@@ -229,7 +229,7 @@ Tick each step when it is finished and committed.
 - [x] Step 7 — Doctor dashboard
 - [x] Step 8 — Doctor appointments
 - [x] Step 9 — Availability
-- [ ] Step 10 — Doctor profile changes
+- [x] Step 10 — Doctor profile changes
 - [ ] Step 11 — Doctor documents page
 - [ ] Step 12 — Notifications for doctors
 - [ ] Step 13 — Final checks

@@ -2,6 +2,7 @@ import Link from "next/link"
 import { CheckCircle2, CircleAlert, Clock3, ExternalLink, FileText, MapPin } from "lucide-react"
 
 import { DoctorApplicationActions, DoctorDocumentReview } from "@/components/admin/doctor-application-actions"
+import { ProfileChangeActions } from "@/components/admin/profile-change-actions"
 import { DoctorPhoto } from "@/components/doctor-photo"
 import { requireAdmin } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
@@ -26,7 +27,7 @@ function DocumentStatusBadge({ status }: { status: "pending" | "verified" | "nee
   return <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${documentStatus[status]}`}><Icon className="size-3.5" aria-hidden="true" />{label}</span>
 }
 
-type Search = { tab?: string; q?: string; id?: string }
+type Search = { tab?: string; q?: string; id?: string; mode?: string }
 type Qualification = { degree?: string; institution?: string; year?: string }
 
 function applicationHref(params: Search, changes: Partial<Search>) {
@@ -40,9 +41,24 @@ function qualificationsFrom(value: Json): Qualification[] {
   return Array.isArray(value) ? value.filter((item): item is Qualification => Boolean(item && typeof item === "object" && !Array.isArray(item))) : []
 }
 
+function profileChangesHref() { return "/admin/doctors/applications?mode=profile_changes" }
+
+function valueLabel(value: unknown) {
+  if (value === null || value === undefined || value === "") return "Not provided"
+  if (Array.isArray(value)) return value.map((item) => typeof item === "object" ? JSON.stringify(item) : String(item)).join(", ")
+  return String(value)
+}
+
+async function ProfileChangesTab() {
+  const supabase = await createClient()
+  const { data: changes, error } = await supabase.from("doctor_profile_changes").select("id,doctor_id,changes,status,admin_note,created_at,doctors(full_name,photo_url,bio,fee,specialty_id,experience_years,languages,clinic_name,city,qualifications)").order("created_at", { ascending: false })
+  return <main className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Credential review</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Doctor applications</h1><p className="mt-2 text-sm text-slate-600">Review submitted credentials and profile updates.</p><nav className="mt-6 flex gap-2 overflow-x-auto pb-1" aria-label="Review type"><Link href="/admin/doctors/applications" className="whitespace-nowrap rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-teal-50 hover:text-[#0F766E]">Applications</Link><Link href={profileChangesHref()} className="whitespace-nowrap rounded-xl bg-[#0F766E] px-3 py-2 text-sm font-semibold text-white">Profile changes</Link></nav>{error ? <p role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">We couldn&apos;t load profile changes. Please refresh and try again.</p> : changes?.length ? <div className="mt-6 grid gap-5">{changes.map((change) => { const doctor = change.doctors as unknown as Record<string, unknown> | null; const fields = change.changes && typeof change.changes === "object" && !Array.isArray(change.changes) ? Object.entries(change.changes) : []; return <article key={change.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-900">{String(doctor?.full_name ?? "Doctor")}</h2><p className="mt-1 text-sm text-slate-500">Submitted {new Intl.DateTimeFormat("en-PK", { dateStyle: "medium" }).format(new Date(change.created_at))}</p></div><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${change.status === "approved" ? "bg-green-100 text-green-800" : change.status === "rejected" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800"}`}>{change.status[0].toUpperCase() + change.status.slice(1)}</span></div><div className="mt-5 overflow-x-auto"><table className="min-w-full text-left text-sm"><thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-3 py-2">Field</th><th className="px-3 py-2">Current public value</th><th className="px-3 py-2">Requested value</th></tr></thead><tbody className="divide-y divide-slate-100">{fields.map(([key, value]) => <tr key={key}><td className="px-3 py-3 font-semibold text-slate-700">{key.replaceAll("_", " ")}</td><td className="max-w-64 px-3 py-3 text-slate-600">{valueLabel(doctor?.[key])}</td><td className="max-w-64 px-3 py-3 text-[#0F766E]">{valueLabel(value)}</td></tr>)}</tbody></table></div>{change.admin_note ? <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">Admin note: {change.admin_note}</p> : null}<ProfileChangeActions changeId={change.id} status={change.status} /></article> })}</div> : <div className="mt-6 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">No profile changes have been submitted yet.</div>}</main>
+}
+
 export default async function DoctorApplicationsPage({ searchParams }: { searchParams: Promise<Search> }) {
   await requireAdmin()
   const params = await searchParams
+  if (params.mode === "profile_changes") return <ProfileChangesTab />
   const selectedTab = tabs.some((tab) => tab.value === params.tab) ? params.tab as DoctorApprovalStatus : "pending"
   const supabase = await createClient()
   let query = supabase.from("doctors").select("id,full_name,photo_url,approval_status,submitted_at,rejection_reason,specialties(name)").in("approval_status", tabs.map((tab) => tab.value)).order("submitted_at", { ascending: false, nullsFirst: false })
@@ -72,7 +88,9 @@ export default async function DoctorApplicationsPage({ searchParams }: { searchP
     <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Doctor applications</h1>
     <p className="mt-2 text-sm text-slate-600">Review submitted credentials and give doctors a clear next step.</p>
 
-    <form className="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row">
+    <nav className="mt-6 flex gap-2 overflow-x-auto pb-1" aria-label="Review type"><Link href="/admin/doctors/applications" className="whitespace-nowrap rounded-xl bg-[#0F766E] px-3 py-2 text-sm font-semibold text-white">Applications</Link><Link href={profileChangesHref()} className="whitespace-nowrap rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-teal-50 hover:text-[#0F766E]">Profile changes</Link></nav>
+
+    <form className="mt-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row">
       <input type="hidden" name="tab" value={selectedTab} />
       <label className="sr-only" htmlFor="application-search">Search applications by doctor name</label>
       <input id="application-search" name="q" defaultValue={params.q} placeholder="Search doctor name" className="h-10 flex-1 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-teal-100" />
