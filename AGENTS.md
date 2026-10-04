@@ -7,6 +7,7 @@ These rules apply to every task in this project.
 - Read `PRD.md` before starting every task.
 - Read `design/README.md` before making any visual or UI change.
 - Treat the requirements and design rules in those files as the project's source of truth.
+- For anything related to doctors signing up, the `/doctor` area, doctor approval, or doctor documents, also read `DOCTOR_PORTAL_PLAN.md` first. Do only the next unchecked step in that plan, follow it exactly, and tick its checkbox when finished.
 
 ## Stack
 
