@@ -16,7 +16,7 @@ type MobileNavigationDrawerProps = {
   userId?: string
   name?: string | null
   email?: string | null
-  role?: "patient" | "admin"
+  role?: "patient" | "doctor" | "admin"
   notificationsHref?: string
   desktopBreakpoint?: "sm" | "lg"
   headerOffset?: "16" | "20"

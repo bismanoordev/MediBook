@@ -139,11 +139,11 @@ Goal: `/signup` has an "I'm a patient / I'm a doctor" toggle.
 
 ### Step 4 — Doctor shell and route protection
 Goal: `/doctor/*` pages exist inside a proper layout.
-- `app/doctor/layout.tsx` uses `requireDoctor()`. Create `components/doctor/doctor-shell.tsx` modeled on `AdminShell` (teal theme): sidebar items Dashboard, Appointments, Availability, My profile, Documents, Notifications; mobile drawer; top bar with `NotificationBell` and account menu.
-- The onboarding page uses a simpler layout (no sidebar) until the application is submitted.
-- Show a status banner when the doctor is not yet approved: `pending` → "Your application is under review"; `rejected`/`changes_requested` → show `rejection_reason` and a button back to onboarding.
-- Add `loading.tsx` and `error.tsx` for the `/doctor` segment.
-Test: a patient or guest opening `/doctor` is redirected; a doctor opening `/admin` is redirected; mobile menu works.
+- [x] `app/doctor/layout.tsx` uses `requireDoctor()`. Create `components/doctor/doctor-shell.tsx` modeled on `AdminShell` (teal theme): sidebar items Dashboard, Appointments, Availability, My profile, Documents, Notifications; mobile drawer; top bar with `NotificationBell` and account menu.
+- [x] The onboarding page uses a simpler layout (no sidebar) until the application is submitted.
+- [x] Show a status banner when the doctor is not yet approved: `pending` → "Your application is under review"; `rejected`/`changes_requested` → show `rejection_reason` and a button back to onboarding.
+- [x] Add `loading.tsx` and `error.tsx` for the `/doctor` segment.
+- [x] Test: a patient or guest opening `/doctor` is redirected; a doctor opening `/admin` is redirected; mobile menu works.
 
 ### Step 5 — Doctor onboarding (5 steps)
 Goal: `/doctor/onboarding`, with a progress ring and a step list, auto-saving each step.
@@ -223,7 +223,7 @@ Tick each step when it is finished and committed.
 - [x] Step 1 — Types and auth plumbing
 - [x] Step 2 — Patient side shows only approved doctors
 - [x] Step 3 — Signup: patient or doctor
-- [ ] Step 4 — Doctor shell and route protection
+- [x] Step 4 — Doctor shell and route protection
 - [ ] Step 5 — Doctor onboarding
 - [ ] Step 6 — Admin: review applications
 - [ ] Step 7 — Doctor dashboard

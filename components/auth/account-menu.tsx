@@ -10,7 +10,7 @@ type AccountMenuProps = {
   userId: string
   name?: string | null
   email?: string | null
-  role?: "patient" | "admin"
+  role?: "patient" | "doctor" | "admin"
 }
 
 function getInitials(name?: string | null) {
@@ -32,7 +32,7 @@ export function AccountMenu({ userId, name, email, role = "patient" }: AccountMe
   const containerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const displayName = profileName || "My account"
-  const roleLabel = role === "admin" ? "Admin account" : "Patient account"
+  const roleLabel = role === "admin" ? "Admin account" : role === "doctor" ? "Doctor account" : "Patient account"
 
   useEffect(() => {
     let active = true
