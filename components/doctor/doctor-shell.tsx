@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, CalendarDays, CalendarRange, ClipboardPenLine, FileText, HeartPulse, LayoutDashboard, Stethoscope } from "lucide-react"
+import { Bell, CalendarDays, CalendarRange, ClipboardPenLine, FileText, HeartPulse, LayoutDashboard } from "lucide-react"
 
 import { AccountMenu } from "@/components/auth/account-menu"
 import { MobileNavigationDrawer } from "@/components/mobile-navigation-drawer"

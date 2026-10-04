@@ -145,7 +145,7 @@ Goal: `/doctor/*` pages exist inside a proper layout.
 - [x] Add `loading.tsx` and `error.tsx` for the `/doctor` segment.
 - [x] Test: a patient or guest opening `/doctor` is redirected; a doctor opening `/admin` is redirected; mobile menu works.
 
-### Step 5 — Doctor onboarding (5 steps)
+### [x] Step 5 — Doctor onboarding (5 steps)
 Goal: `/doctor/onboarding`, with a progress ring and a step list, auto-saving each step.
 Accessible only while status is `draft`, `rejected`, or `changes_requested`; otherwise redirect to `/doctor`. Resume at `onboarding_step`.
 
@@ -224,7 +224,7 @@ Tick each step when it is finished and committed.
 - [x] Step 2 — Patient side shows only approved doctors
 - [x] Step 3 — Signup: patient or doctor
 - [x] Step 4 — Doctor shell and route protection
-- [ ] Step 5 — Doctor onboarding
+- [x] Step 5 — Doctor onboarding
 - [ ] Step 6 — Admin: review applications
 - [ ] Step 7 — Doctor dashboard
 - [ ] Step 8 — Doctor appointments
