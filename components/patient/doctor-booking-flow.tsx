@@ -9,7 +9,7 @@ import * as yup from "yup"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-type Day = { date: string; label: string; day: string; slots: string[] }
+type Day = { date: string; label: string; day: string; slots: string[]; away?: boolean }
 const reasonSchema = yup.object({ reason: yup.string().max(300, "Reason for visit must be 300 characters or fewer.") })
 const timeFormatter = new Intl.DateTimeFormat("en-PK", { hour: "numeric", minute: "2-digit" })
 
@@ -19,7 +19,7 @@ function formatTime(time: string) {
 
 export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: string; days: Day[]; loggedIn: boolean }) {
   const router = useRouter()
-  const [selectedDay, setSelectedDay] = useState(0)
+  const [selectedDay, setSelectedDay] = useState(() => Math.max(0, days.findIndex((item) => !item.away)))
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [reason, setReason] = useState("")
@@ -28,6 +28,7 @@ export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: stri
   const day = days[selectedDay]
 
   function selectDay(index: number) {
+    if (days[index].away) return
     setSelectedDay(index)
     setSelectedTime(null)
   }
@@ -110,8 +111,10 @@ export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: stri
               type="button"
               role="radio"
               aria-checked={selectedDay === index}
+              aria-disabled={item.away}
+              disabled={item.away}
               onClick={() => selectDay(index)}
-              className={`min-h-16 rounded-xl border px-2 text-center text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] ${selectedDay === index ? "border-[#0F766E] bg-[#0F766E] text-white shadow-sm" : "border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50"}`}
+              className={`min-h-16 rounded-xl border px-2 text-center text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 ${selectedDay === index && !item.away ? "border-[#0F766E] bg-[#0F766E] text-white shadow-sm" : "border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50"}`}
             >
               <span className="block text-[11px] font-medium uppercase tracking-wide opacity-80">{item.day}</span>
               <span className="mt-1 block text-sm">{item.label}</span>
@@ -124,7 +127,7 @@ export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: stri
             <CalendarDays className="size-4 text-[#0F766E]" aria-hidden="true" />
             <h3 className="font-semibold text-slate-900">Available times for {day.day}, {day.label}</h3>
           </div>
-          {day.slots.length ? (
+          {day.away ? <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">Doctor is away on this day. Please choose another date.</p> : day.slots.length ? (
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4" role="radiogroup" aria-label="Appointment time">
               {day.slots.map((time) => (
                 <button

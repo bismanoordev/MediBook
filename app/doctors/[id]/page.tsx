@@ -19,9 +19,10 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   const { id } = await params
   const { user, profile } = await getAuthState()
   const supabase = await createClient()
-  const [{ data: doctor }, { data: schedules }] = await Promise.all([
+  const [{ data: doctor }, { data: schedules }, { data: timeOff }] = await Promise.all([
     supabase.from("doctors").select("id, full_name, bio, fee, photo_url, specialties(name)").eq("id", id).eq("is_active", true).eq("approval_status", "approved").maybeSingle(),
     supabase.from("doctor_schedules").select("day_of_week, start_time, end_time, slot_minutes").eq("doctor_id", id),
+    supabase.from("doctor_time_off").select("start_date,end_date").eq("doctor_id", id),
   ])
   if (!doctor) notFound()
 
@@ -36,12 +37,15 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   const days = dates.map((date, index) => {
     const schedule = schedules?.find((item) => item.day_of_week === date.getDay())
     const taken = new Set((booked[index].data ?? []).map((item) => item.start_time))
+    const dateValue = isoDate(date)
+    const away = (timeOff ?? []).some((range) => range.start_date <= dateValue && range.end_date >= dateValue)
 
     return {
-      date: isoDate(date),
+      date: dateValue,
       day: index === 0 ? "Today" : dayName.format(date),
       label: dateName.format(date),
-      slots: schedule
+      away,
+      slots: !away && schedule
         ? generateSlots(schedule.start_time, schedule.end_time, schedule.slot_minutes).filter((time) => !taken.has(time) && (index !== 0 || Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5)) > nowMinutes))
         : [],
     }

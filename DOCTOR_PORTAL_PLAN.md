@@ -182,7 +182,7 @@ Goal: `/doctor/appointments`.
 - Also change the admin appointments buttons to use `rpc('set_appointment_status')` so both roles follow the same rules.
 Test: patient books → doctor sees it live; doctor confirms → patient sees "Confirmed" and gets a notification; confirming twice (doctor then admin) shows the friendly "already updated" message.
 
-### Step 9 — Availability (hours and days off)
+### [x] Step 9 — Availability (hours and days off)
 Goal: `/doctor/availability`.
 - Weekly schedule form: for each weekday on/off, start, end, slot length (15/20/30/60). Reuse the logic of `components/admin/schedule-form.tsx`, but save as the signed-in doctor.
 - Days off: pick first and last day (max 90 days), list with Remove. Show already booked days separately. Friendly message if the database refuses because appointments exist.
@@ -228,7 +228,7 @@ Tick each step when it is finished and committed.
 - [x] Step 6 — Admin: review applications
 - [x] Step 7 — Doctor dashboard
 - [x] Step 8 — Doctor appointments
-- [ ] Step 9 — Availability
+- [x] Step 9 — Availability
 - [ ] Step 10 — Doctor profile changes
 - [ ] Step 11 — Doctor documents page
 - [ ] Step 12 — Notifications for doctors

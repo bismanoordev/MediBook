@@ -60,6 +60,9 @@ export async function POST(request: Request) {
     if (message.includes("past")) {
       return NextResponse.json({ error: "That time has already passed. Please select another slot." }, { status: 400 })
     }
+    if (message.includes("not available on this day")) {
+      return NextResponse.json({ error: "The doctor is away on this day. Please choose another date." }, { status: 409 })
+    }
     if (message.includes("valid slot") || message.includes("does not work") || message.includes("not available")) {
       return NextResponse.json({ error: "That slot is no longer available. Please select another time." }, { status: 409 })
     }
