@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { CheckCircle2, Loader2, Stethoscope, UserPlus, UsersRound } from "lucide-react"
+import { Check, CheckCircle2, Loader2, Stethoscope, UserPlus, UsersRound } from "lucide-react"
 import { toast } from "sonner"
 import * as yup from "yup"
 
@@ -162,7 +162,7 @@ export function SignupForm() {
             <div className="space-y-2"><PasswordInput id="signup-confirmPassword" name="confirmPassword" label="Confirm password" autoComplete="new-password" placeholder="Repeat password" minLength={8} aria-invalid={Boolean(fieldErrors.confirmPassword)} aria-describedby={fieldErrors.confirmPassword ? "signup-confirm-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, confirmPassword: "" }))} required />{fieldErrors.confirmPassword ? <p id="signup-confirm-error" className="text-sm text-red-600">{fieldErrors.confirmPassword}</p> : null}</div>
           </div>
 
-          {isDoctor ? <div className="space-y-2"><label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-600"><input name="acceptedTerms" type="checkbox" className="mt-0.5 size-4 rounded border-slate-300 text-[#0F766E] focus:ring-[#0F766E]" aria-invalid={Boolean(fieldErrors.acceptedTerms)} aria-describedby={fieldErrors.acceptedTerms ? "signup-terms-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, acceptedTerms: "" }))} /><span>I agree to MediBook&apos;s terms and privacy policy.</span></label>{fieldErrors.acceptedTerms ? <p id="signup-terms-error" className="text-sm text-red-600">{fieldErrors.acceptedTerms}</p> : null}</div> : null}
+          {isDoctor ? <div className="space-y-2"><label className="flex cursor-pointer items-start gap-3 text-sm text-slate-600"><input name="acceptedTerms" type="checkbox" className="peer sr-only" aria-invalid={Boolean(fieldErrors.acceptedTerms)} aria-describedby={fieldErrors.acceptedTerms ? "signup-terms-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, acceptedTerms: "" }))} /><span aria-hidden="true" className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border-[1.5px] border-input bg-white transition-colors peer-checked:border-[#0F766E] peer-checked:bg-[#0F766E] peer-hover:border-[#0F766E] peer-focus-visible:ring-2 peer-focus-visible:ring-[#0F766E]/30 peer-focus-visible:ring-offset-2 peer-aria-invalid:border-red-500 peer-disabled:opacity-50"><Check className="size-3.5 stroke-[3] text-white opacity-0 transition-opacity peer-checked:opacity-100" /></span><span className="min-w-0 leading-5">I agree to MediBook&apos;s <span className="font-semibold text-[#0F766E] hover:underline">Terms</span> and <span className="font-semibold text-[#0F766E] hover:underline">Privacy Policy</span>.</span></label>{fieldErrors.acceptedTerms ? <p id="signup-terms-error" className="text-sm text-red-600">{fieldErrors.acceptedTerms}</p> : null}</div> : null}
 
           <Button type="submit" size="lg" className="h-11 w-full" disabled={isSubmitting || (isDoctor && (isLoadingSpecialties || specialtiesError || !specialties.length))}>{isSubmitting ? <Loader2 className="animate-spin" aria-hidden="true" /> : <UserPlus aria-hidden="true" />}{isSubmitting ? "Creating account..." : isDoctor ? "Create doctor account" : "Create patient account"}</Button>
         </form>
