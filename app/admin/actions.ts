@@ -12,6 +12,7 @@ const doctorSchema = yup.object({ fullName: yup.string().trim().matches(/^[\p{L}
 const scheduleSchema = yup.object({ start: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid start time.").required("Choose a start time."), end: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid end time.").required("Choose an end time."), minutes: yup.number().oneOf([15, 20, 30, 60], "Choose 15, 20, 30, or 60 minutes.").required() })
 const bucketPath = "/storage/v1/object/public/doctor-photos/"
 type DoctorMutationResult = { error?: string; success?: true }
+type ReviewResult = { error?: string; success?: true }
 
 function validDoctorPhotoUrl(value: string) {
   if (!value) return true
@@ -96,4 +97,56 @@ export async function updateAppointmentStatus(formData: FormData) {
   revalidatePath("/admin")
   revalidatePath("/admin/appointments")
   revalidatePath("/appointments")
+}
+
+export async function reviewDoctorApplication(input: { doctorId: string; decision: "approved" | "rejected" | "changes_requested"; note?: string }): Promise<ReviewResult> {
+  await requireAdmin()
+  const doctorId = input.doctorId.trim()
+  const note = input.note?.trim() ?? ""
+  if (!doctorId || !["approved", "rejected", "changes_requested"].includes(input.decision)) {
+    return { error: "Please choose a valid review action." }
+  }
+  if (["rejected", "changes_requested"].includes(input.decision) && !note) {
+    return { error: input.decision === "rejected" ? "Please provide a reason for rejecting this application." : "Please explain the changes the doctor needs to make." }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("doctors")
+    .update({
+      approval_status: input.decision,
+      rejection_reason: input.decision === "approved" ? null : note,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("id", doctorId)
+
+  if (error) return { error: "We couldn't save this application review. Please try again." }
+  revalidatePath("/admin")
+  revalidatePath("/admin/doctors")
+  revalidatePath("/admin/doctors/applications")
+  revalidatePath("/doctors")
+  revalidatePath(`/doctors/${doctorId}`)
+  return { success: true }
+}
+
+export async function reviewDoctorDocument(input: { documentId: string; status: "verified" | "needs_action"; note?: string }): Promise<ReviewResult> {
+  await requireAdmin()
+  const documentId = input.documentId.trim()
+  const note = input.note?.trim() ?? ""
+  if (!documentId || !["verified", "needs_action"].includes(input.status)) {
+    return { error: "Please choose a valid document review action." }
+  }
+  if (input.status === "needs_action" && !note) {
+    return { error: "Please explain what needs to be changed in this document." }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("doctor_documents")
+    .update({ status: input.status, reviewer_note: input.status === "verified" ? null : note, reviewed_at: new Date().toISOString() })
+    .eq("id", documentId)
+
+  if (error) return { error: "We couldn't save this document review. Please try again." }
+  revalidatePath("/admin/doctors/applications")
+  return { success: true }
 }

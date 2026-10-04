@@ -30,11 +30,12 @@ export default async function AdminPage() {
     date.setDate(todayDate.getDate() - 6 + index)
     return date
   })
-  const [todayResult, pendingResult, patientsResult, doctorsResult, appointmentsResult, chartResult] = await Promise.all([
+  const [todayResult, pendingResult, patientsResult, doctorsResult, applicationsResult, appointmentsResult, chartResult] = await Promise.all([
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("appointment_date", today),
     supabase.from("appointments").select("id", { count: "exact", head: true }).eq("status", "pending"),
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "patient"),
     supabase.from("doctors").select("id", { count: "exact", head: true }).eq("is_active", true).eq("approval_status", "approved"),
+    supabase.from("doctors").select("id", { count: "exact", head: true }).eq("approval_status", "pending"),
     supabase.from("appointments").select("id, start_time, status, doctors(full_name), profiles!appointments_patient_id_fkey(full_name)").eq("appointment_date", today).order("start_time"),
     supabase.from("appointments").select("appointment_date").gte("appointment_date", isoDate(dates[0])).lte("appointment_date", today),
   ])
@@ -43,10 +44,11 @@ export default async function AdminPage() {
     { label: "Pending appointments", value: pendingResult.count ?? 0, icon: Clock3, href: "/admin/appointments?status=pending", hint: "Need review" },
     { label: "Total patients", value: patientsResult.count ?? 0, icon: Users, href: "/admin/patients", hint: "Registered patients" },
     { label: "Active doctors", value: doctorsResult.count ?? 0, icon: Stethoscope, href: "/admin/doctors", hint: "Visible in directory" },
+    { label: "Pending applications", value: applicationsResult.count ?? 0, icon: Stethoscope, href: "/admin/doctors/applications", hint: "Need credential review" },
   ]
   const chart = dates.map((date) => ({ date: isoDate(date), label: dayFormatter.format(date), count: (chartResult.data ?? []).filter((item) => item.appointment_date === isoDate(date)).length }))
   const max = Math.max(1, ...chart.map((item) => item.count))
-  const hasError = [todayResult, pendingResult, patientsResult, doctorsResult, appointmentsResult, chartResult].some((item) => item.error)
+  const hasError = [todayResult, pendingResult, patientsResult, doctorsResult, applicationsResult, appointmentsResult, chartResult].some((item) => item.error)
 
   return (
     <main className="mx-auto max-w-7xl px-5 py-7 sm:px-8 sm:py-9">
@@ -63,7 +65,7 @@ export default async function AdminPage() {
 
       {hasError ? <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Some dashboard information couldn&apos;t be loaded. Please refresh and try again.</div> : null}
 
-      <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Clinic statistics">
+      <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="Clinic statistics">
         {cards.map(({ label, value, icon: Icon, href, hint }) => (
           <Link key={label} href={href} className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">
             <div className="flex items-start justify-between gap-3"><span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><Icon className="size-5" /></span><ArrowUpRight className="size-4 text-slate-300 transition group-hover:text-[#0F766E]" aria-hidden="true" /></div>

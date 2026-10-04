@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, CalendarDays, HeartPulse, Stethoscope, Users } from "lucide-react"
+import { BarChart3, CalendarDays, ClipboardCheck, HeartPulse, Stethoscope, Users } from "lucide-react"
 
 import { AccountMenu } from "@/components/auth/account-menu"
 import { MobileNavigationDrawer } from "@/components/mobile-navigation-drawer"
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 const navigation = [
   { href: "/admin", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/doctors", label: "Doctors", icon: Stethoscope },
+  { href: "/admin/doctors/applications", label: "Applications", icon: ClipboardCheck },
   { href: "/admin/appointments", label: "Appointments", icon: CalendarDays },
   { href: "/admin/patients", label: "Patients", icon: Users },
 ]

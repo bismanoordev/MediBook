@@ -158,7 +158,7 @@ Accessible only while status is `draft`, `rejected`, or `changes_requested`; oth
 Rules: validate every step with clear inline messages; save with `update` on the doctor's own row and set `onboarding_step`; "Back" and "Continue" buttons; works on phone; friendly errors only. After a successful submit, show a success message and go to `/doctor`.
 Test: documents land in the private bucket; submitting with missing fields shows a friendly message; after submit the status is `pending`; admins get a notification; a draft doctor does not appear in `/doctors`.
 
-### Step 6 — Admin: review applications
+### [x] Step 6 — Admin: review applications
 Goal: `/admin/doctors/applications` (add "Applications" to the admin navigation and a link from `/admin/doctors`).
 - List with tabs: Pending, Changes requested, Rejected, Approved (counts in tabs). Search by name.
 - Detail view for one application: all fields, photo, qualifications, and each document with a **signed URL** preview or download plus a status control (Verify, Needs action with a note).
@@ -225,7 +225,7 @@ Tick each step when it is finished and committed.
 - [x] Step 3 — Signup: patient or doctor
 - [x] Step 4 — Doctor shell and route protection
 - [x] Step 5 — Doctor onboarding
-- [ ] Step 6 — Admin: review applications
+- [x] Step 6 — Admin: review applications
 - [ ] Step 7 — Doctor dashboard
 - [ ] Step 8 — Doctor appointments
 - [ ] Step 9 — Availability
