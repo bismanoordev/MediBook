@@ -110,7 +110,7 @@ Friendly messages for database errors (never show raw errors):
 ### Step 0 — PRD and database scripts
 - [x] `PRD.md` and `design/README.md` updated with the doctor portal.
 - [x] SQL scripts 07, 08, 09 written and saved in `supabase/`.
-- [ ] **Owner:** ran scripts 07, 08, 09 in order in the Supabase SQL Editor with no errors.
+- [x] **Owner:** ran scripts 07, 08, 09 in order in the Supabase SQL Editor with no errors.
 
 Do not start Step 1 until the owner confirms the scripts ran.
 
@@ -219,7 +219,7 @@ Test: patient books → doctor bell +1 without refresh; admin approves → docto
 
 Tick each step when it is finished and committed.
 
-- [ ] Step 0 — owner ran SQL scripts 07, 08, 09
+- [x] Step 0 — owner ran SQL scripts 07, 08, 09
 - [ ] Step 1 — Types and auth plumbing
 - [ ] Step 2 — Patient side shows only approved doctors
 - [ ] Step 3 — Signup: patient or doctor
