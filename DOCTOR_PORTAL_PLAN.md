@@ -203,7 +203,7 @@ Goal: `/doctor/documents`.
 - Same upload rules as onboarding (jpg/png/pdf, max 5 MB). Open files only with signed URLs.
 Test: a doctor can never open another doctor's file; a verified document cannot be replaced.
 
-### Step 12 — Notifications for doctors
+### [x] Step 12 — Notifications for doctors
 - `/doctor/notifications` list with "Mark all as read", using the existing notification components and realtime.
 - Notification bell in the doctor top bar with a toast on new items.
 Test: patient books → doctor bell +1 without refresh; admin approves → doctor bell +1; a doctor never sees someone else's notifications.
@@ -231,5 +231,5 @@ Tick each step when it is finished and committed.
 - [x] Step 9 — Availability
 - [x] Step 10 — Doctor profile changes
 - [x] Step 11 — Doctor documents page
-- [ ] Step 12 — Notifications for doctors
+- [x] Step 12 — Notifications for doctors
 - [ ] Step 13 — Final checks
