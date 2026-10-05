@@ -29,7 +29,7 @@ export async function createDoctor(formData: FormData): Promise<DoctorMutationRe
   const fee = Number(formData.get("fee"))
   const specialtyId = Number(formData.get("specialty_id"))
   const photoUrl = String(formData.get("photo_url") ?? "").trim()
-  if (!(await doctorSchema.isValid({ fullName: name, fee })) || !validDoctorPhotoUrl(photoUrl)) return { error: "Please check the doctor details and photo." }
+  if (!(await doctorSchema.isValid({ fullName: name, fee })) || !photoUrl || !validDoctorPhotoUrl(photoUrl)) return { error: "Please check the doctor details and add a valid photo." }
   const supabase = await createClient()
   const { error } = await supabase.from("doctors").insert({ full_name: name, fee, specialty_id: Number.isInteger(specialtyId) && specialtyId > 0 ? specialtyId : null, bio: String(formData.get("bio") ?? "").trim() || null, photo_url: photoUrl || null })
   if (error) return { error: "We couldn’t add this doctor. Please try again." }
@@ -64,6 +64,31 @@ export async function toggleDoctor(formData: FormData) {
   revalidatePath("/admin/doctors")
   revalidatePath("/doctors")
   revalidatePath(`/doctors/${id}`)
+}
+
+export async function deleteDoctor(doctorId: string): Promise<DoctorMutationResult> {
+  await requireAdmin()
+  const id = doctorId.trim()
+  if (!id) return { error: "We couldn't identify this doctor. Please refresh and try again." }
+
+  const supabase = await createClient()
+  const { count, error: appointmentsError } = await supabase
+    .from("appointments")
+    .select("id", { count: "exact", head: true })
+    .eq("doctor_id", id)
+
+  if (appointmentsError) return { error: "We couldn't check this doctor's appointments. Please try again." }
+  if (count) return { error: "This doctor has appointments and cannot be removed. Resolve those appointments first." }
+
+  const { error } = await supabase.from("doctors").delete().eq("id", id)
+  if (error) return { error: "We couldn't remove this doctor. Please try again." }
+
+  revalidatePath("/admin")
+  revalidatePath("/admin/doctors")
+  revalidatePath("/admin/doctors/applications")
+  revalidatePath("/doctors")
+  revalidatePath(`/doctors/${id}`)
+  return { success: true }
 }
 
 export async function saveSchedule(formData: FormData) {
