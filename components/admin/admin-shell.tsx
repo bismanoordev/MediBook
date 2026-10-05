@@ -18,7 +18,11 @@ const navigation = [
 ]
 
 function isActive(pathname: string, href: string) {
-  return href === "/admin" ? pathname === href : pathname.startsWith(href)
+  if (href === "/admin") return pathname === href
+  if (href === "/admin/doctors") {
+    return pathname === href || (pathname.startsWith(`${href}/`) && !pathname.startsWith("/admin/doctors/applications"))
+  }
+  return pathname.startsWith(href)
 }
 
 function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
