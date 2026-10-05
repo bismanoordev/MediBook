@@ -197,7 +197,7 @@ Goal: `/doctor/profile`.
 - Admin: in `/admin/doctors/applications` add a "Profile changes" tab showing old vs new values with Approve and Reject (note) via `rpc('review_profile_change')`.
 Test: the patient page keeps the old data until the admin approves; after approval it updates and the doctor is notified.
 
-### Step 11 — Doctor documents page
+### [x] Step 11 — Doctor documents page
 Goal: `/doctor/documents`.
 - Summary cards (Verified, Pending, Needs action, Missing) and a table with one row per document type: name, file, uploaded date, status badge, reviewer note, and Upload/Replace (hidden for verified files).
 - Same upload rules as onboarding (jpg/png/pdf, max 5 MB). Open files only with signed URLs.
@@ -230,6 +230,6 @@ Tick each step when it is finished and committed.
 - [x] Step 8 — Doctor appointments
 - [x] Step 9 — Availability
 - [x] Step 10 — Doctor profile changes
-- [ ] Step 11 — Doctor documents page
+- [x] Step 11 — Doctor documents page
 - [ ] Step 12 — Notifications for doctors
 - [ ] Step 13 — Final checks
