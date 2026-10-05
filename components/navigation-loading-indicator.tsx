@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 
 const DISPLAY_DELAY_MS = 120
 
@@ -11,6 +11,8 @@ const DISPLAY_DELAY_MS = 120
  */
 export function NavigationLoadingIndicator() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const navigationKey = `${pathname}?${searchParams.toString()}`
   const [isLoading, setIsLoading] = useState(false)
   const delayTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -22,7 +24,7 @@ export function NavigationLoadingIndicator() {
 
     const finishTimeout = window.setTimeout(() => setIsLoading(false), 0)
     return () => window.clearTimeout(finishTimeout)
-  }, [pathname])
+  }, [navigationKey])
 
   useEffect(() => {
     const stopLoading = () => {
