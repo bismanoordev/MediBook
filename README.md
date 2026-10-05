@@ -9,6 +9,9 @@ MediBook is a responsive healthcare appointment platform for finding doctors, vi
 - Seven-day availability, protected booking, duplicate-slot handling, and patient appointment cancellation more than two hours before a visit.
 - Patient and admin notifications with Supabase Realtime.
 - Admin dashboard, doctor directory, photo upload, schedules, appointments, and patient history.
+- Doctor signup and a five-step onboarding flow for professional details, private credentials, qualifications, practice details, and fee review.
+- Doctor workspace with an approval status banner, dashboard, appointment management, weekly availability and days off, profile-change review, private document management, and realtime notifications.
+- Doctor application, profile-change, and document review tools for clinic administrators.
 
 ## Stack
 
@@ -54,7 +57,7 @@ Add deployment screenshots here when available:
 
 The approved SQL scripts are in [`supabase/`](./supabase). They define the tables, RLS policies, booking validation, triggers, Realtime publication, and `doctor-photos` bucket.
 
-Scripts `01` through `05` are intended to be run once for a new project. Do not rerun them against an existing production database. Create an admin by signing up normally, then use `06_make_admin.sql` in the Supabase SQL Editor.
+Scripts `01` through `05` are intended to be run once for a new project. Do not rerun them against an existing production database. Create an admin by signing up normally, then use `06_make_admin.sql` in the Supabase SQL Editor. Scripts `07` through `09` add the doctor portal schema, functions, policies, and private document storage; they are also one-time scripts and must not be changed or rerun against an existing deployment.
 
 ## Quality checks
 
@@ -68,9 +71,11 @@ npm run build
 - Never commit `.env.local`, service-role secrets, or admin invitation codes.
 - The browser uses only the public Supabase publishable/anon key.
 - RLS limits patients to their own appointments and notifications; admin actions verify the role on the server.
-- Doctor photo uploads use the existing `doctor-photos` bucket. Storage policies limit uploads to authenticated admins.
+- Doctor photo uploads use the existing `doctor-photos` bucket. Storage policies limit uploads to authenticated admins and doctors within their own folders.
+- Doctor documents use a private storage bucket. Doctors and administrators can access them only through short-lived signed URLs, and RLS limits doctors to their own records, schedules, profile changes, appointments, and notifications.
+- Doctor and administrator appointment status changes use the same protected database function, so the first confirmation remains final.
 - Configure only trusted local and production redirect URLs in Supabase Auth before deployment.
 
 ## Deployment
 
-Deploy to Vercel and configure the same public environment variable names from the setup section. Add the deployed URL to Supabase Auth redirect URLs, then test signup, login, booking, cancellation, photo upload, and realtime notifications with separate patient and admin accounts.
+Deploy to Vercel and configure the same public environment variable names from the setup section. Add the deployed URL to Supabase Auth redirect URLs, then test signup, login, booking, cancellation, doctor onboarding and approval, availability, private document access, profile-change review, and realtime notifications with separate patient, doctor, and admin accounts.

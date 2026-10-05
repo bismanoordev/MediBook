@@ -208,7 +208,7 @@ Test: a doctor can never open another doctor's file; a verified document cannot 
 - Notification bell in the doctor top bar with a toast on new items.
 Test: patient books → doctor bell +1 without refresh; admin approves → doctor bell +1; a doctor never sees someone else's notifications.
 
-### Step 13 — Final checks
+### [x] Step 13 — Final checks
 - Security review: RLS behaviour for doctor, patient, admin, and guest; no secret keys in client code; every doctor and admin action checked on the server; private documents truly private; no admin option in any browser form.
 - Test all roles on phone and laptop widths: signup, onboarding, approval, booking, confirm by doctor, confirm by admin, cancel, days off, profile change review, notifications.
 - No console errors. `npm run lint` and `npm run build` pass.
@@ -232,4 +232,4 @@ Tick each step when it is finished and committed.
 - [x] Step 10 — Doctor profile changes
 - [x] Step 11 — Doctor documents page
 - [x] Step 12 — Notifications for doctors
-- [ ] Step 13 — Final checks
+- [x] Step 13 — Final checks

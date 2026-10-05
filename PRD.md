@@ -210,3 +210,12 @@ MediBook is complete when all Version 1 features work on the live website, on bo
 - [ ] Manually test signup, login, logout, and password reset in the browser.
 - [ ] Provision the chosen admin account in Supabase, then log out and back in.
 - [ ] Confirm a patient cannot open `/admin` and the admin account can.
+
+## Phase 5 Checklist
+
+- [x] Doctor signup, five-step onboarding, and approval workflow are implemented.
+- [x] Doctor dashboard, appointment management, availability, profile-change review, documents, and notifications are implemented.
+- [x] Private doctor-document access, role protection, RLS-backed doctor actions, and server-side admin actions have been reviewed.
+- [x] Doctor portal routes keep the MediBook teal visual system and support mobile navigation.
+- [x] `npm run lint` and `npm run build` pass after the doctor portal work.
+- [ ] Owner: run the full patient, doctor, and admin browser journey with configured test accounts before production release.
