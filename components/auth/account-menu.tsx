@@ -12,6 +12,7 @@ type AccountMenuProps = {
   name?: string | null
   email?: string | null
   role?: "patient" | "doctor" | "admin"
+  avatarUrl?: string | null
 }
 
 function getInitials(name?: string | null) {
@@ -26,15 +27,20 @@ function getInitials(name?: string | null) {
   return initials?.toUpperCase() || "M"
 }
 
-export function AccountMenu({ userId, name, email, role = "patient" }: AccountMenuProps) {
+export function AccountMenu({ userId, name, email, role = "patient", avatarUrl: initialAvatarUrl }: AccountMenuProps) {
   const [open, setOpen] = useState(false)
   const [profileName, setProfileName] = useState(name?.trim() ?? "")
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl ?? null)
   const menuId = useId()
   const containerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const displayName = profileName || "My account"
   const roleLabel = role === "admin" ? "Admin account" : role === "doctor" ? "Doctor account" : "Patient account"
+
+  useEffect(() => {
+    setProfileName(name?.trim() ?? "")
+    setAvatarUrl(initialAvatarUrl ?? null)
+  }, [initialAvatarUrl, name])
 
   useEffect(() => {
     let active = true
@@ -55,7 +61,7 @@ export function AccountMenu({ userId, name, email, role = "patient" }: AccountMe
 
     void loadProfileName()
     return () => { active = false }
-  }, [name, userId])
+  }, [initialAvatarUrl, name, userId])
 
   useEffect(() => {
     if (!open) return
