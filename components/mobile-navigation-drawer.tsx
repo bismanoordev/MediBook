@@ -17,13 +17,14 @@ type MobileNavigationDrawerProps = {
   userId?: string
   name?: string | null
   email?: string | null
+  avatarUrl?: string | null
   role?: "patient" | "doctor" | "admin"
   notificationsHref?: string
   desktopBreakpoint?: "sm" | "lg"
   headerOffset?: "16" | "20"
 }
 
-export function MobileNavigationDrawer({ links, userId, name, email, role, notificationsHref, desktopBreakpoint = "sm", headerOffset = "16" }: MobileNavigationDrawerProps) {
+export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, role, notificationsHref, desktopBreakpoint = "sm", headerOffset = "16" }: MobileNavigationDrawerProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const drawerId = useId()
@@ -139,7 +140,7 @@ export function MobileNavigationDrawer({ links, userId, name, email, role, notif
             <div className="mt-auto border-t border-slate-100 bg-[#F8FAFC] px-5 py-4">
               {authenticated && userId && role && notificationsHref ? (
                 <div className="flex items-center justify-between gap-3">
-                  <AccountMenu userId={userId} name={name} email={email} role={role} />
+                  <AccountMenu userId={userId} name={name} email={email} role={role} avatarUrl={avatarUrl} />
                   <NotificationBell userId={userId} href={notificationsHref} />
                 </div>
               ) : (
