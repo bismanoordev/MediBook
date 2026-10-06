@@ -65,9 +65,9 @@ export default async function AdminPage() {
 
       {hasError ? <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Some dashboard information couldn&apos;t be loaded. Please refresh and try again.</div> : null}
 
-      <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="Clinic statistics">
+      <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5" aria-label="Clinic statistics">
         {cards.map(({ label, value, icon: Icon, href, hint }) => (
-          <Link key={label} href={href} className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">
+          <Link key={label} href={href} className="group min-h-44 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">
             <div className="flex items-start justify-between gap-3"><span className="grid size-10 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><Icon className="size-5" /></span><ArrowUpRight className="size-4 text-slate-300 transition group-hover:text-[#0F766E]" aria-hidden="true" /></div>
             <p className="mt-5 text-sm font-medium text-slate-500">{label}</p>
             <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
@@ -93,7 +93,12 @@ export default async function AdminPage() {
               })}
             </div>
           ) : (
-            <div className="mt-5 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-7 text-center text-sm text-slate-500">No appointments are scheduled for today.</div>
+            <div className="mt-5 rounded-2xl border border-dashed border-teal-200 bg-teal-50/40 px-6 py-9 text-center">
+              <span className="mx-auto grid size-11 place-items-center rounded-xl bg-white text-[#0F766E] shadow-sm"><CalendarDays className="size-5" aria-hidden="true" /></span>
+              <h3 className="mt-4 font-semibold text-slate-900">No appointments today</h3>
+              <p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-slate-600">Your schedule is clear for now. New bookings will appear here as soon as patients make them.</p>
+              <Link href="/admin/appointments" className="mt-4 inline-flex rounded-lg px-2 py-1 text-sm font-semibold text-[#0F766E] transition hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Open all appointments</Link>
+            </div>
           )}
         </div>
 

@@ -29,7 +29,7 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
   const pathname = usePathname()
 
   return (
-    <nav aria-label="Admin navigation" className={cn("grid gap-1", mobile && "p-2")}>
+    <nav aria-label="Admin navigation" className={cn("grid gap-1.5", mobile && "p-2")}>
       {navigation.map(({ href, label, icon: Icon }) => {
         const active = isActive(pathname, href)
 
@@ -38,8 +38,8 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2",
-              active ? "bg-[#0F766E] text-white shadow-sm" : "text-slate-600 hover:bg-teal-50 hover:text-[#0F766E]",
+              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2",
+              active ? "bg-teal-50 text-[#0F766E] ring-1 ring-teal-200" : "text-slate-600 hover:bg-teal-50 hover:text-[#0F766E]",
             )}
           >
             <Icon className="size-4" aria-hidden="true" />
@@ -54,13 +54,13 @@ function NavigationLinks({ mobile = false }: { mobile?: boolean }) {
 export function AdminShell({ children, name, email, userId }: { children: React.ReactNode; name?: string | null; email?: string | null; userId: string }) {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 bg-white px-4 py-5 lg:flex lg:flex-col">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-slate-200 bg-white px-5 py-6 lg:flex lg:flex-col">
         <Link href="/" className="flex items-center gap-3 rounded-xl px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">
           <span className="grid size-9 place-items-center rounded-xl bg-[#0F766E] text-white"><HeartPulse className="size-5" aria-hidden="true" /></span>
           <span><span className="block font-bold tracking-tight text-slate-900">MediBook</span><span className="block text-[11px] font-medium text-slate-500">Clinic administration</span></span>
         </Link>
-        <p className="mt-9 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Workspace</p>
-        <div className="mt-3"><NavigationLinks /></div>
+        <p className="mt-10 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">Workspace</p>
+        <div className="mt-4"><NavigationLinks /></div>
         <div className="mt-auto rounded-2xl bg-teal-50 p-4">
           <p className="text-xs font-semibold text-[#0F766E]">Secure admin area</p>
           <p className="mt-1 text-xs leading-5 text-slate-600">Manage clinic activity and appointments with care.</p>

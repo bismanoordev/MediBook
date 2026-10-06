@@ -125,7 +125,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
               const hasStatusUpdate = appointment.updated_at !== appointment.created_at
 
               return (
-                <article key={appointment.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex sm:items-center sm:justify-between sm:gap-5">
+                <article key={appointment.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-semibold">{patient?.full_name ?? "Patient"}</h2>
