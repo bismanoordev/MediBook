@@ -58,13 +58,13 @@ export function AccountMenu({ userId, name, email, role = "patient", avatarUrl: 
 
       if (active && data) {
         setProfileName(data.full_name?.trim() ?? "")
-        if (data.avatar_url) setAvatarUrl(data.avatar_url)
+        if (initialAvatarUrl === undefined) setAvatarUrl(data.avatar_url ?? null)
       }
     }
 
     void loadProfileName()
     return () => { active = false }
-  }, [userId])
+  }, [userId, initialAvatarUrl])
 
   useEffect(() => {
     if (!open) return
