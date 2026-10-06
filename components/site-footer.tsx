@@ -3,10 +3,10 @@
 import Link from "next/link"
 import { ChevronDown, HeartPulse } from "lucide-react"
 import { useId, useState } from "react"
+import type { UserRole } from "@/lib/auth"
+import { getFooterLinks } from "@/lib/navigation"
 
-type SiteFooterProps = {
-  authenticated?: boolean
-}
+type SiteFooterProps = { role?: UserRole | null }
 
 type FooterLink = {
   href: string
@@ -17,10 +17,6 @@ const exploreLinks: FooterLink[] = [
   { href: "/doctors", label: "Find a doctor" },
   { href: "/appointments", label: "Appointments" },
   { href: "/#services", label: "Services" },
-]
-
-const mediBookLinks: FooterLink[] = [
-  { href: "/#about", label: "How it works" },
 ]
 
 const linkClassName =
@@ -74,11 +70,9 @@ function MobileFooterSection({ title, links }: { title: string; links: FooterLin
   )
 }
 
-export function SiteFooter({ authenticated = false }: SiteFooterProps) {
+export function SiteFooter({ role }: SiteFooterProps) {
   const currentYear = new Date().getFullYear()
-  const accountLinks = authenticated
-    ? mediBookLinks
-    : [...mediBookLinks, { href: "/login", label: "Log in" }, { href: "/signup", label: "Create account" }]
+  const accountLinks = getFooterLinks(role)
 
   return (
     <footer className="bg-[#073B3A] text-slate-300">

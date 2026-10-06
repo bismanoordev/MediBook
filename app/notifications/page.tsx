@@ -1,4 +1,5 @@
 import { AppHeader } from "@/components/app-header"
+import { redirect } from "next/navigation"
 import { MarkNotificationsRead } from "@/components/patient/mark-notifications-read"
 import { NotificationsList, type NotificationItem } from "@/components/patient/notifications-list"
 import { requireUser } from "@/lib/auth"
@@ -6,6 +7,8 @@ import { createClient } from "@/lib/supabase/server"
 
 export default async function NotificationsPage() {
   const { user, profile } = await requireUser("/notifications")
+  if (profile?.role === "admin") redirect("/admin/notifications")
+  if (profile?.role === "doctor") redirect("/doctor/notifications")
   const supabase = await createClient()
   const { data, error } = await supabase
     .from("notifications")

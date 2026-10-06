@@ -18,6 +18,7 @@ function getInitials(fullName: string) {
 export default async function ProfilePage() {
   const { user, profile } = await requireUser("/profile")
   if (profile?.role === "doctor") redirect("/doctor")
+  if (profile?.role === "admin") redirect("/admin")
   const fullName = profile?.full_name?.trim() ?? ""
   const phone = profile?.phone?.trim() ?? ""
   const needsDetails = !fullName || !phone

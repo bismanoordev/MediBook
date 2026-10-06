@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Bell, HeartPulse, Menu, X } from "lucide-react"
 import { useEffect, useId, useRef, useState } from "react"
 
@@ -23,6 +24,7 @@ type MobileNavigationDrawerProps = {
 }
 
 export function MobileNavigationDrawer({ links, userId, name, email, role, notificationsHref, desktopBreakpoint = "sm", headerOffset = "16" }: MobileNavigationDrawerProps) {
+  const pathname = usePathname()
   const [open, setOpen] = useState(false)
   const drawerId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -116,7 +118,8 @@ export function MobileNavigationDrawer({ links, userId, name, email, role, notif
                   key={link.href}
                   href={link.href}
                   onClick={() => closeDrawer(false)}
-                  className="flex min-h-12 items-center border-b border-slate-100 py-3 text-base font-medium text-slate-800 transition hover:text-[#0F766E] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#0F766E]"
+                  aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined}
+                  className={`flex min-h-12 items-center border-b border-slate-100 py-3 text-base font-medium transition hover:text-[#0F766E] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#0F766E] ${pathname === link.href || pathname.startsWith(`${link.href}/`) ? "text-[#0F766E]" : "text-slate-800"}`}
                 >
                   {link.label}
                 </Link>
