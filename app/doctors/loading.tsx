@@ -1,5 +1,6 @@
 import { DoctorsDirectoryLoading } from "@/components/page-loading-skeletons"
+import { PatientLoadingShell } from "@/components/patient-loading-shell"
 
 export default function Loading() {
-  return <div className="min-h-screen bg-[#F8FAFC]"><DoctorsDirectoryLoading /></div>
+  return <PatientLoadingShell><DoctorsDirectoryLoading /></PatientLoadingShell>
 }

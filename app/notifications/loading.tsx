@@ -1,5 +1,6 @@
 import { NotificationsLoading } from "@/components/page-loading-skeletons"
+import { PatientLoadingShell } from "@/components/patient-loading-shell"
 
 export default function Loading() {
-  return <NotificationsLoading />
+  return <PatientLoadingShell><NotificationsLoading /></PatientLoadingShell>
 }
