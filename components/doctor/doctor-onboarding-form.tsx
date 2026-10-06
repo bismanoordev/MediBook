@@ -5,6 +5,13 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
   CheckCircle2,
+  Check,
+  CircleAlert,
+  FileBadge2,
+  FileText,
+  BadgeCheck,
+  Clock3,
+  CreditCard,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -15,6 +22,7 @@ import {
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createClient } from "@/lib/supabase/client"
 import type { Tables } from "@/lib/supabase/database.types"
 
@@ -27,13 +35,8 @@ type Document = {
 }
 type Qualification = { degree: string; institution: string; year: string }
 
-const steps = [
-  "Personal information",
-  "Documents",
-  "Qualifications",
-  "Languages and practice",
-  "Fee and review",
-]
+const steps = ["Personal information", "Documents", "Qualifications", "Languages and practice", "Fee and review"]
+const stepDetails = ["Photo and bio", "CNIC and PMDC", "Experience and degrees", "Specialty and clinic", "Final check"]
 const languageOptions = ["English", "Urdu", "Punjabi", "Sindhi", "Pashto", "Balochi"]
 const inputClass =
   "mt-1 h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-teal-100"
@@ -238,51 +241,55 @@ export function DoctorOnboardingForm({
 
   function documentCard(type: DocumentType, label: string, required = false) {
     const document = docs.find((item) => item.doc_type === type)
-    const status = document?.status === "needs_action" ? "Changes requested" : document?.status ?? "Missing"
+    const status = document?.status ?? "missing"
+    const statusConfig = status === "verified" ? { label: "Verified", Icon: BadgeCheck, className: "bg-emerald-50 text-emerald-700 ring-emerald-200" } : status === "pending" ? { label: "Pending", Icon: Clock3, className: "bg-amber-50 text-amber-800 ring-amber-200" } : status === "needs_action" ? { label: "Needs action", Icon: CircleAlert, className: "bg-red-50 text-red-700 ring-red-200" } : { label: "Missing", Icon: CircleAlert, className: "bg-slate-100 text-slate-600 ring-slate-200" }
+    const Icon = type === "cnic" ? CreditCard : type === "pmdc_license" ? FileBadge2 : FileText
+    const StatusIcon = statusConfig.Icon
     return (
-      <div className="rounded-xl border border-slate-200 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold">{label}{required ? " *" : ""}</p>
-            <p className="text-sm text-slate-500">{document?.file_name ?? "Not uploaded"}</p>
-            {document?.reviewer_note ? <p className="mt-1 text-sm text-red-700">{document.reviewer_note}</p> : null}
-          </div>
-          <span className="rounded-full bg-teal-50 px-2 py-1 text-xs font-semibold text-[#0F766E]">{status}</span>
+      <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 gap-3"><span className="grid size-11 shrink-0 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><Icon className="size-5" /></span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><p className="font-semibold text-slate-900">{label}</p><span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${required ? "bg-red-50 text-red-700" : "bg-slate-100 text-slate-600"}`}>{required ? "Required" : "Optional"}</span></div><p className="mt-1 truncate text-sm text-slate-600">{document?.file_name ?? "Not uploaded yet"}</p><p className="mt-1 text-xs text-slate-500">JPG, PNG or PDF, max 5 MB</p></div></div>
+          <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end"><span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${statusConfig.className}`}><StatusIcon className="size-3.5" />{statusConfig.label}</span>
           {document?.status !== "verified" ? (
-            <label className="cursor-pointer text-sm font-semibold text-[#0F766E]">
-              <Upload className="mr-1 inline size-4" />
+            <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-teal-200 bg-white px-3 text-sm font-semibold text-[#0F766E] hover:bg-teal-50 focus-within:ring-2 focus-within:ring-[#0F766E]">
+              <Upload className="size-4" />
               {document ? "Replace" : "Upload"}
               <input className="sr-only" type="file" accept="image/jpeg,image/png,application/pdf" onChange={(event) => void uploadDocument(type, event)} />
             </label>
-          ) : null}
+          ) : null}</div>
         </div>
-      </div>
+        {document?.reviewer_note ? <p className="mt-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-800"><span className="font-semibold">Reviewer note: </span>{document.reviewer_note}</p> : null}
+      </article>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[#F8FAFC] px-5 py-8 sm:px-8 sm:py-12">
-      <div className="mx-auto grid max-w-5xl gap-7 lg:grid-cols-[14rem_1fr]">
-        <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mx-auto grid size-20 place-items-center rounded-full border-8 border-[#CCFBF1] text-xl font-bold text-[#0F766E]">{step}/5</div>
-          <ol className="mt-6 grid gap-2">{steps.map((item, index) => <li key={item} className={`rounded-lg px-3 py-2 text-sm ${step === index + 1 ? "bg-teal-50 font-semibold text-[#0F766E]" : "text-slate-500"}`}>{index + 1}. {item}</li>)}</ol>
+    <main className="relative overflow-hidden bg-[#F8FAFC] px-5 py-7 sm:px-8 sm:py-10">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(204,251,241,0.8),_transparent_38%),radial-gradient(circle_at_bottom_left,_rgba(204,251,241,0.45),_transparent_34%)]" />
+      <div className="mx-auto max-w-6xl"><section className="mb-7 max-w-2xl"><p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Doctor onboarding</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Welcome, Dr. {data.name.trim().split(" ")[0] || "there"}</h1><p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">Complete your profile so patients can book you. It takes about 5 minutes.</p></section>
+      {(doctor.approval_status === "rejected" || doctor.approval_status === "changes_requested") && doctor.rejection_reason ? <div role="status" className={`mb-5 rounded-2xl border p-4 text-sm ${doctor.approval_status === "rejected" ? "border-red-200 bg-red-50 text-red-800" : "border-amber-200 bg-amber-50 text-amber-900"}`}><span className="font-semibold">{doctor.approval_status === "rejected" ? "Your application needs attention. " : "Changes requested. "}</span>{doctor.rejection_reason}</div> : null}
+      <div className="mb-5 rounded-2xl border border-teal-100 bg-white p-4 shadow-sm lg:hidden"><div className="flex items-center justify-between"><p className="font-semibold text-slate-900">Step {step} of 5</p><span className="font-bold text-[#0F766E]">{Math.round(step / 5 * 100)}%</span></div><ol className="mt-4 flex items-center">{steps.map((item, index) => <li key={item} className="flex flex-1 items-center last:flex-none" aria-current={step === index + 1 ? "step" : undefined}><span className={`grid size-7 place-items-center rounded-full text-xs font-bold ${index + 1 < step ? "bg-[#0F766E] text-white" : step === index + 1 ? "border-2 border-[#0F766E] text-[#0F766E]" : "bg-slate-100 text-slate-500"}`}>{index + 1 < step ? <Check className="size-4" /> : index + 1}</span>{index < 4 ? <span className={`mx-1 h-px flex-1 ${index + 1 < step ? "bg-[#0F766E]" : "bg-slate-200"}`} /> : null}</li>)}</ol></div>
+      <div className="grid gap-6 lg:grid-cols-[15.5rem_1fr] lg:items-start">
+        <aside className="sticky top-6 hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:block">
+          <div className="flex items-center gap-3"><div className="relative grid size-16 place-items-center"><svg className="size-16 -rotate-90" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="#CCFBF1" strokeWidth="4" /><circle cx="22" cy="22" r="18" fill="none" stroke="#0F766E" strokeWidth="4" strokeLinecap="round" strokeDasharray="113" strokeDashoffset={113 - 113 * step / 5} /></svg><span className="absolute text-sm font-bold text-[#0F766E]">{Math.round(step / 5 * 100)}%</span></div><p className="text-sm font-semibold text-slate-900">Step {step} of 5</p></div>
+          <ol className="mt-6 grid gap-1">{steps.map((item, index) => <li key={item} aria-current={step === index + 1 ? "step" : undefined} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${step === index + 1 ? "bg-teal-50" : ""}`}><span className={`grid size-7 place-items-center rounded-full text-xs font-bold ${index + 1 < step ? "bg-[#0F766E] text-white" : step === index + 1 ? "border-2 border-[#0F766E] text-[#0F766E]" : "bg-slate-100 text-slate-500"}`}>{index + 1 < step ? <Check className="size-4" /> : index + 1}</span><span><span className="block text-sm font-semibold text-slate-800">{item}</span><span className="text-xs text-slate-500">{stepDetails[index]}</span></span></li>)}</ol>
         </aside>
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+        <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
           <p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Doctor onboarding</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">{steps[step - 1]}</h1>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{steps[step - 1]}</h2>
           <p className="mt-2 text-sm text-slate-600">Your progress is saved when you continue to the next step.</p>
-          {step === 1 ? <div className="mt-5 flex items-center gap-3"><div className="grid size-14 place-items-center overflow-hidden rounded-full bg-teal-100 font-semibold text-[#0F766E]">{data.photo ? <Image src={data.photo} alt="Profile preview" width={56} height={56} unoptimized className="size-full object-cover" /> : data.name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</div><p className="text-sm text-slate-600">Add your professional photo to continue.</p></div> : null}
+          {step === 1 ? <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-dashed border-teal-200 bg-teal-50/60 p-4 sm:flex-row sm:items-center"><div className="grid size-20 place-items-center overflow-hidden rounded-full border-4 border-white bg-teal-100 text-lg font-bold text-[#0F766E] shadow-sm">{data.photo ? <Image src={data.photo} alt="Profile preview" width={80} height={80} unoptimized className="size-full object-cover" /> : data.name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</div><div><p className="font-semibold text-slate-900">Professional photo <span className="text-red-600">*</span></p><p className="mt-1 text-sm text-slate-600">Square image, at least 600 × 600 px. Your face should be clearly visible.</p></div></div> : null}
           {error ? <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-          <div className="mt-7 space-y-4">
+          <div key={step} className="mt-7 space-y-5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-2">
             {step === 1 ? <><label>Full name *<Input className={inputClass} value={data.name} onChange={(event) => setField("name", event.target.value)} /></label><label>Phone *<Input className={inputClass} value={data.phone} onChange={(event) => setField("phone", event.target.value)} /></label><label>City *<Input className={inputClass} value={data.city} onChange={(event) => setField("city", event.target.value)} /></label><label>Short bio *<textarea className="mt-1 min-h-28 w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-[#0F766E]" value={data.bio} onChange={(event) => setField("bio", event.target.value)} /></label><label>Profile photo * <span className="text-xs text-slate-500">Required · square, at least 600 × 600, JPG/PNG/WebP, max 5 MB</span><input className="mt-1 block" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadPhoto(event)} /></label></> : null}
             {step === 2 ? <>{documentCard("cnic", "CNIC", true)}{documentCard("pmdc_license", "PMDC license", true)}{documentCard("degree", "Degree certificate")}</> : null}
             {step === 3 ? <><label>Years of experience *<Input className={inputClass} type="number" min="0" value={data.experience} onChange={(event) => setField("experience", event.target.value)} /></label><label>PMDC number *<Input className={inputClass} value={data.pmdc} onChange={(event) => setField("pmdc", event.target.value)} /></label><button type="button" onClick={() => setQualifications((current) => [...current, { degree: "", institution: "", year: "" }])} className="text-sm font-semibold text-[#0F766E]"><Plus className="mr-1 inline size-4" />Add degree</button>{qualifications.map((qualification, index) => <div key={index} className="grid gap-2 sm:grid-cols-3"><Input placeholder="Degree" value={qualification.degree} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, degree: event.target.value } : item))} /><Input placeholder="Institution" value={qualification.institution} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, institution: event.target.value } : item))} /><div className="flex gap-2"><Input placeholder="Year" value={qualification.year} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, year: event.target.value } : item))} /><button type="button" aria-label="Remove qualification" onClick={() => setQualifications((current) => current.filter((_, itemIndex) => itemIndex !== index))}><Trash2 className="text-red-600" /></button></div></div>)}</> : null}
-            {step === 4 ? <><label>Specialty *<select className={inputClass} value={data.specialty} onChange={(event) => setField("specialty", event.target.value)}><option value="">Choose specialty</option>{specialties.map((specialty) => <option key={specialty.id} value={specialty.id}>{specialty.name}</option>)}</select></label><fieldset><legend className="text-sm font-medium">Languages *</legend><div className="mt-2 flex flex-wrap gap-2">{languageOptions.map((language) => { const selected = data.languages.split(",").map((item) => item.trim()).includes(language); return <button key={language} type="button" aria-pressed={selected} onClick={() => { const current = data.languages.split(",").map((item) => item.trim()).filter(Boolean); setField("languages", selected ? current.filter((item) => item !== language).join(", ") : [...current, language].join(", ")) }} className={`rounded-full px-3 py-1.5 text-sm ${selected ? "bg-[#0F766E] text-white" : "bg-teal-50 text-[#0F766E]"}`}>{language}</button> })}</div></fieldset><label>Clinic or hospital name<Input className={inputClass} value={data.clinic} onChange={(event) => setField("clinic", event.target.value)} /></label></> : null}
+            {step === 4 ? <><label htmlFor="onboarding-specialty" className="block text-sm font-semibold text-slate-700">Specialty <span className="text-red-600">*</span><Select items={specialties.map((specialty) => ({ value: String(specialty.id), label: specialty.name }))} value={data.specialty} onValueChange={(value) => setField("specialty", value ?? "")}><SelectTrigger id="onboarding-specialty" className="mt-2 h-11 w-full rounded-xl border-slate-200 px-3 shadow-sm focus-visible:border-[#0F766E] focus-visible:ring-teal-100"><SelectValue placeholder="Choose specialty" /></SelectTrigger><SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">{specialties.map((specialty) => <SelectItem key={specialty.id} value={String(specialty.id)} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-medium data-[selected]:text-[#0F766E]">{specialty.name}</SelectItem>)}</SelectContent></Select></label><fieldset><legend className="text-sm font-semibold text-slate-700">Languages <span className="text-red-600">*</span></legend><p className="mt-1 text-xs text-slate-500">Choose all languages you can comfortably use with patients.</p><div className="mt-3 flex flex-wrap gap-2">{languageOptions.map((language) => { const selected = data.languages.split(",").map((item) => item.trim()).includes(language); return <button key={language} type="button" aria-pressed={selected} onClick={() => { const current = data.languages.split(",").map((item) => item.trim()).filter(Boolean); setField("languages", selected ? current.filter((item) => item !== language).join(", ") : [...current, language].join(", ")) }} className={`min-h-10 rounded-full border px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] ${selected ? "border-[#0F766E] bg-[#0F766E] text-white" : "border-teal-100 bg-teal-50 text-[#0F766E]"}`}>{selected ? <Check className="mr-1 inline size-3.5" /> : null}{language}</button> })}</div></fieldset><label className="block text-sm font-semibold text-slate-700">Clinic or hospital name <span className="text-xs font-normal text-slate-500">(optional)</span><Input className={inputClass} value={data.clinic} onChange={(event) => setField("clinic", event.target.value)} /></label></> : null}
             {step === 5 ? <><label>Consultation fee (Rs.) *<Input className={inputClass} type="number" min="1" value={data.fee} onChange={(event) => setField("fee", event.target.value)} /></label><div className="rounded-xl bg-teal-50 p-4 text-sm"><p className="font-semibold text-[#0F766E]">Review your application</p><p className="mt-2">{data.name} · {specialties.find((specialty) => specialty.id === Number(data.specialty))?.name ?? "No specialty"}</p><p className="mt-1">Required documents: {docs.some((document) => document.doc_type === "cnic") && docs.some((document) => document.doc_type === "pmdc_license") ? "Uploaded" : "Missing"}</p></div></> : null}
           </div>
-          <div className="mt-8 flex justify-between"><Button type="button" variant="outline" disabled={step === 1 || saving} onClick={() => setStep((current) => current - 1)}><ChevronLeft />Back</Button>{step === 5 ? <Button type="button" disabled={saving} onClick={() => void submit()}>{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}Submit for review</Button> : <Button type="button" disabled={saving} onClick={() => void continueStep()}>{saving ? <Loader2 className="animate-spin" /> : null}Continue<ChevronRight /></Button>}</div>
+          <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between"><Button type="button" variant="outline" disabled={step === 1 || saving} onClick={() => setStep((current) => current - 1)} className="h-11 rounded-xl px-4"><ChevronLeft />Back</Button>{step === 5 ? <Button type="button" disabled={saving} onClick={() => void submit()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}Submit for review</Button> : <Button type="button" disabled={saving} onClick={() => void continueStep()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : null}Continue<ChevronRight /></Button>}</div>
         </section>
-      </div>
+      </div></div>
     </main>
   )
 }
