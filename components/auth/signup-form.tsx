@@ -160,7 +160,7 @@ export function SignupForm({ initialAccountType = "patient" }: { initialAccountT
           <p className="mt-2 text-sm leading-6 text-emerald-800">Open the confirmation link we sent you, then return to sign in.</p>
         </div>
       ) : (
-        <form id="signup-form-panel" className="space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500" onSubmit={handleSubmit}>
+        <form id="signup-form-panel" data-signup-form data-account-type={accountType} className="space-y-4" onSubmit={handleSubmit}>
           {error ? <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
