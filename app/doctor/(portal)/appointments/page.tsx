@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 
 import { DoctorAppointmentActions } from "@/components/doctor/doctor-appointment-actions"
 import { DoctorAppointmentsRealtime } from "@/components/doctor/doctor-appointments-realtime"
@@ -26,6 +27,7 @@ function href(tab: Tab, page = 1) { return `/doctor/appointments?tab=${tab}&page
 export default async function DoctorAppointmentsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const doctor = await getDoctorRecord()
   if (!doctor) return <main className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><p className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">We couldn&apos;t find your doctor profile. Please contact the clinic for help.</p></main>
+  if (["draft", "rejected", "changes_requested"].includes(doctor.approval_status)) redirect("/doctor/onboarding")
 
   const params = await searchParams
   const tab: Tab = tabs.includes(params.tab as Tab) ? params.tab as Tab : "pending"

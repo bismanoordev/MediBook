@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { ArrowUpRight, CalendarDays, Clock3, Users, UserRoundCheck } from "lucide-react"
 
 import { getAuthState, getDoctorRecord } from "@/lib/auth"
@@ -28,6 +29,7 @@ function formatTime(time: string) { return timeFormatter.format(new Date(`2000-0
 export default async function DoctorDashboardPage() {
   const [{ profile }, doctor] = await Promise.all([getAuthState(), getDoctorRecord()])
   if (!doctor) return <main className="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-10"><div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">We couldn&apos;t find your doctor profile. Please contact the clinic for help.</div></main>
+  if (["draft", "rejected", "changes_requested"].includes(doctor.approval_status)) redirect("/doctor/onboarding")
 
   const { date: today, time: now } = pakistanDateParts()
   const supabase = await createClient()

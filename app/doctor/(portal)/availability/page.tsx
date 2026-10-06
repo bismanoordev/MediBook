@@ -1,4 +1,5 @@
 import { CalendarRange } from "lucide-react"
+import { redirect } from "next/navigation"
 
 import { saveDoctorSchedule } from "@/app/doctor/actions"
 import { ScheduleForm } from "@/components/admin/schedule-form"
@@ -17,6 +18,7 @@ function pakistanToday() {
 export default async function DoctorAvailabilityPage() {
   const doctor = await getDoctorRecord()
   if (!doctor) return <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10"><p className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">We couldn&apos;t find your doctor profile. Please contact the clinic for help.</p></main>
+  if (["draft", "rejected", "changes_requested"].includes(doctor.approval_status)) redirect("/doctor/onboarding")
   const supabase = await createClient()
   const today = pakistanToday()
   const [schedulesResult, timeOffResult, appointmentsResult] = await Promise.all([

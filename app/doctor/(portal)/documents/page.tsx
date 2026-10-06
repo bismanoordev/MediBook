@@ -1,10 +1,12 @@
 import { DoctorDocumentsTable } from "@/components/doctor/doctor-documents-table"
+import { redirect } from "next/navigation"
 import { getAuthState, getDoctorRecord } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function DoctorDocumentsPage() {
   const [{ user }, doctor] = await Promise.all([getAuthState(), getDoctorRecord()])
   if (!user || !doctor) return <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10"><p className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">We couldn&apos;t find your doctor profile. Please contact the clinic for help.</p></main>
+  if (["draft", "rejected", "changes_requested"].includes(doctor.approval_status)) redirect("/doctor/onboarding")
   const supabase = await createClient()
   const { data: documents, error } = await supabase.from("doctor_documents").select("id,doc_type,file_path,file_name,status,reviewer_note,uploaded_at").eq("doctor_id", doctor.id).order("uploaded_at", { ascending: false })
   const files = await Promise.all((documents ?? []).map(async (document) => {
