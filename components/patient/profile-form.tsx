@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import * as yup from "yup"
@@ -28,9 +29,9 @@ export function ProfileForm({ userId, fullName, phone }: { userId: string; fullN
     toast.success("Your profile has been updated.")
     router.refresh()
   }
-  return <form onSubmit={save} className="mt-7 grid gap-5 sm:grid-cols-2">
-    <label className="grid gap-2 text-sm font-medium text-slate-800">Full name<Input value={name} onChange={(event) => { setName(event.target.value); setErrors((current) => ({ ...current, fullName: "" })) }} aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName ? "profile-name-error" : undefined} required />{errors.fullName ? <span id="profile-name-error" role="alert" className="text-sm font-normal text-red-600">{errors.fullName}</span> : null}</label>
-    <label className="grid gap-2 text-sm font-medium text-slate-800">Phone number<Input value={phoneValue} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "")); setErrors((current) => ({ ...current, phone: "" })) }} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? "profile-phone-error" : undefined} inputMode="numeric" placeholder="03001234567" /><span className="text-xs font-normal text-slate-500">Use digits only, for example 03001234567.</span>{errors.phone ? <span id="profile-phone-error" role="alert" className="text-sm font-normal text-red-600">{errors.phone}</span> : null}</label>
-    <Button disabled={saving || !changed} className="h-11 w-full rounded-xl bg-[#0F766E] hover:bg-[#0D5F59] sm:col-span-2 sm:w-fit sm:min-w-36">{saving ? "Saving..." : "Save changes"}</Button>
+  return <form onSubmit={save} className="mt-6 grid gap-5 sm:grid-cols-2">
+    <label htmlFor="profile-full-name" className="grid gap-2 text-sm font-medium text-slate-800">Full name<Input id="profile-full-name" className="h-11 rounded-xl border-slate-300 px-3 text-sm focus-visible:border-[#0F766E] focus-visible:ring-[#0F766E]/25" value={name} onChange={(event) => { setName(event.target.value); setErrors((current) => ({ ...current, fullName: "" })) }} aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName ? "profile-name-error" : undefined} required />{errors.fullName ? <span id="profile-name-error" role="alert" className="text-sm font-normal text-red-600">{errors.fullName}</span> : null}</label>
+    <label htmlFor="profile-phone" className="grid gap-2 text-sm font-medium text-slate-800">Phone number<Input id="profile-phone" className="h-11 rounded-xl border-slate-300 px-3 text-sm focus-visible:border-[#0F766E] focus-visible:ring-[#0F766E]/25" value={phoneValue} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "")); setErrors((current) => ({ ...current, phone: "" })) }} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? "profile-phone-error" : "profile-phone-hint"} inputMode="numeric" placeholder="03001234567" /><span id="profile-phone-hint" className="text-xs font-normal leading-5 text-slate-500">Use digits only, for example 03001234567.</span>{errors.phone ? <span id="profile-phone-error" role="alert" className="text-sm font-normal text-red-600">{errors.phone}</span> : null}</label>
+    <Button disabled={saving || !changed} className="h-11 w-full rounded-xl bg-[#0F766E] px-4 text-sm font-semibold hover:bg-[#0D5F59] disabled:opacity-60 sm:col-span-2 sm:w-fit sm:min-w-36">{saving ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}{saving ? "Saving..." : "Save changes"}</Button>
   </form>
 }
