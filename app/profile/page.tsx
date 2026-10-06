@@ -6,7 +6,7 @@ import { LogoutButton } from "@/components/auth/logout-button"
 import { requireUser } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Bell, CalendarDays, CheckCircle2, Clock3, Stethoscope, XCircle } from "lucide-react"
+import { BadgeCheck, Bell, CalendarDays, CheckCircle2, Clock3, LockKeyhole, Mail, Stethoscope, XCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function ProfilePage() {
@@ -44,15 +44,7 @@ export default async function ProfilePage() {
 
         <section className="relative mt-8 overflow-hidden rounded-3xl border border-teal-100 bg-white shadow-sm" aria-labelledby="account-summary-title">
           <div aria-hidden="true" className="absolute -right-16 -top-16 size-40 rounded-full bg-teal-50" />
-          <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-7">
-            <ProfilePhotoUpload userId={user.id} name={fullName} avatarUrl={profile?.avatar_url} />
-            <div className="min-w-0 flex-1">
-              <p className="inline-flex rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#0F766E]">Patient account</p>
-              <h2 id="account-summary-title" className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">{fullName || "Complete your profile"}</h2>
-              <p className="mt-1 truncate text-sm text-slate-600">{user.email ?? "Your account email"}</p>
-            </div>
-            <div className="flex flex-wrap gap-2"><span className="w-fit rounded-full bg-teal-50 px-3 py-1.5 text-xs font-semibold text-[#0F766E]">Private account</span>{user.email_confirmed_at ? <span className="w-fit rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">Email verified</span> : null}</div>
-          </div>
+          <div className="relative p-5 sm:p-7"><ProfilePhotoUpload userId={user.id} name={fullName} avatarUrl={profile?.avatar_url}><div className="min-w-0 flex-1 text-center sm:text-left"><p className="inline-flex whitespace-nowrap rounded-full bg-[#CCFBF1] px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#0F766E]">Patient account</p><h2 id="account-summary-title" className="mt-2 break-words text-2xl font-semibold tracking-tight text-slate-900">{fullName || "Complete your profile"}</h2><p className="mt-2 flex items-start justify-center gap-2 break-all text-sm text-slate-600 sm:justify-start sm:break-normal"><Mail className="mt-0.5 size-4 shrink-0 text-[#0F766E]" aria-hidden="true" />{user.email ?? "Your account email"}</p><div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start"><span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold text-[#0F766E]"><LockKeyhole className="size-3.5" />Private account</span>{user.email_confirmed_at ? <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"><BadgeCheck className="size-3.5" />Email verified</span> : null}</div></div></ProfilePhotoUpload></div>
           {needsDetails ? <div className="border-t border-teal-100 bg-teal-50/70 px-5 py-3 text-sm leading-6 text-slate-700 sm:px-7"><div className="flex items-center justify-between gap-3"><span>Profile {completeness}% complete — add your {!fullName ? "name" : "phone number"}.</span><span className="h-2 w-24 overflow-hidden rounded-full bg-teal-100"><span className="block h-full bg-[#0F766E]" style={{ width: `${completeness}%` }} /></span></div></div> : null}
         </section>
 

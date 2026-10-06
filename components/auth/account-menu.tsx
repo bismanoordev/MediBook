@@ -38,11 +38,6 @@ export function AccountMenu({ userId, name, email, role = "patient", avatarUrl: 
   const roleLabel = role === "admin" ? "Admin account" : role === "doctor" ? "Doctor account" : "Patient account"
 
   useEffect(() => {
-    setProfileName(name?.trim() ?? "")
-    setAvatarUrl(initialAvatarUrl ?? null)
-  }, [initialAvatarUrl, name])
-
-  useEffect(() => {
     let active = true
 
     async function loadProfileName() {
@@ -61,7 +56,7 @@ export function AccountMenu({ userId, name, email, role = "patient", avatarUrl: 
 
     void loadProfileName()
     return () => { active = false }
-  }, [initialAvatarUrl, name, userId])
+  }, [userId])
 
   useEffect(() => {
     if (!open) return
