@@ -27,7 +27,7 @@ export function HomeDoctorHero({ doctors, error }: Props) {
         ) : <p className="mt-2 text-[10px] leading-4 text-slate-600">Compassionate care, made simple.</p>}
         <Link href="/doctors" className="mt-3 inline-flex items-center gap-1 text-[10px] font-bold text-[#0F766E]">Find a doctor <ArrowRight className="size-3" /></Link>
       </div>
-      <div className="motion-float motion-float-later absolute bottom-10 right-0 z-10 hidden rounded-2xl bg-white p-3 shadow-xl sm:-right-6 sm:block"><div className="flex items-center gap-2"><span className="grid size-8 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E]"><BadgeCheck className="size-4" /></span><div><p className="text-xs font-bold text-slate-900">Care you can trust</p><p className="text-[10px] text-slate-500">Verified clinicians</p></div></div></div>
+      <div className="motion-float motion-float-later absolute bottom-10 right-0 z-10 hidden rounded-2xl bg-white p-3 shadow-xl sm:-right-12 sm:block"><div className="flex items-center gap-2"><span className="grid size-8 place-items-center rounded-xl bg-[#CCFBF1] text-[#0F766E]"><BadgeCheck className="size-4" /></span><div><p className="text-xs font-bold text-slate-900">Care you can trust</p><p className="text-[10px] text-slate-500">Verified clinicians</p></div></div></div>
       {error ? <p className="sr-only">The doctor directory could not be loaded.</p> : null}
     </div>
   )
