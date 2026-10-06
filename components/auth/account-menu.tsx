@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react"
 import { ChevronDown, UserRound } from "lucide-react"
+import Image from "next/image"
 
 import { LogoutButton } from "@/components/auth/logout-button"
 import { createClient } from "@/lib/supabase/client"
@@ -28,6 +29,7 @@ function getInitials(name?: string | null) {
 export function AccountMenu({ userId, name, email, role = "patient" }: AccountMenuProps) {
   const [open, setOpen] = useState(false)
   const [profileName, setProfileName] = useState(name?.trim() ?? "")
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const menuId = useId()
   const containerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -44,11 +46,11 @@ export function AccountMenu({ userId, name, email, role = "patient" }: AccountMe
 
       const { data } = await supabase
         .from("profiles")
-        .select("full_name")
+        .select("full_name, avatar_url")
         .eq("id", user.id)
         .maybeSingle()
 
-      if (active) setProfileName(data?.full_name?.trim() ?? "")
+      if (active) { setProfileName(data?.full_name?.trim() ?? ""); setAvatarUrl(data?.avatar_url ?? null) }
     }
 
     void loadProfileName()
@@ -88,14 +90,14 @@ export function AccountMenu({ userId, name, email, role = "patient" }: AccountMe
         onClick={() => setOpen((current) => !current)}
         className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-1.5 pr-2.5 text-sm font-semibold text-slate-800 shadow-sm transition hover:border-teal-200 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
       >
-        <span className="grid size-7 place-items-center rounded-full bg-[#CCFBF1] text-xs font-bold text-[#0F766E]" aria-hidden="true">{getInitials(profileName)}</span>
+        <span className="grid size-7 place-items-center overflow-hidden rounded-full bg-[#CCFBF1] text-xs font-bold text-[#0F766E]" aria-hidden="true">{avatarUrl ? <Image src={avatarUrl} alt="" width={28} height={28} unoptimized className="size-full object-cover" /> : getInitials(profileName)}</span>
         <span className="max-w-24 truncate">{displayName}</span>
         <ChevronDown className={`size-4 text-slate-500 transition ${open ? "rotate-180" : ""}`} aria-hidden="true" />
       </button>
 
       {open ? <div id={menuId} role="menu" aria-label="My account" className="absolute right-0 top-12 z-50 w-64 max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
         <div className="flex items-center gap-3 px-3 py-3">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-teal-50 text-[#0F766E]" aria-hidden="true"><UserRound className="size-4" /></span>
+          <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-teal-50 text-[#0F766E]" aria-hidden="true">{avatarUrl ? <Image src={avatarUrl} alt="" width={36} height={36} unoptimized className="size-full object-cover" /> : <UserRound className="size-4" />}</span>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
             <p className="mt-0.5 truncate text-xs text-slate-500">{email ?? "Signed-in MediBook user"}</p>

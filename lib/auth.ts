@@ -20,7 +20,7 @@ export const getAuthState = cache(async () => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, phone, role")
+    .select("full_name, phone, role, avatar_url")
     .eq("id", user.id)
     .maybeSingle()
 

@@ -1,5 +1,6 @@
 import { ProfileForm } from "@/components/patient/profile-form"
 import { PasswordSecurityCard } from "@/components/patient/password-security-card"
+import { ProfilePhotoUpload } from "@/components/patient/profile-photo-upload"
 import { AppHeader } from "@/components/app-header"
 import { LogoutButton } from "@/components/auth/logout-button"
 import { requireUser } from "@/lib/auth"
@@ -7,18 +8,6 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Bell, CalendarDays, CheckCircle2, Clock3, Stethoscope, XCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
-
-function getInitials(fullName: string) {
-  const initials = fullName
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-
-  return initials.toUpperCase() || "P"
-}
 
 export default async function ProfilePage() {
   const { user, profile } = await requireUser("/profile")
@@ -55,7 +44,7 @@ export default async function ProfilePage() {
 
         <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby="account-summary-title">
           <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-7">
-            <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-[#0F766E] text-lg font-semibold text-white shadow-sm" aria-hidden="true">{getInitials(fullName)}</div>
+            <ProfilePhotoUpload userId={user.id} name={fullName} avatarUrl={profile?.avatar_url} />
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0F766E]">Patient account</p>
               <h2 id="account-summary-title" className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">{fullName || "Complete your profile"}</h2>
