@@ -1,6 +1,6 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Check, CheckCircle2, Loader2, Stethoscope, UserPlus, UsersRound } from "lucide-react"
 import { toast } from "sonner"
@@ -29,10 +29,11 @@ const doctorSignupSchema = signupSchema.shape({
   acceptedTerms: yup.boolean().oneOf([true], "You need to accept the terms to continue.").required("You need to accept the terms to continue."),
 })
 
-export function SignupForm() {
+export function SignupForm({ initialAccountType = "patient" }: { initialAccountType?: AccountType }) {
   const router = useRouter()
   const supabase = useMemo(() => createClient(), [])
-  const [accountType, setAccountType] = useState<AccountType>("patient")
+  const [accountType, setAccountType] = useState<AccountType>(initialAccountType)
+  const accountTypeRefs = useRef<Record<AccountType, HTMLButtonElement | null>>({ patient: null, doctor: null })
   const [specialties, setSpecialties] = useState<Specialty[]>([])
   const [specialtiesError, setSpecialtiesError] = useState(false)
   const [isLoadingSpecialties, setIsLoadingSpecialties] = useState(false)
@@ -64,6 +65,16 @@ export function SignupForm() {
     setAccountType(nextType)
     setError(null)
     setFieldErrors({})
+  }
+
+  function handleAccountTypeKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
+    if (!["ArrowLeft", "ArrowRight", " ", "Enter"].includes(event.key)) return
+
+    event.preventDefault()
+    const selectedType: AccountType = event.currentTarget.dataset.accountType === "doctor" ? "doctor" : "patient"
+    const nextType: AccountType = event.key === "ArrowLeft" ? "patient" : event.key === "ArrowRight" ? "doctor" : selectedType
+    chooseAccountType(nextType)
+    requestAnimationFrame(() => accountTypeRefs.current[nextType]?.focus())
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -129,10 +140,17 @@ export function SignupForm() {
 
   return (
     <div>
-      <div className="mb-8 space-y-3 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500">
+      <div className="mb-6 space-y-3 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-500">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">{isDoctor ? "Doctor account" : "Patient account"}</p>
         <h1 className="text-3xl font-semibold tracking-tight text-card-foreground">Create your account</h1>
         <p className="text-sm leading-6 text-muted-foreground">{isDoctor ? "Join MediBook and complete your professional profile for review." : "Book doctors and manage your appointments in one place."}</p>
+
+        <fieldset role="radiogroup" aria-label="Account type" className="relative mt-5 flex rounded-full border border-slate-200 bg-teal-50 p-1">
+          <legend className="sr-only">Account type</legend>
+          <span aria-hidden="true" className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-[#0F766E] shadow-sm transition-transform duration-200 ease-out motion-reduce:transition-none ${isDoctor ? "translate-x-full" : "translate-x-0"}`} />
+          <button ref={(element) => { accountTypeRefs.current.patient = element }} type="button" role="radio" data-account-type="patient" aria-checked={!isDoctor} onClick={() => chooseAccountType("patient")} onKeyDown={handleAccountTypeKeyDown} className={`relative z-10 flex h-11 flex-1 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none ${!isDoctor ? "text-white" : "text-slate-600 hover:bg-white/60 hover:text-[#0F766E]"}`}><UsersRound className="size-4 shrink-0" aria-hidden="true" /><span className="whitespace-nowrap">I&apos;m a patient</span></button>
+          <button ref={(element) => { accountTypeRefs.current.doctor = element }} type="button" role="radio" data-account-type="doctor" aria-checked={isDoctor} onClick={() => chooseAccountType("doctor")} onKeyDown={handleAccountTypeKeyDown} className={`relative z-10 flex h-11 flex-1 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 motion-reduce:transition-none ${isDoctor ? "text-white" : "text-slate-600 hover:bg-white/60 hover:text-[#0F766E]"}`}><Stethoscope className="size-4 shrink-0" aria-hidden="true" /><span className="whitespace-nowrap">I&apos;m a doctor</span></button>
+        </fieldset>
       </div>
 
       {checkEmail ? (
@@ -143,23 +161,17 @@ export function SignupForm() {
         </div>
       ) : (
         <form id="signup-form-panel" className="space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500" onSubmit={handleSubmit}>
-          <fieldset className="grid grid-cols-2 gap-2" aria-label="Choose account type">
-            <legend className="sr-only">Choose account type</legend>
-            <button type="button" onClick={() => chooseAccountType("patient")} aria-pressed={!isDoctor} className={`flex min-h-20 items-center gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 ${!isDoctor ? "border-[#0F766E] bg-[#CCFBF1]/60 text-slate-900" : "border-slate-200 bg-white text-slate-600 hover:border-teal-200"}`}><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-teal-50 text-[#0F766E]"><UsersRound className="size-4" aria-hidden="true" /></span><span><span className="block text-sm font-semibold">I&apos;m a patient</span><span className="mt-0.5 block text-xs leading-4">Book care</span></span></button>
-            <button type="button" onClick={() => chooseAccountType("doctor")} aria-pressed={isDoctor} className={`flex min-h-20 items-center gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 ${isDoctor ? "border-[#0F766E] bg-[#CCFBF1]/60 text-slate-900" : "border-slate-200 bg-white text-slate-600 hover:border-teal-200"}`}><span className="grid size-9 shrink-0 place-items-center rounded-lg bg-teal-50 text-[#0F766E]"><Stethoscope className="size-4" aria-hidden="true" /></span><span><span className="block text-sm font-semibold">I&apos;m a doctor</span><span className="mt-0.5 block text-xs leading-4">Join MediBook</span></span></button>
-          </fieldset>
-
           {error ? <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Full name" id="signup-fullName" error={fieldErrors.fullName} errorId="signup-name-error"><Input id="signup-fullName" name="fullName" autoComplete="name" onInput={(event) => { event.currentTarget.value = event.currentTarget.value.replace(/[^\p{L}\s.'-]/gu, "") }} placeholder="Your full name" className="h-11" aria-invalid={Boolean(fieldErrors.fullName)} aria-describedby={fieldErrors.fullName ? "signup-name-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, fullName: "" }))} required /></Field>
-            <Field label="Phone number" id="signup-phone" error={fieldErrors.phone} errorId="signup-phone-error"><Input id="signup-phone" name="phone" type="tel" autoComplete="tel" inputMode="numeric" pattern="[0-9]*" onInput={(event) => { event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "") }} placeholder="03001234567" className="h-11" aria-invalid={Boolean(fieldErrors.phone)} aria-describedby={fieldErrors.phone ? "signup-phone-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, phone: "" }))} required /></Field>
+            <Field key="full-name" label="Full name" id="signup-fullName" error={fieldErrors.fullName} errorId="signup-name-error"><Input id="signup-fullName" name="fullName" autoComplete="name" onInput={(event) => { event.currentTarget.value = event.currentTarget.value.replace(/[^\p{L}\s.'-]/gu, "") }} placeholder="Your full name" className="h-11" aria-invalid={Boolean(fieldErrors.fullName)} aria-describedby={fieldErrors.fullName ? "signup-name-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, fullName: "" }))} required /></Field>
+            <Field key="phone" label="Phone number" id="signup-phone" error={fieldErrors.phone} errorId="signup-phone-error"><Input id="signup-phone" name="phone" type="tel" autoComplete="tel" inputMode="numeric" pattern="[0-9]*" onInput={(event) => { event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "") }} placeholder="03001234567" className="h-11" aria-invalid={Boolean(fieldErrors.phone)} aria-describedby={fieldErrors.phone ? "signup-phone-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, phone: "" }))} required /></Field>
 
-            {isDoctor ? <div className="space-y-2 sm:col-span-2"><label htmlFor="doctor-specialty" className="text-sm font-medium">Specialty</label><Select items={[{ value: "", label: "Choose your specialty" }, ...specialties.map((specialty) => ({ value: String(specialty.id), label: specialty.name }))]} name="specialtyId" required disabled={isLoadingSpecialties || specialtiesError || !specialties.length} onValueChange={() => setFieldErrors((current) => ({ ...current, specialtyId: "" }))}><SelectTrigger id="doctor-specialty" className="w-full data-[size=default]:h-11" aria-invalid={Boolean(fieldErrors.specialtyId)} aria-describedby={fieldErrors.specialtyId ? "signup-specialty-error" : undefined}><SelectValue placeholder={isLoadingSpecialties ? "Loading specialties…" : specialtiesError ? "Specialties unavailable" : specialties.length ? "Choose your specialty" : "No specialties available"} /></SelectTrigger><SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">{specialties.map((specialty) => <SelectItem key={specialty.id} value={String(specialty.id)} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-medium data-[selected]:text-[#0F766E]">{specialty.name}</SelectItem>)}</SelectContent></Select>{specialtiesError ? <p className="text-sm text-red-600">We couldn&apos;t load specialties. Please refresh and try again.</p> : null}{fieldErrors.specialtyId ? <p id="signup-specialty-error" className="text-sm text-red-600">{fieldErrors.specialtyId}</p> : null}</div> : null}
+            {isDoctor ? <div key="specialty" className="space-y-2 sm:col-span-2"><label htmlFor="doctor-specialty" className="text-sm font-medium">Specialty</label><Select items={[{ value: "", label: "Choose your specialty" }, ...specialties.map((specialty) => ({ value: String(specialty.id), label: specialty.name }))]} name="specialtyId" required disabled={isLoadingSpecialties || specialtiesError || !specialties.length} onValueChange={() => setFieldErrors((current) => ({ ...current, specialtyId: "" }))}><SelectTrigger id="doctor-specialty" className="w-full data-[size=default]:h-11" aria-invalid={Boolean(fieldErrors.specialtyId)} aria-describedby={fieldErrors.specialtyId ? "signup-specialty-error" : undefined}><SelectValue placeholder={isLoadingSpecialties ? "Loading specialties…" : specialtiesError ? "Specialties unavailable" : specialties.length ? "Choose your specialty" : "No specialties available"} /></SelectTrigger><SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">{specialties.map((specialty) => <SelectItem key={specialty.id} value={String(specialty.id)} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-medium data-[selected]:text-[#0F766E]">{specialty.name}</SelectItem>)}</SelectContent></Select>{specialtiesError ? <p className="text-sm text-red-600">We couldn&apos;t load specialties. Please refresh and try again.</p> : null}{fieldErrors.specialtyId ? <p id="signup-specialty-error" className="text-sm text-red-600">{fieldErrors.specialtyId}</p> : null}</div> : null}
 
-            <Field label="Email address" id="signup-email" error={fieldErrors.email} errorId="signup-email-error"><Input id="signup-email" name="email" type="email" autoComplete="email" placeholder="you@example.com" className="h-11" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? "signup-email-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, email: "" }))} required /></Field>
-            <div className="space-y-2"><PasswordInput id="signup-password" name="password" label="Password" autoComplete="new-password" placeholder="At least 8 characters" minLength={8} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? "signup-password-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, password: "" }))} required />{fieldErrors.password ? <p id="signup-password-error" className="text-sm text-red-600">{fieldErrors.password}</p> : null}</div>
-            <div className="space-y-2"><PasswordInput id="signup-confirmPassword" name="confirmPassword" label="Confirm password" autoComplete="new-password" placeholder="Repeat password" minLength={8} aria-invalid={Boolean(fieldErrors.confirmPassword)} aria-describedby={fieldErrors.confirmPassword ? "signup-confirm-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, confirmPassword: "" }))} required />{fieldErrors.confirmPassword ? <p id="signup-confirm-error" className="text-sm text-red-600">{fieldErrors.confirmPassword}</p> : null}</div>
+            <Field key="email" label="Email address" id="signup-email" error={fieldErrors.email} errorId="signup-email-error"><Input id="signup-email" name="email" type="email" autoComplete="email" placeholder="you@example.com" className="h-11" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? "signup-email-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, email: "" }))} required /></Field>
+            <div key="password" className="space-y-2"><PasswordInput id="signup-password" name="password" label="Password" autoComplete="new-password" placeholder="At least 8 characters" minLength={8} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? "signup-password-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, password: "" }))} required />{fieldErrors.password ? <p id="signup-password-error" className="text-sm text-red-600">{fieldErrors.password}</p> : null}</div>
+            <div key="confirm-password" className="space-y-2"><PasswordInput id="signup-confirmPassword" name="confirmPassword" label="Confirm password" autoComplete="new-password" placeholder="Repeat password" minLength={8} aria-invalid={Boolean(fieldErrors.confirmPassword)} aria-describedby={fieldErrors.confirmPassword ? "signup-confirm-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, confirmPassword: "" }))} required />{fieldErrors.confirmPassword ? <p id="signup-confirm-error" className="text-sm text-red-600">{fieldErrors.confirmPassword}</p> : null}</div>
           </div>
 
           {isDoctor ? <div className="space-y-2"><label className="flex cursor-pointer items-start gap-3 text-sm text-slate-600"><input name="acceptedTerms" type="checkbox" className="peer sr-only" aria-invalid={Boolean(fieldErrors.acceptedTerms)} aria-describedby={fieldErrors.acceptedTerms ? "signup-terms-error" : undefined} onChange={() => setFieldErrors((current) => ({ ...current, acceptedTerms: "" }))} /><span aria-hidden="true" className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-md border-[1.5px] border-input bg-white transition-colors peer-checked:border-[#0F766E] peer-checked:bg-[#0F766E] peer-checked:[&>svg]:opacity-100 peer-hover:border-[#0F766E] peer-focus-visible:ring-2 peer-focus-visible:ring-[#0F766E]/30 peer-focus-visible:ring-offset-2 peer-aria-invalid:border-red-500 peer-disabled:opacity-50"><Check className="size-3.5 stroke-[3] text-white opacity-0 transition-opacity" /></span><span className="min-w-0 leading-5">I agree to MediBook&apos;s <span className="font-semibold text-[#0F766E] hover:underline">Terms</span> and <span className="font-semibold text-[#0F766E] hover:underline">Privacy Policy</span>.</span></label>{fieldErrors.acceptedTerms ? <p id="signup-terms-error" className="text-sm text-red-600">{fieldErrors.acceptedTerms}</p> : null}</div> : null}

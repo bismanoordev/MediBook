@@ -4,8 +4,9 @@ import { AuthShell } from "@/components/auth/auth-shell"
 import { SignupForm } from "@/components/auth/signup-form"
 import { redirectAuthenticatedUser } from "@/lib/auth"
 
-export default async function SignupPage() {
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ type?: string }> }) {
   await redirectAuthenticatedUser()
+  const { type } = await searchParams
 
   return (
     <AuthShell
@@ -16,7 +17,7 @@ export default async function SignupPage() {
       hideHeader
       footer={<p>Already have an account? <Link href="/login" className="font-semibold text-[#0F766E] hover:underline">Log in</Link></p>}
     >
-      <SignupForm />
+      <SignupForm initialAccountType={type === "doctor" ? "doctor" : "patient"} />
     </AuthShell>
   )
 }
