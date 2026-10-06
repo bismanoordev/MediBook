@@ -42,11 +42,12 @@ export default async function ProfilePage() {
           <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">Keep your contact details current so the clinic can support your appointments.</p>
         </div>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby="account-summary-title">
-          <div className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-7">
+        <section className="relative mt-8 overflow-hidden rounded-3xl border border-teal-100 bg-white shadow-sm" aria-labelledby="account-summary-title">
+          <div aria-hidden="true" className="absolute -right-16 -top-16 size-40 rounded-full bg-teal-50" />
+          <div className="relative flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-7">
             <ProfilePhotoUpload userId={user.id} name={fullName} avatarUrl={profile?.avatar_url} />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0F766E]">Patient account</p>
+              <p className="inline-flex rounded-full bg-teal-50 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#0F766E]">Patient account</p>
               <h2 id="account-summary-title" className="mt-1 truncate text-xl font-semibold tracking-tight text-slate-900">{fullName || "Complete your profile"}</h2>
               <p className="mt-1 truncate text-sm text-slate-600">{user.email ?? "Your account email"}</p>
             </div>
