@@ -29,18 +29,14 @@ function getInitials(name?: string | null) {
 
 export function AccountMenu({ userId, name, email, role = "patient", avatarUrl: initialAvatarUrl }: AccountMenuProps) {
   const [open, setOpen] = useState(false)
-  const [profileName, setProfileName] = useState(name?.trim() ?? "")
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl ?? null)
+  const [loadedProfile, setLoadedProfile] = useState<{ name: string; avatarUrl: string | null } | null>(null)
   const menuId = useId()
   const containerRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const profileName = name?.trim() || loadedProfile?.name || ""
+  const avatarUrl = initialAvatarUrl !== undefined ? initialAvatarUrl : loadedProfile?.avatarUrl ?? null
   const displayName = profileName || "My account"
   const roleLabel = role === "admin" ? "Admin account" : role === "doctor" ? "Doctor account" : "Patient account"
-
-  useEffect(() => {
-    setProfileName(name?.trim() ?? "")
-    setAvatarUrl(initialAvatarUrl ?? null)
-  }, [name, initialAvatarUrl])
 
   useEffect(() => {
     let active = true
@@ -56,15 +52,12 @@ export function AccountMenu({ userId, name, email, role = "patient", avatarUrl: 
         .eq("id", user.id)
         .maybeSingle()
 
-      if (active && data) {
-        setProfileName(data.full_name?.trim() ?? "")
-        if (initialAvatarUrl === undefined) setAvatarUrl(data.avatar_url ?? null)
-      }
+      if (active && data) setLoadedProfile({ name: data.full_name?.trim() ?? "", avatarUrl: data.avatar_url ?? null })
     }
 
     void loadProfileName()
     return () => { active = false }
-  }, [userId, initialAvatarUrl])
+  }, [userId])
 
   useEffect(() => {
     if (!open) return

@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { ChangeEvent, ReactNode, useEffect, useState } from "react"
+import { ChangeEvent, ReactNode, useState } from "react"
 import { Camera, Loader2, Trash2, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
@@ -35,10 +35,9 @@ function friendly(error: unknown) {
 
 export function ProfilePhotoUpload({ userId, name, avatarUrl, children }: { userId: string; name: string; avatarUrl?: string | null; children: ReactNode }) {
   const router = useRouter()
-  const [preview, setPreview] = useState(avatarUrl ?? "")
+  const [localPreview, setLocalPreview] = useState<string | undefined>(undefined)
+  const preview = localPreview ?? avatarUrl ?? ""
   const [saving, setSaving] = useState(false)
-
-  useEffect(() => { setPreview(avatarUrl ?? "") }, [avatarUrl])
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const selected = event.target.files?.[0]
@@ -57,7 +56,7 @@ export function ProfilePhotoUpload({ userId, name, avatarUrl, children }: { user
       if (updateError) { await supabase.storage.from("patient-avatars").remove([path]); throw updateError }
       const old = avatarUrl ? pathFrom(avatarUrl) : null
       if (old) await supabase.storage.from("patient-avatars").remove([old])
-      setPreview(url)
+      setLocalPreview(url)
       toast.success("Profile photo updated.")
       router.refresh()
     } catch (error) {
@@ -77,7 +76,7 @@ export function ProfilePhotoUpload({ userId, name, avatarUrl, children }: { user
     else {
       const path = pathFrom(avatarUrl)
       if (path) await supabase.storage.from("patient-avatars").remove([path])
-      setPreview("")
+      setLocalPreview("")
       toast.success("Profile photo removed.")
       router.refresh()
     }
