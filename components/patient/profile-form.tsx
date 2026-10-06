@@ -17,6 +17,7 @@ export function ProfileForm({ userId, fullName, phone }: { userId: string; fullN
   const [phoneValue, setPhone] = useState(phone)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const changed = name !== fullName || phoneValue !== phone
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     try { await profileSchema.validate({ fullName: name, phone: phoneValue }, { abortEarly: false }); setErrors({}) } catch (validationError) { if (validationError instanceof yup.ValidationError) setErrors(Object.fromEntries(validationError.inner.map((issue) => [issue.path ?? "form", issue.message]))); return }
@@ -29,7 +30,7 @@ export function ProfileForm({ userId, fullName, phone }: { userId: string; fullN
   }
   return <form onSubmit={save} className="mt-7 grid gap-5 sm:grid-cols-2">
     <label className="grid gap-2 text-sm font-medium text-slate-800">Full name<Input value={name} onChange={(event) => { setName(event.target.value); setErrors((current) => ({ ...current, fullName: "" })) }} aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName ? "profile-name-error" : undefined} required />{errors.fullName ? <span id="profile-name-error" role="alert" className="text-sm font-normal text-red-600">{errors.fullName}</span> : null}</label>
-    <label className="grid gap-2 text-sm font-medium text-slate-800">Phone number<Input value={phoneValue} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "")); setErrors((current) => ({ ...current, phone: "" })) }} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? "profile-phone-error" : undefined} inputMode="numeric" placeholder="03001234567" />{errors.phone ? <span id="profile-phone-error" role="alert" className="text-sm font-normal text-red-600">{errors.phone}</span> : null}</label>
-    <Button disabled={saving} className="h-11 w-full rounded-xl bg-[#0F766E] hover:bg-[#0D5F59] sm:col-span-2 sm:w-fit sm:min-w-36">{saving ? "Saving..." : "Save changes"}</Button>
+    <label className="grid gap-2 text-sm font-medium text-slate-800">Phone number<Input value={phoneValue} onChange={(event) => { setPhone(event.target.value.replace(/\D/g, "")); setErrors((current) => ({ ...current, phone: "" })) }} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? "profile-phone-error" : undefined} inputMode="numeric" placeholder="03001234567" /><span className="text-xs font-normal text-slate-500">Use digits only, for example 03001234567.</span>{errors.phone ? <span id="profile-phone-error" role="alert" className="text-sm font-normal text-red-600">{errors.phone}</span> : null}</label>
+    <Button disabled={saving || !changed} className="h-11 w-full rounded-xl bg-[#0F766E] hover:bg-[#0D5F59] sm:col-span-2 sm:w-fit sm:min-w-36">{saving ? "Saving..." : "Save changes"}</Button>
   </form>
 }
