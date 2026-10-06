@@ -37,6 +37,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please log in before booking an appointment." }, { status: 401 })
   }
 
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
+  if (profile?.role !== "patient") {
+    return NextResponse.json({ error: "Only patient accounts can book appointments." }, { status: 403 })
+  }
+
   const { error } = await supabase.from("appointments").insert({
     patient_id: user.id,
     doctor_id: body.doctorId,

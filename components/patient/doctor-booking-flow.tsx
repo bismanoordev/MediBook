@@ -17,7 +17,7 @@ function formatTime(time: string) {
   return timeFormatter.format(new Date(`2000-01-01T${time}`))
 }
 
-export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: string; days: Day[]; loggedIn: boolean }) {
+export function DoctorBookingFlow({ doctorId, days, loggedIn, role }: { doctorId: string; days: Day[]; loggedIn: boolean; role?: "patient" | "doctor" | "admin" | null }) {
   const router = useRouter()
   const [selectedDay, setSelectedDay] = useState(() => Math.max(0, days.findIndex((item) => !item.away)))
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -35,6 +35,10 @@ export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: stri
 
   function continueBooking() {
     if (!selectedTime) return
+    if (role && role !== "patient") {
+      toast.error("Booking is available for patient accounts.")
+      return
+    }
     if (!loggedIn) {
       router.push(`/login?next=${encodeURIComponent(`/doctors/${doctorId}`)}`)
       return
@@ -74,6 +78,11 @@ export function DoctorBookingFlow({ doctorId, days, loggedIn }: { doctorId: stri
 
     if (response.status === 401) {
       router.push(`/login?next=${encodeURIComponent(`/doctors/${doctorId}`)}`)
+      return
+    }
+
+    if (response.status === 403) {
+      toast.error("Booking is available for patient accounts.")
       return
     }
 
