@@ -11,7 +11,32 @@ const schema = yup.object({
 })
 
 type Schedule = { start_time: string; end_time: string; slot_minutes: number }
-const timeField = "h-10 min-w-[7.35rem] cursor-pointer rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm transition-colors hover:border-teal-300 focus:border-[#0F766E] focus:ring-2 focus:ring-teal-100 focus:outline-none [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
+
+const timeOptions = Array.from({ length: 288 }, (_, index) => {
+  const hours = Math.floor(index / 12)
+  const minutes = (index % 12) * 5
+  const value = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
+  const period = hours < 12 ? "AM" : "PM"
+  const displayHour = hours % 12 || 12
+  return { value, label: `${String(displayHour).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}` }
+})
+
+function ScheduleTimePicker({ id, name, label, defaultValue, invalid, describedBy, onValueChange }: { id: string; name: "start_time" | "end_time"; label: string; defaultValue: string; invalid: boolean; describedBy?: string; onValueChange: () => void }) {
+  const value = defaultValue.slice(0, 5)
+  const options = timeOptions.some((option) => option.value === value) ? timeOptions : [{ value, label: value }, ...timeOptions]
+
+  return <>
+    <label htmlFor={id} className="sr-only">{label}</label>
+    <Select name={name} defaultValue={value} items={options} onValueChange={onValueChange}>
+      <SelectTrigger id={id} aria-invalid={invalid} aria-describedby={describedBy} className="h-10 min-w-[7.35rem] rounded-xl border-slate-200 bg-white px-3 text-sm shadow-sm transition-colors hover:border-teal-300 focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-teal-100">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent alignItemWithTrigger={false} className="max-h-72 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+        {options.map((option) => <SelectItem key={option.value} value={option.value} className="rounded-lg px-3 py-2 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-semibold data-[selected]:text-[#0F766E]">{option.label}</SelectItem>)}
+      </SelectContent>
+    </Select>
+  </>
+}
 
 export function ScheduleForm({ action, doctorId, day, index, schedule }: { action: (data: FormData) => void | Promise<void>; doctorId: string; day: string; index: number; schedule?: Schedule }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -44,13 +69,11 @@ export function ScheduleForm({ action, doctorId, day, index, schedule }: { actio
         <p className={`mt-1 text-xs font-medium ${schedule ? "text-[#0F766E]" : "text-slate-500"}`}>{schedule ? "Available" : "Not available"}</p>
       </div>
       <div>
-        <label htmlFor={`start-time-${index}`} className="sr-only">Start time for {day}</label>
-        <input id={`start-time-${index}`} name="start_time" type="time" defaultValue={schedule?.start_time.slice(0, 5) ?? "09:00"} onChange={() => clear("start")} aria-invalid={Boolean(errors.start)} aria-describedby={errors.start ? `start-${index}` : undefined} className={timeField} />
+        <ScheduleTimePicker id={`start-time-${index}`} name="start_time" label={`Start time for ${day}`} defaultValue={schedule?.start_time ?? "09:00"} invalid={Boolean(errors.start)} describedBy={errors.start ? `start-${index}` : undefined} onValueChange={() => clear("start")} />
         {errors.start ? <p id={`start-${index}`} className="mt-1 text-xs text-red-600">{errors.start}</p> : null}
       </div>
       <div>
-        <label htmlFor={`end-time-${index}`} className="sr-only">End time for {day}</label>
-        <input id={`end-time-${index}`} name="end_time" type="time" defaultValue={schedule?.end_time.slice(0, 5) ?? "13:00"} onChange={() => clear("end")} aria-invalid={Boolean(errors.end)} aria-describedby={errors.end ? `end-${index}` : undefined} className={timeField} />
+        <ScheduleTimePicker id={`end-time-${index}`} name="end_time" label={`End time for ${day}`} defaultValue={schedule?.end_time ?? "13:00"} invalid={Boolean(errors.end)} describedBy={errors.end ? `end-${index}` : undefined} onValueChange={() => clear("end")} />
         {errors.end ? <p id={`end-${index}`} className="mt-1 text-xs text-red-600">{errors.end}</p> : null}
       </div>
       <div>
