@@ -2,6 +2,7 @@ import Link from "next/link"
 
 import { updateAppointmentStatus } from "@/app/admin/actions"
 import { AppointmentsRealtime } from "@/components/admin/appointments-realtime"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { requireAdmin } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
 
@@ -96,17 +97,24 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
       <form className="mt-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-5">
         <input name="q" defaultValue={params.q} placeholder="Search patient name" className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0F766E]" />
         <input name="date" type="date" defaultValue={params.date} className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0F766E]" />
-        <select name="doctor" defaultValue={params.doctor} className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0F766E]">
-          <option value="">All doctors</option>
-          {doctors?.map((doctor) => <option key={doctor.id} value={doctor.id}>{doctor.full_name}</option>)}
-        </select>
-        <select name="status" defaultValue={params.status} className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#0F766E]">
-          <option value="">All statuses</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="completed">Completed</option>
-        </select>
+        <Select name="doctor" defaultValue={params.doctor ?? ""} items={[{ value: "", label: "All doctors" }, ...(doctors ?? []).map((doctor) => ({ value: doctor.id, label: doctor.full_name }))]}>
+          <SelectTrigger aria-label="Filter by doctor" className="h-10 w-full rounded-xl border-slate-200 bg-white px-3 text-sm shadow-sm focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-teal-100">
+            <SelectValue placeholder="All doctors" />
+          </SelectTrigger>
+          <SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+            <SelectItem value="" className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-semibold data-[selected]:text-[#0F766E]">All doctors</SelectItem>
+            {doctors?.map((doctor) => <SelectItem key={doctor.id} value={doctor.id} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-semibold data-[selected]:text-[#0F766E]">{doctor.full_name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select name="status" defaultValue={params.status ?? ""} items={[{ value: "", label: "All statuses" }, { value: "pending", label: "Pending" }, { value: "confirmed", label: "Confirmed" }, { value: "cancelled", label: "Cancelled" }, { value: "completed", label: "Completed" }]}>
+          <SelectTrigger aria-label="Filter by appointment status" className="h-10 w-full rounded-xl border-slate-200 bg-white px-3 text-sm shadow-sm focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-teal-100">
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+            <SelectItem value="" className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-semibold data-[selected]:text-[#0F766E]">All statuses</SelectItem>
+            {[["pending", "Pending"], ["confirmed", "Confirmed"], ["cancelled", "Cancelled"], ["completed", "Completed"]].map(([value, label]) => <SelectItem key={value} value={value} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-semibold data-[selected]:text-[#0F766E]">{label}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <div className="flex gap-2">
           <button className="h-10 flex-1 rounded-xl bg-[#0F766E] px-4 text-sm font-semibold text-white hover:bg-[#0D5F59]">Apply filters</button>
           {hasFilters ? <Link href="/admin/appointments" className="grid h-10 place-items-center rounded-xl px-3 text-sm font-semibold text-slate-600 hover:bg-slate-100">Clear</Link> : null}
