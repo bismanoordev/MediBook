@@ -104,7 +104,7 @@ export function ScheduleForm({ action, doctorId, day, index, schedule }: { actio
       </div>
       <div className="flex flex-wrap gap-2 sm:justify-end">
         {schedule ? <button type="submit" name="enabled" value="false" formNoValidate disabled={pending} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60">Turn off</button> : null}
-        <button type="submit" name="enabled" value="true" disabled={pending} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#0F766E] px-4 text-sm font-semibold text-white hover:bg-[#0D5F59] disabled:opacity-60">{pending ? <Loader2 className="size-4 animate-spin" /> : null}{schedule ? "Save" : "Save hours"}</button>
+        <button type="submit" name="enabled" value="true" disabled={pending} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#0F766E] px-4 text-sm font-semibold text-white hover:bg-[#0D5F59] disabled:opacity-60">{pending ? <Loader2 className="size-4 animate-spin" /> : null}{schedule ? "Saved" : "Save hours"}</button>
       </div>
       {errors.form ? <p role="alert" className="text-sm text-red-700 sm:col-span-5">{errors.form}</p> : null}
     </form>
