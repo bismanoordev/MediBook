@@ -285,3 +285,39 @@ html {
     transform: translateY(0);
   }
 }
+
+[data-doctor-onboarding] input[type="file"] {
+  margin-top: 0.5rem;
+  max-width: 100%;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+[data-doctor-onboarding] input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  border: 1px solid #0f766e;
+  border-radius: 0.75rem;
+  background: #0f766e;
+  padding: 0.5rem 1rem;
+  color: #ffffff;
+  font-weight: 600;
+  transition: background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+[data-doctor-onboarding] input[type="file"]:hover::file-selector-button {
+  background: #0d5f59;
+}
+
+[data-doctor-onboarding] input[type="file"]:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-doctor-onboarding] input[type="file"]:active::file-selector-button {
+    transform: translateY(1px);
+  }
+}

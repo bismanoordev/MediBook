@@ -264,7 +264,7 @@ export function DoctorOnboardingForm({
   }
 
   return (
-    <main className="relative overflow-hidden bg-[#F8FAFC] px-5 py-7 sm:px-8 sm:py-10">
+    <main data-doctor-onboarding className="relative overflow-hidden bg-[#F8FAFC] px-5 py-7 sm:px-8 sm:py-10">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(204,251,241,0.8),_transparent_38%),radial-gradient(circle_at_bottom_left,_rgba(204,251,241,0.45),_transparent_34%)]" />
       <div className="mx-auto max-w-6xl"><section className="mb-7 max-w-2xl"><p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Doctor onboarding</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Welcome, Dr. {data.name.trim().split(" ")[0] || "there"}</h1><p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">Complete your profile so patients can book you. It takes about 5 minutes.</p></section>
       {(doctor.approval_status === "rejected" || doctor.approval_status === "changes_requested") && doctor.rejection_reason ? <div role="status" className={`mb-5 rounded-2xl border p-4 text-sm ${doctor.approval_status === "rejected" ? "border-red-200 bg-red-50 text-red-800" : "border-amber-200 bg-amber-50 text-amber-900"}`}><span className="font-semibold">{doctor.approval_status === "rejected" ? "Your application needs attention. " : "Changes requested. "}</span>{doctor.rejection_reason}</div> : null}
