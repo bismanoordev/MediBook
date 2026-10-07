@@ -69,7 +69,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
   let query = supabase
     .from("appointments")
     .select(
-      "id, appointment_date, start_time, status, reason, created_at, updated_at, doctors(full_name), profiles!appointments_patient_id_fkey(full_name, phone)",
+      "id, appointment_date, start_time, status, reason, created_at, updated_at, doctors(full_name), profiles!appointments_patient_id_fkey!inner(full_name, phone)",
       { count: "exact" },
     )
     .order("appointment_date", { ascending: false })
