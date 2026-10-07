@@ -50,6 +50,8 @@ export function ScheduleForm({ action, doctorId, day, index, schedule }: { actio
     event.preventDefault()
     const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null
     const formData = new FormData(event.currentTarget)
+    if (submitter?.name) formData.set(submitter.name, submitter.value)
+    else formData.set("enabled", "true")
     if (submitter?.value !== "false") {
       try {
         schema.validateSync({ start: formData.get("start_time"), end: formData.get("end_time"), minutes: Number(formData.get("slot_minutes")) }, { abortEarly: false })
