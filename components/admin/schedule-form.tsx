@@ -11,6 +11,7 @@ const schema = yup.object({
 })
 
 type Schedule = { start_time: string; end_time: string; slot_minutes: number }
+const timeField = "h-10 min-w-[7.35rem] cursor-pointer rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm transition-colors hover:border-teal-300 focus:border-[#0F766E] focus:ring-2 focus:ring-teal-100 focus:outline-none [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-70"
 
 export function ScheduleForm({ action, doctorId, day, index, schedule }: { action: (data: FormData) => void | Promise<void>; doctorId: string; day: string; index: number; schedule?: Schedule }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -43,11 +44,13 @@ export function ScheduleForm({ action, doctorId, day, index, schedule }: { actio
         <p className={`mt-1 text-xs font-medium ${schedule ? "text-[#0F766E]" : "text-slate-500"}`}>{schedule ? "Available" : "Not available"}</p>
       </div>
       <div>
-        <input name="start_time" type="time" defaultValue={schedule?.start_time.slice(0, 5) ?? "09:00"} onChange={() => clear("start")} aria-invalid={Boolean(errors.start)} aria-describedby={errors.start ? `start-${index}` : undefined} className="h-10 rounded-xl border border-slate-200 bg-white px-2 text-sm" />
+        <label htmlFor={`start-time-${index}`} className="sr-only">Start time for {day}</label>
+        <input id={`start-time-${index}`} name="start_time" type="time" defaultValue={schedule?.start_time.slice(0, 5) ?? "09:00"} onChange={() => clear("start")} aria-invalid={Boolean(errors.start)} aria-describedby={errors.start ? `start-${index}` : undefined} className={timeField} />
         {errors.start ? <p id={`start-${index}`} className="mt-1 text-xs text-red-600">{errors.start}</p> : null}
       </div>
       <div>
-        <input name="end_time" type="time" defaultValue={schedule?.end_time.slice(0, 5) ?? "13:00"} onChange={() => clear("end")} aria-invalid={Boolean(errors.end)} aria-describedby={errors.end ? `end-${index}` : undefined} className="h-10 rounded-xl border border-slate-200 bg-white px-2 text-sm" />
+        <label htmlFor={`end-time-${index}`} className="sr-only">End time for {day}</label>
+        <input id={`end-time-${index}`} name="end_time" type="time" defaultValue={schedule?.end_time.slice(0, 5) ?? "13:00"} onChange={() => clear("end")} aria-invalid={Boolean(errors.end)} aria-describedby={errors.end ? `end-${index}` : undefined} className={timeField} />
         {errors.end ? <p id={`end-${index}`} className="mt-1 text-xs text-red-600">{errors.end}</p> : null}
       </div>
       <div>
