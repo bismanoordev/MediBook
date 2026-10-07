@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { sendNewBookingRequestEmail } from "@/lib/email/booking-emails"
 import { createClient } from "@/lib/supabase/server"
 
 type BookingRequest = {
@@ -42,13 +43,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Only patient accounts can book appointments." }, { status: 403 })
   }
 
-  const { error } = await supabase.from("appointments").insert({
-    patient_id: user.id,
-    doctor_id: body.doctorId,
-    appointment_date: body.date,
-    start_time: body.time,
-    reason: body.reason?.trim().slice(0, 300) || null,
-  })
+  const { data: appointment, error } = await supabase
+    .from("appointments")
+    .insert({
+      patient_id: user.id,
+      doctor_id: body.doctorId,
+      appointment_date: body.date,
+      start_time: body.time,
+      reason: body.reason?.trim().slice(0, 300) || null,
+    })
+    .select("id")
+    .single()
 
   if (error) {
     console.error("Appointment booking failed", {
@@ -80,6 +85,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: "We could not save your appointment. Please try again." }, { status: 500 })
   }
+
+  // Delivery failures must never undo a valid booking. The helper logs a safe
+  // server-side error and uses a Resend idempotency key for retry protection.
+  await sendNewBookingRequestEmail(appointment.id)
 
   return NextResponse.json({ ok: true }, { status: 201 })
 }

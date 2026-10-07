@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { createClient } from "@/lib/supabase/client"
+import { cancelPatientAppointment } from "@/app/appointments/actions"
 
 export function CancelAppointmentButton({ appointmentId }: { appointmentId: string }) {
   const [loading, setLoading] = useState(false)
@@ -21,10 +21,10 @@ export function CancelAppointmentButton({ appointmentId }: { appointmentId: stri
 
   async function cancel() {
     setLoading(true)
-    const { error } = await createClient().rpc("cancel_appointment", { p_appointment_id: appointmentId })
+    const result = await cancelPatientAppointment(appointmentId)
     setLoading(false)
 
-    if (error) return toast.error(error.message.includes("2 hours") ? "Appointments can only be cancelled more than 2 hours ahead." : "We could not cancel this appointment. Please try again.")
+    if (result.error) return toast.error(result.error)
 
     setOpen(false)
     toast.success("Your appointment has been cancelled.")

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import * as yup from "yup"
 
 import { requireAdmin } from "@/lib/auth"
+import { sendBookingAcceptedEmail, sendBookingCancelledByClinicEmail, sendBookingCancelledByClinicToDoctorEmail } from "@/lib/email/booking-emails"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
 
@@ -121,11 +122,19 @@ export async function updateAppointmentStatus(formData: FormData) {
   const status = String(formData.get("status") ?? "")
   if (!id || !statuses.has(status)) return
   const supabase = await createClient()
-  await supabase.rpc("set_appointment_status", {
+  const { data: appointment, error: lookupError } = await supabase.from("appointments").select("id,status").eq("id", id).maybeSingle()
+  if (lookupError || !appointment) return
+  const { error } = await supabase.rpc("set_appointment_status", {
     p_appointment_id: id,
     p_status: status,
     p_cancel_reason: String(formData.get("cancel_reason") ?? "").trim() || null,
   })
+  if (error) return
+  if (status === "confirmed") await sendBookingAcceptedEmail(id)
+  if (status === "cancelled") await Promise.all([
+    sendBookingCancelledByClinicEmail(id),
+    sendBookingCancelledByClinicToDoctorEmail(id),
+  ])
   revalidatePath("/admin")
   revalidatePath("/admin/appointments")
   revalidatePath("/appointments")

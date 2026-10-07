@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { getDoctorRecord, requireDoctor } from "@/lib/auth"
+import { sendBookingAcceptedEmail, sendBookingCancelledByDoctorEmail, sendBookingRejectedEmail } from "@/lib/email/booking-emails"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
 
@@ -41,12 +42,25 @@ export async function updateDoctorAppointment(input: { appointmentId: string; st
   if (cancelReason.length > 500) return { error: "The decline reason must be 500 characters or fewer." }
 
   const supabase = await createClient()
+  const { data: appointment, error: lookupError } = await supabase
+    .from("appointments")
+    .select("id,status")
+    .eq("id", appointmentId)
+    .eq("doctor_id", doctor.id)
+    .maybeSingle()
+  if (lookupError || !appointment) return { error: "This appointment is not available. Refresh to see the latest status." }
+
   const { error } = await supabase.rpc("set_appointment_status", {
     p_appointment_id: appointmentId,
     p_status: input.status,
     p_cancel_reason: input.status === "cancelled" ? cancelReason || null : null,
   })
   if (error) return { error: friendlyAppointmentError(error.message) }
+
+  if (input.status === "confirmed") await sendBookingAcceptedEmail(appointmentId)
+  if (input.status === "cancelled") {
+    await (appointment.status === "pending" ? sendBookingRejectedEmail(appointmentId) : sendBookingCancelledByDoctorEmail(appointmentId))
+  }
 
   revalidatePath("/doctor")
   revalidatePath("/doctor/appointments")
