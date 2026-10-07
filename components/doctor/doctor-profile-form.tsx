@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { Loader2, Plus, Trash2, Upload, X } from "lucide-react"
 import { ChangeEvent, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { submitDoctorProfileChanges, withdrawDoctorProfileChange } from "@/app/doctor/actions"
@@ -24,6 +25,7 @@ export function DoctorProfileForm({ userId, phone, doctor, specialties, pendingC
   const [error, setError] = useState("")
   const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
+  const router = useRouter()
   const disabled = Boolean(pendingChange) || pending || uploading
   const set = (key: keyof typeof data, value: string | string[]) => setData((current) => ({ ...current, [key]: value } as typeof current))
 
@@ -49,6 +51,7 @@ export function DoctorProfileForm({ userId, phone, doctor, specialties, pendingC
       const result = await submitDoctorProfileChanges({ ...data, qualifications })
       if (result.error) { setError(result.error); return }
       toast.success("Your profile changes were sent for review.")
+      router.refresh()
     })
   }
 
@@ -58,6 +61,7 @@ export function DoctorProfileForm({ userId, phone, doctor, specialties, pendingC
       const result = await withdrawDoctorProfileChange(pendingChange.id)
       if (result.error) { setError(result.error); return }
       toast.success("Profile changes withdrawn.")
+      router.refresh()
     })
   }
 

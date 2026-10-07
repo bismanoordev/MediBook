@@ -91,25 +91,28 @@ export async function deleteDoctor(doctorId: string): Promise<DoctorMutationResu
   return { success: true }
 }
 
-export async function saveSchedule(formData: FormData) {
+export async function saveSchedule(formData: FormData): Promise<DoctorMutationResult> {
   await requireAdmin()
   const doctorId = String(formData.get("doctor_id") ?? "")
   const day = Number(formData.get("day_of_week"))
   const start = String(formData.get("start_time") ?? "")
   const end = String(formData.get("end_time") ?? "")
   const minutes = Number(formData.get("slot_minutes"))
-  if (!doctorId || !Number.isInteger(day) || day < 0 || day > 6) return
+  if (!doctorId || !Number.isInteger(day) || day < 0 || day > 6) return { error: "We couldn't save these hours. Please try again." }
   const supabase = await createClient()
   if (formData.get("enabled") !== "true") {
-    await supabase.from("doctor_schedules").delete().eq("doctor_id", doctorId).eq("day_of_week", day)
+    const { error } = await supabase.from("doctor_schedules").delete().eq("doctor_id", doctorId).eq("day_of_week", day)
+    if (error) return { error: "We couldn't turn off these hours. Please try again." }
     revalidatePath(`/admin/doctors/${doctorId}/schedule`)
     revalidatePath(`/doctors/${doctorId}`)
-    return
+    return { success: true }
   }
-  if (!(await scheduleSchema.isValid({ start, end, minutes })) || end <= start) return
-  await supabase.from("doctor_schedules").upsert({ doctor_id: doctorId, day_of_week: day, start_time: start, end_time: end, slot_minutes: minutes }, { onConflict: "doctor_id,day_of_week" })
+  if (!(await scheduleSchema.isValid({ start, end, minutes })) || end <= start) return { error: "Choose a valid start time, end time, and slot length." }
+  const { error } = await supabase.from("doctor_schedules").upsert({ doctor_id: doctorId, day_of_week: day, start_time: start, end_time: end, slot_minutes: minutes }, { onConflict: "doctor_id,day_of_week" })
+  if (error) return { error: "We couldn't save these hours. Please try again." }
   revalidatePath(`/admin/doctors/${doctorId}/schedule`)
   revalidatePath(`/doctors/${doctorId}`)
+  return { success: true }
 }
 
 export async function updateAppointmentStatus(formData: FormData) {

@@ -2,6 +2,7 @@
 
 import { Loader2, Trash2 } from "lucide-react"
 import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { addDoctorTimeOff, removeDoctorTimeOff } from "@/app/doctor/actions"
@@ -13,6 +14,7 @@ export function DoctorTimeOffForm({ timeOff }: { timeOff: TimeOff[] }) {
   const [endDate, setEndDate] = useState("")
   const [error, setError] = useState("")
   const [pending, startTransition] = useTransition()
+  const router = useRouter()
 
   function addDaysOff() {
     setError("")
@@ -23,6 +25,7 @@ export function DoctorTimeOffForm({ timeOff }: { timeOff: TimeOff[] }) {
       toast.success("Days off saved.")
       setStartDate("")
       setEndDate("")
+      router.refresh()
     })
   }
 
@@ -32,6 +35,7 @@ export function DoctorTimeOffForm({ timeOff }: { timeOff: TimeOff[] }) {
       const result = await removeDoctorTimeOff(id)
       if (result.error) { setError(result.error); return }
       toast.success("Days off removed.")
+      router.refresh()
     })
   }
 

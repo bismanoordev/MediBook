@@ -26,8 +26,8 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
   useEffect(() => {
     const supabase = createClient()
 
-    const load = async () => {
-      setLoading(true)
+    const load = async (showLoading = true) => {
+      if (showLoading) setLoading(true)
       const [latestResult, unreadResult] = await Promise.all([
         supabase
           .from("notifications")
@@ -45,7 +45,7 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
       setItems(latestResult.data ?? [])
       setUnread(unreadResult.count ?? 0)
       setError(Boolean(latestResult.error || unreadResult.error))
-      setLoading(false)
+      if (showLoading) setLoading(false)
     }
 
     void load()
@@ -60,10 +60,16 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
             const notification = payload.new as Notification
             toast.info(notification.title, { description: notification.message })
           }
-          void load()
+          void load(false)
         },
       )
       .subscribe()
+
+    const poll = window.setInterval(() => void load(false), 5_000)
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void load(false)
+    }
+    document.addEventListener("visibilitychange", refreshWhenVisible)
 
     const marked = (event: Event) => {
       if ((event as CustomEvent<{ userId?: string }>).detail?.userId === userId) {
@@ -75,6 +81,8 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
     window.addEventListener("notifications-read", marked)
     return () => {
       window.removeEventListener("notifications-read", marked)
+      document.removeEventListener("visibilitychange", refreshWhenVisible)
+      window.clearInterval(poll)
       void supabase.removeChannel(channel)
     }
   }, [userId])
