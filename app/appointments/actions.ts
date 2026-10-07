@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { requireUser } from "@/lib/auth"
-import { sendBookingCancelledByPatientEmail } from "@/lib/email/booking-emails"
+import { sendBookingCancelledByPatientAdminEmails, sendBookingCancelledByPatientEmail } from "@/lib/email/booking-emails"
 import { createClient } from "@/lib/supabase/server"
 
 type CancelAppointmentResult = { error?: string; success?: true }
@@ -34,7 +34,10 @@ export async function cancelPatientAppointment(appointmentId: string): Promise<C
     return { error: "We couldn't cancel this appointment. Please try again." }
   }
 
-  await sendBookingCancelledByPatientEmail(appointmentId)
+  await Promise.all([
+    sendBookingCancelledByPatientEmail(appointmentId),
+    sendBookingCancelledByPatientAdminEmails(appointmentId),
+  ])
   revalidatePath("/appointments")
   revalidatePath("/doctor")
   revalidatePath("/doctor/appointments")

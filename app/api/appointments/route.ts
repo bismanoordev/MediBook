@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { sendNewBookingRequestEmail } from "@/lib/email/booking-emails"
+import { sendNewBookingRequestAdminEmails, sendNewBookingRequestEmail } from "@/lib/email/booking-emails"
 import { createClient } from "@/lib/supabase/server"
 
 type BookingRequest = {
@@ -88,7 +88,10 @@ export async function POST(request: Request) {
 
   // Delivery failures must never undo a valid booking. The helper logs a safe
   // server-side error and uses a Resend idempotency key for retry protection.
-  await sendNewBookingRequestEmail(appointment.id)
+  await Promise.all([
+    sendNewBookingRequestEmail(appointment.id),
+    sendNewBookingRequestAdminEmails(appointment.id),
+  ])
 
   return NextResponse.json({ ok: true }, { status: 201 })
 }
