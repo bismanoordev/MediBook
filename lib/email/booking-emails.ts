@@ -1,5 +1,7 @@
 import "server-only"
 
+import nodemailer from "nodemailer"
+
 import { siteUrl } from "@/lib/site"
 import { createAdminClient } from "@/lib/supabase/admin"
 
@@ -129,8 +131,9 @@ async function adminUserIds(appointmentId: string) {
   return data.map((profile) => profile.id)
 }
 
-async function sendResendEmail(input: { to: string; subject: string; html: string; text: string; idempotencyKey: string; appointmentId: string }): Promise<EmailResult> {
-  const apiKey = process.env.RESEND_API_KEY
+async function sendGmailEmail(input: { to: string; subject: string; html: string; text: string; appointmentId: string }): Promise<EmailResult> {
+  const gmailUser = process.env.GMAIL_USER
+  const gmailAppPassword = process.env.GMAIL_APP_PASSWORD
   const from = process.env.EMAIL_FROM
   const testMode = process.env.EMAIL_TEST_MODE === "true"
   const testRecipient = process.env.EMAIL_TEST_RECIPIENT
@@ -139,8 +142,8 @@ async function sendResendEmail(input: { to: string; subject: string; html: strin
     console.info("Booking email suppressed outside production. Set EMAIL_TEST_MODE=true to deliver to a safe test inbox.", { appointmentId: input.appointmentId })
     return { delivered: false, skipped: true }
   }
-  if (!apiKey || !from) {
-    console.warn("Booking email skipped: Resend is not configured.", { appointmentId: input.appointmentId })
+  if (!gmailUser || !gmailAppPassword || !from) {
+    console.warn("Booking email skipped: Gmail SMTP is not configured.", { appointmentId: input.appointmentId })
     return { delivered: false, skipped: true }
   }
   if (testMode && !testRecipient) {
@@ -150,22 +153,17 @@ async function sendResendEmail(input: { to: string; subject: string; html: strin
 
   const recipient = testMode ? testRecipient! : input.to
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "Idempotency-Key": input.idempotencyKey,
-      },
-      body: JSON.stringify({ from, to: [recipient], subject: input.subject, html: input.html, text: input.text }),
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: { user: gmailUser, pass: gmailAppPassword },
     })
-    if (!response.ok) {
-      console.error("Booking email delivery failed.", { appointmentId: input.appointmentId, status: response.status })
-      return { delivered: false }
-    }
+    await transporter.sendMail({ from, to: recipient, subject: input.subject, html: input.html, text: input.text })
     return { delivered: true }
   } catch (error) {
-    console.error("Booking email delivery failed.", { appointmentId: input.appointmentId, error: error instanceof Error ? error.name : "unknown" })
+    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : undefined
+    console.error("Booking email delivery failed.", { appointmentId: input.appointmentId, error: error instanceof Error ? error.name : "unknown", code })
     return { delivered: false }
   }
 }
@@ -244,12 +242,11 @@ async function sendBookingEmailInternal(event: BookingEmailEvent, appointmentId:
   const recipient = await emailForUser(recipientId, appointmentId)
   if (!recipient) return { delivered: false, skipped: true }
 
-  return sendResendEmail({
+  return sendGmailEmail({
     to: recipient,
     subject,
     html: emailHtml({ title, greeting, body, rows: bookingRows(context, extras), actionLabel, actionUrl }),
     text: `${title}\n\n${greeting}\n${body}\n\n${commonText}\n${extras.filter(([, value]) => Boolean(value)).map(([label, value]) => `${label}: ${value}`).join("\n")}\n\n${actionLabel}: ${actionUrl}`,
-    idempotencyKey: `appointment-${appointmentId}-${event}`,
     appointmentId,
   })
 }
@@ -303,12 +300,11 @@ async function sendBookingEmailToAdmins(event: "new-request" | "cancelled-by-pat
     await Promise.all(adminIds.map(async (adminId) => {
       const recipient = await emailForUser(adminId, appointmentId)
       if (!recipient) return
-      await sendResendEmail({
+      await sendGmailEmail({
         to: recipient,
         subject,
         html,
         text,
-        idempotencyKey: `appointment-${appointmentId}-${event}-admin-${adminId}`,
         appointmentId,
       })
     }))

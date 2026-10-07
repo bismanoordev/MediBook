@@ -86,8 +86,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "We could not save your appointment. Please try again." }, { status: 500 })
   }
 
-  // Delivery failures must never undo a valid booking. The helper logs a safe
-  // server-side error and uses a Resend idempotency key for retry protection.
+  // Delivery failures must never undo a valid booking. The server-only helper
+  // logs a safe error without exposing SMTP details to the browser.
   await Promise.all([
     sendNewBookingRequestEmail(appointment.id),
     sendNewBookingRequestAdminEmails(appointment.id),

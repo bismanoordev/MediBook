@@ -44,10 +44,11 @@ Add deployment screenshots here when available:
    # Or, for older Supabase projects only:
    # NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 
-   # Server-only booking email delivery (Resend)
+   # Server-only booking email delivery (Gmail SMTP)
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   RESEND_API_KEY=re_your_resend_api_key
-   EMAIL_FROM="MediBook <bookings@your-domain.com>"
+   GMAIL_USER=your-gmail-address@gmail.com
+   GMAIL_APP_PASSWORD=your_16_character_google_app_password
+   EMAIL_FROM="MediBook <your-gmail-address@gmail.com>"
    NEXT_PUBLIC_SITE_URL=https://your-production-domain.com
 
    # Optional: safe email delivery during local development
