@@ -79,6 +79,29 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
     }
   }, [userId])
 
+  useEffect(() => {
+    if (!open) return
+
+    function closeWhenClickingAway(event: PointerEvent) {
+      const target = event.target as Element | null
+      const dialog = document.querySelector<HTMLElement>('[role="dialog"][aria-label="Latest notifications"]')
+      const notificationTrigger = target?.closest('button[aria-haspopup="dialog"][aria-label^="Notifications"]')
+
+      if (!dialog?.contains(target) && !notificationTrigger) setOpen(false)
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false)
+    }
+
+    document.addEventListener("pointerdown", closeWhenClickingAway)
+    document.addEventListener("keydown", closeOnEscape)
+    return () => {
+      document.removeEventListener("pointerdown", closeWhenClickingAway)
+      document.removeEventListener("keydown", closeOnEscape)
+    }
+  }, [open])
+
   async function markAll() {
     setSaving(true)
     const { error: updateError } = await createClient()
