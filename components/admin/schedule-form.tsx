@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import * as yup from "yup"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const schema = yup.object({
   start: yup.string().required("Choose a start time."),
@@ -50,9 +51,15 @@ export function ScheduleForm({ action, doctorId, day, index, schedule }: { actio
         {errors.end ? <p id={`end-${index}`} className="mt-1 text-xs text-red-600">{errors.end}</p> : null}
       </div>
       <div>
-        <select name="slot_minutes" defaultValue={schedule?.slot_minutes ?? 30} onChange={() => clear("minutes")} aria-invalid={Boolean(errors.minutes)} aria-describedby={errors.minutes ? `minutes-${index}` : undefined} className="h-10 rounded-xl border border-slate-200 bg-white px-2 text-sm">
-          <option value="15">15 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="60">60 min</option>
-        </select>
+        <label htmlFor={`slot-minutes-${index}`} className="sr-only">Appointment slot duration for {day}</label>
+        <Select name="slot_minutes" defaultValue={String(schedule?.slot_minutes ?? 30)} items={[{ value: "15", label: "15 min" }, { value: "20", label: "20 min" }, { value: "30", label: "30 min" }, { value: "60", label: "60 min" }]} onValueChange={() => clear("minutes")}>
+          <SelectTrigger id={`slot-minutes-${index}`} aria-invalid={Boolean(errors.minutes)} aria-describedby={errors.minutes ? `minutes-${index}` : undefined} className="h-10 min-w-24 rounded-xl border-slate-200 bg-white px-3 text-sm shadow-sm focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-teal-100">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+            {[15, 20, 30, 60].map((minutes) => <SelectItem key={minutes} value={String(minutes)} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-semibold data-[selected]:text-[#0F766E]">{minutes} min</SelectItem>)}
+          </SelectContent>
+        </Select>
         {errors.minutes ? <p id={`minutes-${index}`} className="mt-1 text-xs text-red-600">{errors.minutes}</p> : null}
       </div>
       <div className="flex flex-wrap gap-2 sm:justify-end">
