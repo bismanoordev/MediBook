@@ -122,9 +122,19 @@
 
 @layer base {
   button:not(:disabled),
+  input[type="button"]:not(:disabled),
+  input[type="reset"]:not(:disabled),
+  input[type="submit"]:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   a[href] {
     cursor: pointer;
+  }
+
+  button:disabled,
+  input[type="button"]:disabled,
+  input[type="reset"]:disabled,
+  input[type="submit"]:disabled {
+    cursor: not-allowed;
   }
 
   * {
