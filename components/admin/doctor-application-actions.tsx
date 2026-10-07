@@ -8,10 +8,15 @@ import { reviewDoctorApplication, reviewDoctorDocument } from "@/app/admin/actio
 
 const inputClass = "mt-2 min-h-20 w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-teal-100"
 
-export function DoctorApplicationActions({ doctorId }: { doctorId: string }) {
+export function DoctorApplicationActions({ doctorId, status }: { doctorId: string; status: string }) {
   const [note, setNote] = useState("")
   const [error, setError] = useState("")
   const [pending, startTransition] = useTransition()
+
+  if (status !== "pending") {
+    const isRejected = status === "rejected"
+    return <section className={`rounded-2xl border p-5 shadow-sm ${isRejected ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50"}`}><h2 className={`text-lg font-semibold ${isRejected ? "text-red-900" : "text-amber-950"}`}>{isRejected ? "Application rejected" : "Changes requested"}</h2><p className={`mt-1 text-sm leading-6 ${isRejected ? "text-red-800" : "text-amber-900"}`}>The doctor must update and submit this application again before it can be reviewed.</p></section>
+  }
 
   function review(decision: "approved" | "rejected" | "changes_requested") {
     setError("")

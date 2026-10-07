@@ -142,7 +142,7 @@ export async function reviewDoctorApplication(input: { doctorId: string; decisio
   }
 
   const supabase = await createClient()
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("doctors")
     .update({
       approval_status: input.decision,
@@ -150,8 +150,12 @@ export async function reviewDoctorApplication(input: { doctorId: string; decisio
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", doctorId)
+    .eq("approval_status", "pending")
+    .select("id")
+    .maybeSingle()
 
   if (error) return { error: "We couldn't save this application review. Please try again." }
+  if (!data) return { error: "This application was already reviewed. Refresh the page." }
   revalidatePath("/admin")
   revalidatePath("/admin/doctors")
   revalidatePath("/admin/doctors/applications")
