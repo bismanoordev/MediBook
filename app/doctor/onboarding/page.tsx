@@ -21,7 +21,7 @@ export default async function DoctorOnboardingPage() {
             <span className="grid size-8 place-items-center rounded-xl bg-[#0F766E] text-white shadow-sm"><HeartPulse className="size-4" aria-hidden="true" /></span>
             MediBook
           </Link>
-          <AccountMenu userId={user.id} name={profile?.full_name} email={user.email} role="doctor" />
+          <AccountMenu userId={user.id} name={profile?.full_name} email={user.email} role="doctor" avatarUrl={doctor.photo_url} />
         </div>
       </header>
       <DoctorOnboardingForm userId={user.id} doctor={doctor} fullName={profile?.full_name ?? ""} phone={profile?.phone ?? ""} specialties={specialties ?? []} documents={documents ?? []} />
