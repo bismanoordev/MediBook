@@ -120,17 +120,6 @@ async function emailForUser(userId: string, appointmentId: string) {
   return data.user.email
 }
 
-async function adminUserIds(appointmentId: string) {
-  const admin = createAdminClient()
-  if (!admin) return []
-  const { data, error } = await admin.from("profiles").select("id").eq("role", "admin")
-  if (error) {
-    console.error("Booking email skipped: admin recipient lookup failed.", { appointmentId, code: error.code })
-    return []
-  }
-  return data.map((profile) => profile.id)
-}
-
 async function sendGmailEmail(input: { to: string; subject: string; html: string; text: string; appointmentId: string }): Promise<EmailResult> {
   const gmailUser = process.env.GMAIL_USER
   const gmailAppPassword = process.env.GMAIL_APP_PASSWORD
@@ -269,54 +258,6 @@ export async function sendBookingEmail(event: BookingEmailEvent, appointmentId: 
   }
 }
 
-/** Sends operational booking notices to configured admin accounts. */
-async function sendBookingEmailToAdmins(event: "new-request" | "cancelled-by-patient", appointmentId: string) {
-  try {
-    const context = await loadContext(appointmentId)
-    if (!context) return
-    const adminIds = await adminUserIds(appointmentId)
-    if (!adminIds.length) return
-
-    const isNewRequest = event === "new-request"
-    const subject = isNewRequest ? "New Booking Request Received" : "Booking Cancelled"
-    const title = isNewRequest ? "New booking request" : "Appointment cancelled"
-    const body = isNewRequest
-      ? `${context.patientName} requested an appointment with Dr. ${context.doctorName}.`
-      : `${context.patientName} cancelled an appointment with Dr. ${context.doctorName}.`
-    const extras: Array<[string, string | null | undefined]> = isNewRequest
-      ? [["Status", "Pending"], ["Patient note", context.reason]]
-      : [["Status", "Cancelled"], ["Cancelled by", context.patientName], ["Reason", context.cancel_reason]]
-    const actionUrl = `${siteUrl}/admin/appointments`
-    const html = emailHtml({
-      title,
-      greeting: "Hello MediBook admin,",
-      body,
-      rows: bookingRows(context, extras),
-      actionLabel: "Open appointments",
-      actionUrl,
-    })
-    const text = `${title}\n\n${body}\n\nBooking ID: ${context.id}\nDoctor: ${context.doctorName}\nPatient: ${context.patientName}\nAppointment: ${formatVisit(context.appointment_date, context.start_time)}\n\nOpen appointments: ${actionUrl}`
-
-    await Promise.all(adminIds.map(async (adminId) => {
-      const recipient = await emailForUser(adminId, appointmentId)
-      if (!recipient) return
-      await sendGmailEmail({
-        to: recipient,
-        subject,
-        html,
-        text,
-        appointmentId,
-      })
-    }))
-  } catch (error) {
-    console.error("Admin booking email delivery failed unexpectedly.", {
-      appointmentId,
-      event,
-      error: error instanceof Error ? error.name : "unknown",
-    })
-  }
-}
-
 export const sendNewBookingRequestEmail = (appointmentId: string) => sendBookingEmail("new-request", appointmentId)
 export const sendBookingAcceptedEmail = (appointmentId: string) => sendBookingEmail("confirmed", appointmentId)
 export const sendBookingRejectedEmail = (appointmentId: string) => sendBookingEmail("declined", appointmentId)
@@ -324,5 +265,3 @@ export const sendBookingCancelledByPatientEmail = (appointmentId: string) => sen
 export const sendBookingCancelledByDoctorEmail = (appointmentId: string) => sendBookingEmail("cancelled-by-doctor", appointmentId)
 export const sendBookingCancelledByClinicEmail = (appointmentId: string) => sendBookingEmail("cancelled-by-clinic", appointmentId)
 export const sendBookingCancelledByClinicToDoctorEmail = (appointmentId: string) => sendBookingEmail("cancelled-by-clinic-to-doctor", appointmentId)
-export const sendNewBookingRequestAdminEmails = (appointmentId: string) => sendBookingEmailToAdmins("new-request", appointmentId)
-export const sendBookingCancelledByPatientAdminEmails = (appointmentId: string) => sendBookingEmailToAdmins("cancelled-by-patient", appointmentId)
