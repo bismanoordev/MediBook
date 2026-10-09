@@ -1,5 +1,5 @@
-import { MediBookLoadingScreen } from "@/components/medibook-loading-screen"
+import { DashboardLoading } from "@/components/page-loading-skeletons"
 
 export default function Loading() {
-  return <MediBookLoadingScreen />
+  return <DashboardLoading doctor />
 }
