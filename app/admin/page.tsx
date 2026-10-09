@@ -107,8 +107,8 @@ export default async function AdminPage() {
           {chartResult.error ? (
             <p className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">Booking activity couldn&apos;t be loaded. Please refresh and try again.</p>
           ) : (
-            <div className="mt-8 grid h-48 grid-cols-7 items-end gap-2" aria-label="Bookings over the last 7 days">
-              {chart.map((item) => <div key={item.date} className="flex h-full min-w-0 flex-col justify-end text-center"><span className="mb-2 text-xs font-semibold text-slate-600">{item.count}</span><div className="min-h-1 rounded-t-lg bg-[#0F766E] transition-[height]" style={{ height: `${Math.max(4, Math.round((item.count / max) * 100))}%` }} title={`${item.count} bookings`} /><span className="mt-2 text-[11px] text-slate-500">{item.label}</span></div>)}
+            <div className="mt-8 grid h-48 grid-cols-7 items-end gap-1 sm:gap-2" aria-label="Bookings over the last 7 days">
+              {chart.map((item) => <div key={item.date} className="flex h-full min-w-0 flex-col justify-end text-center"><span className="mb-2 truncate text-xs font-semibold text-slate-600">{item.count}</span><div className="min-h-1 rounded-t-lg bg-[#0F766E] transition-[height]" style={{ height: `${Math.max(4, Math.round((item.count / max) * 100))}%` }} title={`${item.count} bookings`} /><span className="mt-2 truncate text-[11px] text-slate-500">{item.label}</span></div>)}
             </div>
           )}
         </div>
