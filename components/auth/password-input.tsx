@@ -36,8 +36,8 @@ export function PasswordInput({ label, id, className, ...props }: PasswordInputP
           variant="ghost"
           size="icon"
           className="absolute right-0 top-1/2 z-10 size-11 -translate-y-1/2 rounded-xl text-muted-foreground"
-          onPointerDown={(event) => event.preventDefault()}
           onClick={() => setVisible((current) => !current)}
+          aria-controls={id}
           aria-label={visible ? "Hide password" : "Show password"}
           aria-pressed={visible}
           title={visible ? "Hide password" : "Show password"}
