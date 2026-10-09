@@ -95,7 +95,8 @@ export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, 
       {mounted && open
         ? createPortal(
             <div
-              className={`${desktopBreakpoint === "lg" ? "lg:hidden" : "sm:hidden"} ${headerOffset === "20" ? "fixed inset-x-0 bottom-0 top-20 z-50 bg-slate-950/15" : "fixed inset-x-0 bottom-0 top-16 z-50 bg-slate-950/15"}`}
+              className={`${desktopBreakpoint === "lg" ? "lg:hidden" : "sm:hidden"} fixed inset-0 z-50 bg-slate-950/15`}
+              data-header-offset={headerOffset}
               onPointerDown={() => closeDrawer()}
             >
               <aside
@@ -104,7 +105,7 @@ export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, 
                 role="dialog"
                 aria-modal="true"
                 aria-label="Mobile navigation"
-                className="flex h-full w-full flex-col overflow-y-auto rounded-b-2xl border-b border-slate-200 bg-white"
+                className="flex h-full w-full flex-col overflow-y-auto bg-white"
                 onPointerDown={(event) => event.stopPropagation()}
               >
             <div className="flex min-h-16 items-center justify-between border-b border-slate-100 px-5">
