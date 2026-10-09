@@ -102,7 +102,7 @@ export function DoctorBookingFlow({ doctorId, days, loggedIn, role }: { doctorId
   }
 
   return (
-    <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
+    <section className="mt-8 grid gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:pb-0">
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
