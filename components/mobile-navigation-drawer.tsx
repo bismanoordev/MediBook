@@ -104,7 +104,7 @@ export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, 
                 role="dialog"
                 aria-modal="true"
                 aria-label="Mobile navigation"
-                className="flex max-h-full w-full flex-col overflow-y-auto rounded-b-2xl border-b border-slate-200 bg-white"
+                className="flex h-full w-full flex-col overflow-y-auto rounded-b-2xl border-b border-slate-200 bg-white"
                 onPointerDown={(event) => event.stopPropagation()}
               >
             <div className="flex min-h-16 items-center justify-between border-b border-slate-100 px-5">
