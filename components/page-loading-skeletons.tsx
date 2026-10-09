@@ -4,7 +4,7 @@ function Skeleton({ className }: SkeletonProps) {
   return <div aria-hidden="true" className={`animate-pulse rounded-xl bg-slate-200/80 ${className}`} />
 }
 
-function PageIntro({ labelWidth = "w-36", titleWidth = "w-64", copyWidth = "w-96" }: { labelWidth?: string; titleWidth?: string; copyWidth?: string }) {
+function PageIntro({ labelWidth = "w-36", titleWidth = "w-64", copyWidth = "w-full max-w-96" }: { labelWidth?: string; titleWidth?: string; copyWidth?: string }) {
   return <div>
     <Skeleton className={`h-4 ${labelWidth} bg-teal-100`} />
     <Skeleton className={`mt-3 h-9 max-w-full ${titleWidth}`} />
@@ -60,14 +60,14 @@ export function AppointmentsLoading({ doctor = false }: { doctor?: boolean }) {
 
 export function AvailabilityLoading() {
   return <main className="mx-auto max-w-5xl px-5 py-7 sm:px-8 sm:py-9" aria-label="Loading availability">
-    <PageIntro labelWidth="w-44" titleWidth="w-80" copyWidth="w-[32rem]" />
+    <PageIntro labelWidth="w-44" titleWidth="w-full max-w-80" copyWidth="w-full max-w-[32rem]" />
     <div className="mt-8"><Skeleton className="h-5 w-40" /><Skeleton className="mt-2 h-4 w-80 max-w-full" /><div className="mt-5 grid gap-3">{Array.from({ length: 7 }, (_, index) => <div key={index} className="flex h-20 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><Skeleton className="size-5" /><Skeleton className="h-4 w-24" /><Skeleton className="ml-auto h-10 w-44" /></div>)}</div></div>
     <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"><Skeleton className="h-64 w-full border border-slate-200 bg-white" /><Skeleton className="h-64 w-full border border-slate-200 bg-white" /></div>
   </main>
 }
 
 export function ProfileLoading() {
-  return <main className="mx-auto max-w-4xl px-5 py-8 sm:px-8 sm:py-10" aria-label="Loading profile"><PageIntro labelWidth="w-28" titleWidth="w-52" copyWidth="w-80" /><div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex gap-4"><Skeleton className="size-20 rounded-2xl bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-48" /><Skeleton className="mt-3 h-4 w-64" /></div></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-11 w-full" />)}</div><Skeleton className="mt-4 h-28 w-full" /></div></main>
+  return <main className="mx-auto max-w-4xl px-5 py-8 sm:px-8 sm:py-10" aria-label="Loading profile"><PageIntro labelWidth="w-28" titleWidth="w-52" copyWidth="w-full max-w-80" /><div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex gap-4"><Skeleton className="size-20 rounded-2xl bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-48" /><Skeleton className="mt-3 h-4 w-64" /></div></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-11 w-full" />)}</div><Skeleton className="mt-4 h-28 w-full" /></div></main>
 }
 
 export function DocumentsLoading() {
