@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Bell, HeartPulse, Menu, X } from "lucide-react"
+import { createPortal } from "react-dom"
 import { useEffect, useId, useRef, useState } from "react"
 
 import { AccountMenu } from "@/components/auth/account-menu"
@@ -27,12 +28,17 @@ type MobileNavigationDrawerProps = {
 export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, role, notificationsHref, desktopBreakpoint = "sm", headerOffset = "16" }: MobileNavigationDrawerProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const drawerId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const drawerRef = useRef<HTMLElement>(null)
   const previousOverflow = useRef("")
   const authenticated = Boolean(userId && role)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   function closeDrawer(restoreFocus = true) {
     setOpen(false)
@@ -86,17 +92,21 @@ export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, 
         <Menu className="size-5" aria-hidden="true" />
       </button>
 
-      {open ? (
-        <div className={headerOffset === "20" ? "fixed inset-x-0 bottom-0 top-20 z-50 bg-slate-950/15" : "fixed inset-x-0 bottom-0 top-16 z-50 bg-slate-950/15"} onPointerDown={() => closeDrawer()}>
-          <aside
-            ref={drawerRef}
-            id={drawerId}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Mobile navigation"
-            className="flex max-h-full w-full flex-col overflow-y-auto rounded-b-2xl border-b border-slate-200 bg-white"
-            onPointerDown={(event) => event.stopPropagation()}
-          >
+      {mounted && open
+        ? createPortal(
+            <div
+              className={`${desktopBreakpoint === "lg" ? "lg:hidden" : "sm:hidden"} ${headerOffset === "20" ? "fixed inset-x-0 bottom-0 top-20 z-50 bg-slate-950/15" : "fixed inset-x-0 bottom-0 top-16 z-50 bg-slate-950/15"}`}
+              onPointerDown={() => closeDrawer()}
+            >
+              <aside
+                ref={drawerRef}
+                id={drawerId}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Mobile navigation"
+                className="flex max-h-full w-full flex-col overflow-y-auto rounded-b-2xl border-b border-slate-200 bg-white"
+                onPointerDown={(event) => event.stopPropagation()}
+              >
             <div className="flex min-h-16 items-center justify-between border-b border-slate-100 px-5">
               <Link href="/" onClick={() => closeDrawer(false)} className="flex items-center gap-2 font-bold tracking-tight text-slate-900">
                 <span className="grid size-8 place-items-center rounded-xl bg-[#0F766E] text-white"><HeartPulse className="size-4" aria-hidden="true" /></span>
@@ -150,9 +160,11 @@ export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, 
                 </div>
               )}
             </div>
-          </aside>
-        </div>
-      ) : null}
+              </aside>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }
