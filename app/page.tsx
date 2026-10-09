@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import { ArrowRight, MessageCircleHeart, Search, ShieldCheck } from "lucide-react"
 
 import { LandingHeader } from "@/components/home/landing-header"
+import { LandingPageEffects } from "@/components/home/landing-page-effects"
 import { SiteFooter } from "@/components/site-footer"
 import { SpecialtyCards, SpecialtyCardsLoading } from "@/components/home/specialty-cards"
 import { HomeDoctorCards, HomeDoctorHero } from "@/components/home/home-doctors"
@@ -32,6 +33,7 @@ export default async function Home() {
 
   return (
     <main data-landing-page className="overflow-x-clip bg-white text-slate-950">
+      <LandingPageEffects />
       <section className="relative bg-[#E7F7F5]">
         <div aria-hidden className="absolute -left-28 top-28 size-80 rounded-full bg-[#B8EEE8]/70 blur-3xl" />
         <div aria-hidden className="absolute right-[8%] top-24 size-64 rounded-full border-[32px] border-white/40" />
