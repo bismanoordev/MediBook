@@ -88,7 +88,29 @@ export function DoctorFormLoading() {
 }
 
 export function DoctorDetailsLoading() {
-  return <div className="min-h-screen bg-[#F8FAFC]"><main className="mx-auto max-w-6xl px-5 py-8 sm:px-8 sm:py-10" aria-label="Loading doctor details"><Skeleton className="h-4 w-28 bg-teal-100" /><section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex flex-wrap gap-6"><Skeleton className="size-24 rounded-2xl bg-teal-100" /><div className="min-w-0 flex-1"><Skeleton className="h-5 w-28" /><Skeleton className="mt-4 h-9 w-64 max-w-full" /><Skeleton className="mt-4 h-4 w-full max-w-xl" /></div><Skeleton className="h-16 w-40" /></div></section><section className="mt-6 grid gap-6 lg:grid-cols-[.7fr_1.3fr]"><Skeleton className="h-72 w-full border border-slate-200 bg-white" /><Skeleton className="h-72 w-full border border-slate-200 bg-white" /></section></main></div>
+  return (
+    <div className="min-h-screen bg-[#F8FAFC]">
+      <main className="mx-auto max-w-6xl px-5 py-8 pb-28 sm:px-8 sm:py-10 lg:pb-12" aria-label="Loading doctor details">
+        <Skeleton className="h-4 w-28 bg-teal-100" />
+        <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
+            <Skeleton className="size-24 rounded-2xl bg-teal-100 sm:size-28" />
+            <div className="min-w-0"><Skeleton className="h-6 w-28" /><Skeleton className="mt-3 h-9 w-64 max-w-full" /><Skeleton className="mt-3 h-4 w-full max-w-2xl" /><Skeleton className="mt-2 h-4 w-4/5 max-w-xl" /></div>
+            <div className="rounded-xl border border-teal-100 bg-teal-50/70 px-4 py-3"><Skeleton className="h-3 w-24" /><Skeleton className="mt-2 h-6 w-20" /></div>
+          </div>
+        </section>
+        <section className="mt-8 grid gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:pb-0">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <Skeleton className="h-4 w-32 bg-teal-100" /><Skeleton className="mt-3 h-8 w-64 max-w-full" /><Skeleton className="mt-3 h-4 w-full max-w-lg" />
+            <div className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-7">{Array.from({ length: 7 }, (_, index) => <Skeleton key={index} className="h-16 w-full rounded-xl" />)}</div>
+            <div className="mt-7 border-t border-slate-100 pt-6"><Skeleton className="h-5 w-64 max-w-full" /><div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }, (_, index) => <Skeleton key={index} className="h-11 w-full rounded-xl" />)}</div></div>
+          </div>
+          <aside className="hidden rounded-2xl border border-teal-100 bg-teal-50/70 p-5 shadow-sm lg:block"><Skeleton className="h-4 w-36 bg-teal-100" /><Skeleton className="mt-5 h-4 w-full" /><Skeleton className="mt-2 h-4 w-4/5" /><Skeleton className="mt-6 h-11 w-full bg-teal-100" /></aside>
+          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden"><div className="mx-auto flex max-w-xl items-center gap-3"><Skeleton className="h-4 flex-1" /><Skeleton className="h-11 w-28 shrink-0 bg-teal-100" /></div></div>
+        </section>
+      </main>
+    </div>
+  )
 }
 
 export function NotificationsLoading() {
