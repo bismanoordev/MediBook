@@ -105,7 +105,7 @@ export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, 
                 role="dialog"
                 aria-modal="true"
                 aria-label="Mobile navigation"
-                className="flex h-full w-full flex-col overflow-y-auto bg-white"
+                className="flex max-h-full w-full flex-col overflow-y-auto bg-white"
                 onPointerDown={(event) => event.stopPropagation()}
               >
             <div className="flex min-h-16 items-center justify-between border-b border-slate-100 px-5">
@@ -148,7 +148,7 @@ export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, 
               ) : null}
             </nav>
 
-            <div className="mt-auto border-t border-slate-100 bg-[#F8FAFC] px-5 py-4">
+            <div className="border-t border-slate-100 bg-[#F8FAFC] px-5 py-4">
               {authenticated && userId && role && notificationsHref ? (
                 <div className="flex items-center justify-between gap-3">
                   <AccountMenu userId={userId} name={name} email={email} role={role} avatarUrl={avatarUrl} />
