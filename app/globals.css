@@ -240,6 +240,12 @@ html {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+}
+
 @media (min-width: 640px) and (prefers-reduced-motion: no-preference) {
   [data-scroll-reveal] {
     transform: translateY(26px);

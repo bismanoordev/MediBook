@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Bell, HeartPulse, Menu, X } from "lucide-react"
 import { createPortal } from "react-dom"
-import { useEffect, useId, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 
 import { AccountMenu } from "@/components/auth/account-menu"
 import { NotificationBell } from "@/components/patient/notification-bell"
@@ -28,17 +28,13 @@ type MobileNavigationDrawerProps = {
 export function MobileNavigationDrawer({ links, userId, name, email, avatarUrl, role, notificationsHref, desktopBreakpoint = "sm", headerOffset = "16" }: MobileNavigationDrawerProps) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(() => () => {}, () => true, () => false)
   const drawerId = useId()
   const triggerRef = useRef<HTMLButtonElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const drawerRef = useRef<HTMLElement>(null)
   const previousOverflow = useRef("")
   const authenticated = Boolean(userId && role)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   function closeDrawer(restoreFocus = true) {
     setOpen(false)
