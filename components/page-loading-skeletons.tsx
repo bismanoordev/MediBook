@@ -103,11 +103,11 @@ export function DoctorDetailsLoading() {
     <div className="min-h-screen bg-[#F8FAFC]">
       <main className="mx-auto max-w-6xl px-5 py-8 pb-28 sm:px-8 sm:py-10 lg:pb-12" aria-label="Loading doctor details">
         <Skeleton className="h-4 w-28 bg-teal-100" />
-        <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="grid gap-6 p-5 sm:p-7 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
-            <Skeleton className="size-24 rounded-2xl bg-teal-100 sm:size-28" />
-            <div className="min-w-0"><Skeleton className="h-6 w-28" /><Skeleton className="mt-3 h-9 w-64 max-w-full" /><Skeleton className="mt-3 h-4 w-full max-w-2xl" /><Skeleton className="mt-2 h-4 w-4/5 max-w-xl" /></div>
-            <div className="rounded-xl border border-teal-100 bg-teal-50/70 px-4 py-3"><Skeleton className="h-3 w-24" /><Skeleton className="mt-2 h-6 w-20" /></div>
+        <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-start gap-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-6">
+            <Skeleton className="size-20 rounded-2xl bg-teal-100 sm:size-32" />
+            <div className="min-w-0"><div className="flex items-start justify-between gap-3"><div className="min-w-0 flex-1"><Skeleton className="h-6 w-28" /><Skeleton className="mt-3 h-9 w-64 max-w-full" /></div><div className="hidden rounded-xl border border-teal-100 bg-teal-50 px-4 py-3 sm:block"><Skeleton className="h-3 w-24" /><Skeleton className="mt-2 h-6 w-20" /></div></div><Skeleton className="mt-3 h-4 w-36 sm:hidden" /></div>
+            <div className="col-span-2 min-w-0 sm:col-start-2 sm:col-span-1"><div className="flex flex-wrap gap-2"><Skeleton className="h-8 w-36" /><Skeleton className="h-8 w-40 max-w-full" /><Skeleton className="h-8 w-32" /></div><Skeleton className="mt-5 h-3 w-12" /><Skeleton className="mt-3 h-4 w-full max-w-2xl" /><Skeleton className="mt-2 h-4 w-4/5 max-w-xl" /><Skeleton className="mt-2 h-4 w-3/5 max-w-lg" /></div>
           </div>
         </section>
         <section className="mt-8 grid gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:pb-0">
