@@ -8,6 +8,7 @@ import { DoctorPhoto } from "@/components/doctor-photo"
 import { requireAdmin } from "@/lib/auth"
 import { createClient } from "@/lib/supabase/server"
 import type { DoctorApprovalStatus, Json } from "@/lib/supabase/database.types"
+import { doctorApprovalDocumentError, type ApprovalDocument } from "@/lib/validation/doctor-approval"
 
 const tabs: { value: DoctorApprovalStatus; label: string }[] = [
   { value: "pending", label: "Pending" },
@@ -78,6 +79,7 @@ export default async function DoctorApplicationsPage({ searchParams }: { searchP
     ? await supabase.from("doctor_documents").select("*").eq("doctor_id", doctor.id).order("uploaded_at")
     : { data: [], error: null }
   const documents = documentsResult.data ?? []
+  const approvalDocumentError = doctorApprovalDocumentError(documents as ApprovalDocument[])
   const signedDocuments = await Promise.all(documents.map(async (document) => {
     const { data } = await supabase.storage.from("doctor-documents").createSignedUrl(document.file_path, 300)
     return { ...document, signedUrl: data?.signedUrl ?? null }
@@ -113,7 +115,7 @@ export default async function DoctorApplicationsPage({ searchParams }: { searchP
 
         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><h2 className="text-lg font-semibold text-slate-900">Documents</h2><p className="mt-1 text-sm text-slate-500">Private files are available only through short-lived secure links.</p><div className="mt-4 grid gap-3">{signedDocuments.length ? signedDocuments.map((document) => <div key={document.id} className="rounded-xl border border-slate-200 p-4"><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><p className="font-semibold text-slate-900">{documentLabels[document.doc_type]}</p><p className="mt-1 truncate text-sm text-slate-500">{document.file_name}</p></div><DocumentStatusBadge status={document.status} /></div>{document.signedUrl ? <a href={document.signedUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#0F766E] hover:underline"><FileText className="size-4" />Preview or download<ExternalLink className="size-3" /></a> : <p className="mt-3 text-sm text-red-700">{"This file couldn't be opened. Please try again."}</p>}<DoctorDocumentReview documentId={document.id} status={document.status} reviewerNote={document.reviewer_note} /></div>) : <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No documents have been uploaded.</p>}</div></article>
 
-        {doctor.approval_status === "approved" ? <section className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-green-100 text-green-800"><CheckCircle2 className="size-5" aria-hidden="true" /></span><div><h2 className="font-semibold text-green-900">Application approved</h2><p className="mt-1 text-sm text-green-800">This doctor is approved and visible to patients while their profile is active.</p></div></div></section> : <DoctorApplicationActions doctorId={doctor.id} status={doctor.approval_status} />}
+        {doctor.approval_status === "approved" ? <section className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm"><div className="flex items-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-green-100 text-green-800"><CheckCircle2 className="size-5" aria-hidden="true" /></span><div><h2 className="font-semibold text-green-900">Application approved</h2><p className="mt-1 text-sm text-green-800">This doctor is approved and visible to patients while their profile is active.</p></div></div>{approvalDocumentError ? <p role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Approved, but {approvalDocumentError.replace("You can't approve this doctor yet. Verify the CNIC and the PMDC license first. ", "")}</p> : null}</section> : <DoctorApplicationActions doctorId={doctor.id} status={doctor.approval_status} documents={documents as ApprovalDocument[]} />}
       </section> : <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">Select an application to review its details.</section>}
     </div>
   </main>

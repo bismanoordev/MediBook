@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/auth"
 import { sendBookingAcceptedEmail, sendBookingCancelledByClinicEmail, sendBookingCancelledByClinicToDoctorEmail } from "@/lib/email/booking-emails"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
+import { doctorApprovalDocumentError, type ApprovalDocument } from "@/lib/validation/doctor-approval"
 
 const statuses = new Set(["confirmed", "cancelled", "completed"])
 const doctorSchema = yup.object({ fullName: yup.string().trim().matches(/^[\p{L}][\p{L}\s.'-]*$/u, "Enter a valid doctor name.").required("Enter the doctor’s full name."), fee: yup.number().typeError("Enter a valid consultation fee.").min(0, "Consultation fee cannot be negative.").required("Enter a consultation fee.") })
@@ -154,6 +155,17 @@ export async function reviewDoctorApplication(input: { doctorId: string; decisio
   }
 
   const supabase = await createClient()
+  if (input.decision === "approved") {
+    const { data: documents, error: documentsError } = await supabase
+      .from("doctor_documents")
+      .select("doc_type,status")
+      .eq("doctor_id", doctorId)
+
+    if (documentsError) return { error: "We couldn't verify the required documents. Please try again." }
+    const documentError = doctorApprovalDocumentError((documents ?? []) as ApprovalDocument[])
+    if (documentError) return { error: documentError }
+  }
+
   const { data, error } = await supabase
     .from("doctors")
     .update({
@@ -194,6 +206,7 @@ export async function reviewDoctorDocument(input: { documentId: string; status: 
     .eq("id", documentId)
 
   if (error) return { error: "We couldn't save this document review. Please try again." }
+  revalidatePath("/admin/doctors")
   revalidatePath("/admin/doctors/applications")
   return { success: true }
 }
