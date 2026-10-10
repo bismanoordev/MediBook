@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckCircle2, Loader2, XCircle } from "lucide-react"
+import { CheckCheck, CheckCircle2, Loader2, XCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 import { toast } from "sonner"
