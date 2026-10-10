@@ -64,6 +64,8 @@ export function DoctorOnboardingForm({
   const [step, setStep] = useState(Math.min(Math.max(doctor.onboarding_step, 1), 5))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
+  const [photoError, setPhotoError] = useState("")
+  const [documentErrors, setDocumentErrors] = useState<Partial<Record<DocumentType, string>>>({})
   const [docs, setDocs] = useState(documents)
   const [data, setData] = useState({
     name: doctor.full_name || fullName,
@@ -141,6 +143,7 @@ export function DoctorOnboardingForm({
     }
     const nextStep = Math.min(step + 1, 5)
     if (await save(nextStep)) {
+      setPhotoError("")
       setStep(nextStep)
       toast.success("Progress saved.")
     }
@@ -149,8 +152,9 @@ export function DoctorOnboardingForm({
   async function uploadDocument(type: DocumentType, event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
+    setDocumentErrors((current) => ({ ...current, [type]: "" }))
     if (!['image/jpeg', 'image/png', 'application/pdf'].includes(file.type) || file.size > 5_242_880) {
-      setError("Use a JPG, PNG, or PDF document smaller than 5 MB.")
+      setDocumentErrors((current) => ({ ...current, [type]: "Use a JPG, PNG, or PDF document smaller than 5 MB." }))
       return
     }
 
@@ -162,7 +166,7 @@ export function DoctorOnboardingForm({
     const uploadResult = await supabase.storage.from("doctor-documents").upload(filePath, file)
     if (uploadResult.error) {
       setSaving(false)
-      setError("Your document couldn't be uploaded. Please try again.")
+      setDocumentErrors((current) => ({ ...current, [type]: "Your document couldn't be uploaded. Please try again." }))
       return
     }
     const rowResult = await supabase.from("doctor_documents").upsert(
@@ -177,7 +181,7 @@ export function DoctorOnboardingForm({
     )
     setSaving(false)
     if (rowResult.error) {
-      setError("Your document couldn't be saved. Please try again.")
+      setDocumentErrors((current) => ({ ...current, [type]: "Your document couldn't be saved. Please try again." }))
       return
     }
     setDocs((current) => [
@@ -190,8 +194,9 @@ export function DoctorOnboardingForm({
   async function uploadPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
+    setPhotoError("")
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5_242_880) {
-      setError("Use a JPG, PNG, or WebP photo smaller than 5 MB.")
+      setPhotoError("Use a JPG, PNG, or WebP photo smaller than 5 MB.")
       return
     }
     const image = new window.Image()
@@ -203,7 +208,7 @@ export function DoctorOnboardingForm({
     }).catch(() => undefined)
     URL.revokeObjectURL(objectUrl)
     if (image.width < 600 || image.height < 600 || image.width !== image.height) {
-      setError("Use a square photo at least 600 × 600 pixels.")
+      setPhotoError("Use a square photo at least 600 × 600 pixels.")
       return
     }
 
@@ -212,7 +217,7 @@ export function DoctorOnboardingForm({
     const uploadResult = await supabase.storage.from("doctor-photos").upload(filePath, file)
     setSaving(false)
     if (uploadResult.error) {
-      setError("Your photo couldn't be uploaded. Please try again.")
+      setPhotoError("Your photo couldn't be uploaded. Please try again.")
       return
     }
     setField("photo", supabase.storage.from("doctor-photos").getPublicUrl(filePath).data.publicUrl)
@@ -246,6 +251,7 @@ export function DoctorOnboardingForm({
     const statusConfig = status === "verified" ? { label: "Verified", Icon: BadgeCheck, className: "bg-emerald-50 text-emerald-700 ring-emerald-200" } : status === "pending" ? { label: "Pending", Icon: Clock3, className: "bg-amber-50 text-amber-800 ring-amber-200" } : status === "needs_action" ? { label: "Needs action", Icon: CircleAlert, className: "bg-red-50 text-red-700 ring-red-200" } : { label: "Missing", Icon: CircleAlert, className: "bg-slate-100 text-slate-600 ring-slate-200" }
     const Icon = type === "cnic" ? CreditCard : type === "pmdc_license" ? FileBadge2 : FileText
     const StatusIcon = statusConfig.Icon
+    const documentError = documentErrors[type]
     return (
       <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -259,7 +265,7 @@ export function DoctorOnboardingForm({
             </label>
           ) : null}</div>
         </div>
-        {document?.reviewer_note ? <p className="mt-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-800"><span className="font-semibold">Reviewer note: </span>{document.reviewer_note}</p> : null}
+        {documentError ? <p role="alert" className="mt-3 flex items-start gap-1.5 text-sm text-red-700"><CircleAlert className="mt-0.5 size-4 shrink-0" />{documentError}</p> : null}{document?.reviewer_note ? <p className="mt-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm text-red-800"><span className="font-semibold">Reviewer note: </span>{document.reviewer_note}</p> : null}
       </article>
     )
   }
@@ -281,16 +287,16 @@ export function DoctorOnboardingForm({
           <p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Doctor onboarding</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{steps[step - 1]}</h2>
           <p className="mt-2 text-sm text-slate-600">Your progress is saved when you continue to the next step.</p>
-          {step === 1 ? <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-dashed border-teal-200 bg-teal-50/60 p-4 sm:flex-row sm:items-center"><div className="grid size-20 place-items-center overflow-hidden rounded-full border-4 border-white bg-teal-100 text-lg font-bold text-[#0F766E] shadow-sm">{data.photo ? <Image src={data.photo} alt="Profile preview" width={80} height={80} unoptimized className="size-full object-cover" /> : data.name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</div><div className="min-w-0 flex-1"><p className="font-semibold text-slate-900">Professional photo <span className="text-red-600">*</span></p><p className="mt-1 text-sm text-slate-600">Square image, at least 600 × 600 px, JPG, PNG or WebP, max 5 MB. Your face should be clearly visible.</p><label className="mt-3 inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl bg-[#0F766E] px-4 text-sm font-semibold text-white hover:bg-[#0D5F59] focus-within:ring-2 focus-within:ring-[#0F766E] focus-within:ring-offset-2"><Upload className="size-4" />{saving ? <Loader2 className="size-4 animate-spin" /> : data.photo ? "Change photo" : "Upload photo"}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadPhoto(event)} /></label></div></div> : null}
+          {step === 1 ? <div className={`mt-5 flex flex-col items-center gap-5 rounded-2xl border border-dashed bg-teal-50/60 p-5 text-center sm:flex-row sm:text-left ${photoError ? "border-red-300" : "border-teal-200"}`}><div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-white bg-teal-100 text-lg font-bold text-[#0F766E] shadow-sm">{data.photo ? <Image src={data.photo} alt="Profile preview" width={80} height={80} unoptimized className="size-full object-cover" /> : data.name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</div><div className="min-w-0 flex-1"><p className="font-semibold text-slate-900">Professional photo <span className="text-red-600">*</span></p><p className="mt-1 text-sm text-slate-600">Square image, at least 600 × 600 px, JPG, PNG or WebP, max 5 MB. Your face should be clearly visible.</p>{photoError ? <p role="alert" className="mt-2 flex items-start gap-1.5 text-sm text-red-700"><CircleAlert className="mt-0.5 size-4 shrink-0" />{photoError}</p> : null}<label className="mt-3 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0F766E] px-4 text-sm font-semibold text-white hover:bg-[#0D5F59] focus-within:ring-2 focus-within:ring-[#0F766E] focus-within:ring-offset-2 sm:inline-flex sm:w-auto"><Upload className="size-4" />{saving ? <Loader2 className="size-4 animate-spin" /> : data.photo ? "Change photo" : "Upload photo"}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadPhoto(event)} /></label></div></div> : null}
           {error ? <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
           <div key={step} className="mt-7 space-y-5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-2">
-            {step === 1 ? <div className={fieldGrid}><OnboardingField label="Full name" htmlFor="onboarding-name" required><Input id="onboarding-name" className={inputClass} value={data.name} onChange={(event) => setField("name", event.target.value)} /></OnboardingField><OnboardingField label="Phone" htmlFor="onboarding-phone" required><Input id="onboarding-phone" type="tel" inputMode="tel" className={inputClass} value={data.phone} onChange={(event) => setField("phone", event.target.value)} /></OnboardingField><OnboardingField label="City" htmlFor="onboarding-city" required><Input id="onboarding-city" className={inputClass} value={data.city} onChange={(event) => setField("city", event.target.value)} /></OnboardingField><OnboardingField label="Short bio" htmlFor="onboarding-bio" required><textarea id="onboarding-bio" className="min-h-28 w-full resize-y rounded-xl border border-slate-200 px-3 py-2 text-base outline-none focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-[#0F766E] sm:text-sm" value={data.bio} onChange={(event) => setField("bio", event.target.value)} /></OnboardingField></div> : null}
+            {step === 1 ? <div className={fieldGrid}><OnboardingField label="Full name" htmlFor="onboarding-name" required><Input id="onboarding-name" className={inputClass} value={data.name} onChange={(event) => setField("name", event.target.value)} /></OnboardingField><OnboardingField label="Phone" htmlFor="onboarding-phone" required><Input id="onboarding-phone" type="tel" inputMode="tel" className={inputClass} value={data.phone} onChange={(event) => setField("phone", event.target.value)} /></OnboardingField><OnboardingField label="City" htmlFor="onboarding-city" required><Input id="onboarding-city" className={inputClass} value={data.city} onChange={(event) => setField("city", event.target.value)} /></OnboardingField><OnboardingField label="Short bio" htmlFor="onboarding-bio" required helper="A few sentences patients will see on your profile." className="md:col-span-2"><textarea id="onboarding-bio" maxLength={500} className="min-h-32 w-full resize-y rounded-xl border border-slate-200 px-3 py-2 text-base outline-none focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-[#0F766E] sm:text-sm" value={data.bio} onChange={(event) => setField("bio", event.target.value)} /><p className="mt-1 text-right text-xs text-slate-500">{data.bio.length} / 500</p></OnboardingField></div> : null}
             {step === 2 ? <>{documentCard("cnic", "CNIC", true)}{documentCard("pmdc_license", "PMDC license", true)}{documentCard("degree", "Degree certificate")}</> : null}
             {step === 3 ? <><label>Years of experience *<Input className={inputClass} type="number" min="0" value={data.experience} onChange={(event) => setField("experience", event.target.value)} /></label><label>PMDC number *<Input className={inputClass} value={data.pmdc} onChange={(event) => setField("pmdc", event.target.value)} /></label><Button type="button" variant="outline" onClick={() => setQualifications((current) => [...current, { degree: "", institution: "", year: "" }])} className="mt-3 h-11 w-full rounded-xl border-teal-200 bg-white text-sm font-semibold text-[#0F766E] hover:bg-teal-50 sm:w-fit"><Plus className="size-4" />Add degree</Button>{qualifications.map((qualification, index) => <div key={index} className="grid gap-2 sm:grid-cols-3"><Input placeholder="Degree" value={qualification.degree} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, degree: event.target.value } : item))} /><Input placeholder="Institution" value={qualification.institution} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, institution: event.target.value } : item))} /><div className="flex gap-2"><Input placeholder="Year" value={qualification.year} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, year: event.target.value } : item))} /><button type="button" aria-label="Remove qualification" onClick={() => setQualifications((current) => current.filter((_, itemIndex) => itemIndex !== index))}><Trash2 className="text-red-600" /></button></div></div>)}</> : null}
             {step === 4 ? <><label htmlFor="onboarding-specialty" className="block text-sm font-semibold text-slate-700">Specialty <span className="text-red-600">*</span><Select items={specialties.map((specialty) => ({ value: String(specialty.id), label: specialty.name }))} value={data.specialty} onValueChange={(value) => setField("specialty", value ?? "")}><SelectTrigger id="onboarding-specialty" className="mt-2 h-11 w-full rounded-xl border-slate-200 px-3 shadow-sm focus-visible:border-[#0F766E] focus-visible:ring-teal-100"><SelectValue placeholder="Choose specialty" /></SelectTrigger><SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">{specialties.map((specialty) => <SelectItem key={specialty.id} value={String(specialty.id)} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-medium data-[selected]:text-[#0F766E]">{specialty.name}</SelectItem>)}</SelectContent></Select></label><fieldset><legend className="text-sm font-semibold text-slate-700">Languages <span className="text-red-600">*</span></legend><p className="mt-1 text-xs text-slate-500">Choose all languages you can comfortably use with patients.</p><div className="mt-3 flex flex-wrap gap-2">{languageOptions.map((language) => { const selected = data.languages.split(",").map((item) => item.trim()).includes(language); return <button key={language} type="button" aria-pressed={selected} onClick={() => { const current = data.languages.split(",").map((item) => item.trim()).filter(Boolean); setField("languages", selected ? current.filter((item) => item !== language).join(", ") : [...current, language].join(", ")) }} className={`min-h-10 rounded-full border px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] ${selected ? "border-[#0F766E] bg-[#0F766E] text-white" : "border-teal-100 bg-teal-50 text-[#0F766E]"}`}>{selected ? <Check className="mr-1 inline size-3.5" /> : null}{language}</button> })}</div></fieldset><label className="block text-sm font-semibold text-slate-700">Clinic or hospital name <span className="text-xs font-normal text-slate-500">(optional)</span><Input className={inputClass} value={data.clinic} onChange={(event) => setField("clinic", event.target.value)} /></label></> : null}
             {step === 5 ? <><label>Consultation fee (Rs.) *<Input className={inputClass} type="number" min="1" value={data.fee} onChange={(event) => setField("fee", event.target.value)} /></label><div className="rounded-xl bg-teal-50 p-4 text-sm"><p className="font-semibold text-[#0F766E]">Review your application</p><p className="mt-2">{data.name} · {specialties.find((specialty) => specialty.id === Number(data.specialty))?.name ?? "No specialty"}</p><p className="mt-1">Required documents: {docs.some((document) => document.doc_type === "cnic") && docs.some((document) => document.doc_type === "pmdc_license") ? "Uploaded" : "Missing"}</p></div></> : null}
           </div>
-          <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between"><Button type="button" variant="outline" disabled={step === 1 || saving} onClick={() => setStep((current) => current - 1)} className="h-11 rounded-xl px-4"><ChevronLeft />Back</Button>{step === 5 ? <Button type="button" disabled={saving} onClick={() => void submit()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}Submit for review</Button> : <Button type="button" disabled={saving} onClick={() => void continueStep()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : null}Continue<ChevronRight /></Button>}</div>
+          <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between"><Button type="button" variant="outline" disabled={step === 1 || saving} onClick={() => { setPhotoError(""); setStep((current) => current - 1) }} className="h-11 rounded-xl px-4"><ChevronLeft />Back</Button>{step === 5 ? <Button type="button" disabled={saving} onClick={() => void submit()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}Submit for review</Button> : <Button type="button" disabled={saving} onClick={() => void continueStep()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : null}Continue<ChevronRight /></Button>}</div>
         </section>
       </div></div>
     </main>
