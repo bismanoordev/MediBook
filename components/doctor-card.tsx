@@ -64,7 +64,7 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
             </div>
           </div>
 
-          <p className="mt-5 min-h-10 line-clamp-2 text-sm leading-5 text-slate-600">{bio}</p>
+          <p className="mt-5 min-h-10 break-words line-clamp-2 text-sm leading-5 text-slate-600">{bio}</p>
 
           <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-5">
             <div className="min-w-0">
@@ -114,7 +114,7 @@ export function DoctorCard({ doctor, sizes = "(max-width: 640px) 100vw, (max-wid
               <p className="mt-2 inline-flex max-w-full break-words rounded-full bg-[#CCFBF1] px-2.5 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p>
             </div>
           ) : null}
-          <p className={cn("line-clamp-2 min-h-10 text-sm leading-5 text-slate-600", hasPhoto ? "mt-4" : "mt-0")}>{bio}</p>
+          <p className={cn("min-h-10 break-words line-clamp-2 text-sm leading-5 text-slate-600", hasPhoto ? "mt-4" : "mt-0")}>{bio}</p>
           <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
             <span className="text-sm font-semibold text-slate-700">{formatFee(doctor.fee)}</span>
             <span className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl bg-[#0F766E] px-3 text-sm font-semibold text-white transition group-hover:bg-[#0D5F59] group-focus-visible:bg-[#0D5F59]">

@@ -78,7 +78,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
             <div className="min-w-0">
               <p className="inline-flex max-w-full break-words rounded-full bg-[#CCFBF1] px-3 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p>
               <h1 className="mt-3 break-words text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">{doctor.full_name}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">{doctor.bio ?? "Professional, patient-centered care."}</p>
+              <p className="mt-3 max-w-2xl break-words text-sm leading-6 text-slate-600 sm:text-base">{doctor.bio ?? "Professional, patient-centered care."}</p>
             </div>
             <div className="rounded-xl border border-teal-100 bg-teal-50/70 px-4 py-3 md:text-right">
               <p className="text-xs font-medium text-slate-500">Consultation fee</p>

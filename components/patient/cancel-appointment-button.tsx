@@ -38,13 +38,13 @@ export function CancelAppointmentButton({ appointmentId }: { appointmentId: stri
         onClick={() => setOpen(true)}
         disabled={loading}
         variant="outline"
-        className="rounded-xl border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800"
+        className="h-11 w-full rounded-xl border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 sm:w-auto"
       >
         Cancel appointment
       </Button>
 
       <Dialog open={open} onOpenChange={(nextOpen) => !loading && setOpen(nextOpen)}>
-        <DialogContent showCloseButton={!loading} className="max-w-md rounded-2xl p-6 shadow-xl">
+        <DialogContent showCloseButton={!loading} className="w-[calc(100%-2rem)] max-w-md rounded-2xl p-6 shadow-xl">
           <DialogHeader className="gap-3 pr-8">
             <DialogTitle className="text-xl font-semibold text-slate-900">Cancel appointment?</DialogTitle>
             <DialogDescription className="leading-6 text-slate-600">

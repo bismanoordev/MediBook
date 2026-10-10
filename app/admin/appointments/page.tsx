@@ -126,21 +126,21 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
       ) : appointments?.length ? (
         <>
           <div className="mt-4 text-sm text-slate-500">Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, count ?? 0)} of {count ?? 0} appointments.</div>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             {appointments.map((appointment) => {
               const doctor = appointment.doctors as unknown as { full_name: string } | null
               const patient = appointment.profiles as unknown as { full_name: string; phone: string | null } | null
               const hasStatusUpdate = appointment.updated_at !== appointment.created_at
 
               return (
-                <article key={appointment.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6">
+                <article key={appointment.id} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-semibold">{patient?.full_name ?? "Patient"}</h2>
+                      <h2 className="min-w-0 break-words font-semibold">{patient?.full_name ?? "Patient"}</h2>
                       <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusClass[appointment.status]}`}>{appointment.status}</span>
                     </div>
-                    <p className="mt-2 text-sm text-[#0F766E]">{doctor?.full_name ?? "Clinic doctor"}</p>
-                    <p className="mt-1 text-sm text-slate-600">Visit: {formatVisitDate(appointment.appointment_date)} at {formatVisitTime(appointment.start_time)}{patient?.phone ? ` · ${patient.phone}` : ""}</p>
+                    <p className="mt-2 break-words text-sm text-[#0F766E]">{doctor?.full_name ?? "Clinic doctor"}</p>
+                    <p className="mt-1 break-words text-sm text-slate-600">Visit: {formatVisitDate(appointment.appointment_date)} at {formatVisitTime(appointment.start_time)}{patient?.phone ? ` · ${patient.phone}` : ""}</p>
                     <p className="mt-1 text-xs text-slate-500">
                       Booked: {formatActivityTime(appointment.created_at)}
                       {hasStatusUpdate ? ` · Status updated: ${formatActivityTime(appointment.updated_at)}` : ""}
