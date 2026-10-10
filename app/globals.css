@@ -182,6 +182,11 @@ html {
   scroll-margin-top: 6rem;
 }
 
+/* Keep the patient appointment tabs compact instead of stretching across the page. */
+.mt-7.flex.max-w-full.overflow-x-auto.rounded-xl.bg-slate-100.p-1 {
+  width: fit-content;
+}
+
 @layer utilities {
   .scrollbar-none {
     -ms-overflow-style: none;

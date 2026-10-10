@@ -26,7 +26,7 @@ function DoctorAppointmentListSkeleton() {
 }
 
 function PatientAppointmentListSkeleton() {
-  return <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-4">{Array.from({ length: 4 }, (_, index) => <article key={index} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex sm:items-center sm:gap-4 sm:p-5"><Skeleton className="size-14 shrink-0 rounded-xl bg-teal-100" /><div className="mt-4 min-w-0 flex-1 sm:mt-0"><div className="flex items-center gap-2"><Skeleton className="h-5 w-40 max-w-full" /><Skeleton className="h-6 w-20 shrink-0" /></div><Skeleton className="mt-2 h-3 w-28 bg-teal-100" /><Skeleton className="mt-3 h-4 w-full max-w-md" /><Skeleton className="mt-3 h-3 w-full max-w-lg" /></div><Skeleton className="mt-4 h-11 w-full sm:mt-0 sm:w-32" /></article>)}</div>
+  return <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-4">{Array.from({ length: 4 }, (_, index) => <article key={index} className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex sm:items-center sm:gap-4 sm:p-5"><div className="min-w-0 flex-1"><div className="flex items-center gap-2"><Skeleton className="h-5 w-40 max-w-full" /><Skeleton className="h-6 w-20 shrink-0" /></div><Skeleton className="mt-2 h-3 w-28 bg-teal-100" /><Skeleton className="mt-3 h-4 w-full max-w-md" /><Skeleton className="mt-3 h-3 w-full max-w-lg" /></div><Skeleton className="mt-4 h-11 w-full sm:mt-0 sm:w-32" /></article>)}</div>
 }
 
 export function DashboardLoading({ doctor = false }: { doctor?: boolean }) {

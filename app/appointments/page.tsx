@@ -25,9 +25,7 @@ function StatusBadge({ status }: { status: keyof typeof statusStyle }) {
 }
 
 function DateBlock({ date, status }: { date: string; status: string }) {
-  const value = appointmentDate(date)
-  const muted = status === "cancelled"
-  return <div aria-hidden="true" className={`grid w-14 shrink-0 place-items-center rounded-xl px-1 py-2 text-center ${muted ? "bg-slate-100 text-slate-600" : "bg-[#CCFBF1] text-[#0F766E]"}`}><span className="text-[10px] font-bold uppercase tracking-wide">{monthFormatter.format(value)}</span><span className="text-xl font-medium leading-6">{dayFormatter.format(value)}</span><span className="text-[10px] font-medium">{weekdayFormatter.format(value)}</span></div>
+  return null
 }
 
 export default async function AppointmentsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
