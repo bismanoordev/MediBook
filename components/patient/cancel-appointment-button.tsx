@@ -38,7 +38,7 @@ export function CancelAppointmentButton({ appointmentId }: { appointmentId: stri
         onClick={() => setOpen(true)}
         disabled={loading}
         variant="outline"
-        className="h-11 w-full rounded-xl border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 sm:w-auto"
+        className="min-h-11 w-full rounded-xl border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 focus-visible:ring-red-200 sm:h-10 sm:min-h-10 sm:w-auto sm:border-transparent"
       >
         Cancel appointment
       </Button>
