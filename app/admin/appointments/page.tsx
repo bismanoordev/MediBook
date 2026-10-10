@@ -134,7 +134,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
 
               return (
                 <article key={appointment.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-teal-200 hover:shadow-md sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6">
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-semibold">{patient?.full_name ?? "Patient"}</h2>
                       <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${statusClass[appointment.status]}`}>{appointment.status}</span>
@@ -145,7 +145,7 @@ export default async function AdminAppointmentsPage({ searchParams }: { searchPa
                       Booked: {formatActivityTime(appointment.created_at)}
                       {hasStatusUpdate ? ` · Status updated: ${formatActivityTime(appointment.updated_at)}` : ""}
                     </p>
-                    {appointment.reason ? <p className="mt-2 text-sm text-slate-500">Reason: {appointment.reason}</p> : null}
+                    {appointment.reason ? <p title={appointment.reason} className="mt-2 max-w-full truncate text-sm text-slate-500">Reason: {appointment.reason}</p> : null}
                   </div>
 
                   <form action={updateAppointmentStatus} className="mt-4 flex flex-wrap gap-2 sm:mt-0">

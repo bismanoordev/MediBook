@@ -30,6 +30,9 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json({ error: "Invalid booking details." }, { status: 400 })
   }
+  if (typeof body.reason === "string" && body.reason.trim().length > 300) {
+    return NextResponse.json({ error: "Reason for visit must be 300 characters or fewer." }, { status: 400 })
+  }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -50,7 +53,7 @@ export async function POST(request: Request) {
       doctor_id: body.doctorId,
       appointment_date: body.date,
       start_time: body.time,
-      reason: body.reason?.trim().slice(0, 300) || null,
+      reason: body.reason?.trim() || null,
     })
     .select("id")
     .single()
