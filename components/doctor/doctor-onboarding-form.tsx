@@ -1,6 +1,7 @@
 "use client"
 
 import { ChangeEvent, useMemo, useState } from "react"
+import type { ReactNode } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import {
@@ -16,6 +17,7 @@ import {
   ChevronRight,
   Loader2,
   Plus,
+  Pencil,
   Trash2,
   Upload,
 } from "lucide-react"
@@ -35,12 +37,27 @@ type Document = {
   reviewer_note: string | null
 }
 type Qualification = { degree: string; institution: string; year: string }
+type ReviewAttention = { step: number; label: string }
 
 const steps = ["Personal information", "Documents", "Qualifications", "Languages and practice", "Fee and review"]
 const stepDetails = ["Photo and bio", "CNIC and PMDC", "Experience and degrees", "Specialty and clinic", "Final check"]
 const languageOptions = ["English", "Urdu", "Punjabi", "Sindhi", "Pashto", "Balochi"]
+const reviewDocumentTypes: { type: DocumentType; label: string; required: boolean }[] = [
+  { type: "cnic", label: "CNIC", required: true },
+  { type: "pmdc_license", label: "PMDC license", required: true },
+  { type: "degree", label: "Degree certificate", required: false },
+]
 const inputClass =
   "h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-base outline-none focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:bg-slate-100 disabled:text-slate-500 sm:text-sm"
+
+function ReviewSection({ title, step, onEdit, children }: { title: string; step: number; onEdit: (step: number) => void; children: ReactNode }) {
+  return <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex items-center justify-between gap-3"><h3 className="text-base font-semibold text-slate-900">{title}</h3><button type="button" onClick={() => onEdit(step)} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-sm font-semibold text-[#0F766E] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"><Pencil className="size-4" aria-hidden="true" />Edit</button></div><div className="mt-4 min-w-0">{children}</div></section>
+}
+
+function ReviewValue({ label, value, required = false, preserveWhitespace = false }: { label: string; value: ReactNode; required?: boolean; preserveWhitespace?: boolean }) {
+  const hasValue = typeof value === "string" ? Boolean(value.trim()) : Boolean(value)
+  return <div className="min-w-0"><dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</dt><dd className={hasValue ? `mt-1 break-words text-sm text-slate-800 ${preserveWhitespace ? "whitespace-pre-wrap" : ""}` : required ? "mt-1 text-sm font-medium text-red-700" : "mt-1 text-sm text-slate-500"}>{hasValue ? value : required ? "Required - go back to add it" : "Not provided"}</dd></div>
+}
 
 type Props = {
   userId: string
@@ -66,6 +83,8 @@ export function DoctorOnboardingForm({
   const [error, setError] = useState("")
   const [photoError, setPhotoError] = useState("")
   const [documentErrors, setDocumentErrors] = useState<Partial<Record<DocumentType, string>>>({})
+  const [reviewConfirmed, setReviewConfirmed] = useState(false)
+  const [reviewMessage, setReviewMessage] = useState("")
   const [docs, setDocs] = useState(documents)
   const [data, setData] = useState({
     name: doctor.full_name || fullName,
@@ -88,6 +107,23 @@ export function DoctorOnboardingForm({
 
   function setField(key: keyof typeof data, value: string) {
     setData((current) => ({ ...current, [key]: value }))
+  }
+
+  const missingDocuments = (["cnic", "pmdc_license"] as const).filter((type) => !docs.some((document) => document.doc_type === type))
+  const reviewAttention: ReviewAttention[] = [
+    ...(!data.name.trim() || !data.phone.trim() || !data.city.trim() || !data.bio.trim() || !data.photo ? [{ step: 1, label: "Complete your personal information" }] : []),
+    ...(missingDocuments.length ? [{ step: 2, label: `Upload your ${missingDocuments.map((type) => type === "cnic" ? "CNIC" : "PMDC license").join(" and ")}` }] : []),
+    ...(!data.experience || !data.pmdc.trim() || !qualifications.length ? [{ step: 3, label: "Complete your qualifications" }] : []),
+    ...(!data.specialty || !data.languages.trim() ? [{ step: 4, label: "Complete languages and practice" }] : []),
+    ...(Number(data.fee) <= 0 ? [{ step: 5, label: "Enter a consultation fee" }] : []),
+  ]
+  const selectedSpecialty = specialties.find((specialty) => specialty.id === Number(data.specialty))?.name ?? ""
+
+  function goToStep(target: number) {
+    setError("")
+    setReviewMessage("")
+    setReviewConfirmed(false)
+    setStep(target)
   }
 
   async function save(nextStep: number) {
@@ -231,6 +267,19 @@ export function DoctorOnboardingForm({
     router.push("/doctor")
   }
 
+  async function submitReview() {
+    if (reviewAttention.length) {
+      setReviewMessage("Complete the items marked for attention before submitting.")
+      return
+    }
+    if (!reviewConfirmed) {
+      setReviewMessage("Please confirm your details before submitting.")
+      return
+    }
+    setReviewMessage("")
+    await submit()
+  }
+
   function documentCard(type: DocumentType, label: string, required = false) {
     const document = docs.find((item) => item.doc_type === type)
     const status = document?.status ?? "missing"
@@ -258,6 +307,11 @@ export function DoctorOnboardingForm({
 
   const fieldGrid = "grid gap-x-4 gap-y-5 md:grid-cols-2"
 
+  function reviewContent() {
+    const languages = data.languages.split(",").map((language) => language.trim()).filter(Boolean)
+    return <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start"><div className="min-w-0 space-y-5">{reviewAttention.length ? <section role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><h3 className="font-semibold text-amber-950">{reviewAttention.length} {reviewAttention.length === 1 ? "thing needs" : "things need"} your attention</h3><div className="mt-3 grid gap-2">{reviewAttention.map((item) => <button key={item.step} type="button" onClick={() => goToStep(item.step)} className="w-fit rounded-lg text-left text-sm font-semibold text-amber-900 underline decoration-amber-400 underline-offset-2 hover:text-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">{item.label}</button>)}</div></section> : null}<ReviewSection title="Personal information" step={1} onEdit={goToStep}><div className="flex min-w-0 gap-4"><div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-full bg-teal-100 text-sm font-bold text-[#0F766E]">{data.photo ? <Image src={data.photo} alt="Profile preview" width={64} height={64} unoptimized className="size-full object-cover" /> : data.name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "?"}</div><dl className="grid min-w-0 flex-1 gap-4 sm:grid-cols-2"><ReviewValue label="Full name" value={data.name} required /><ReviewValue label="Phone" value={data.phone} required /><ReviewValue label="City" value={data.city} required /></dl></div><dl className="mt-4"><ReviewValue label="Short bio" value={data.bio} required preserveWhitespace /></dl></ReviewSection><ReviewSection title="Documents" step={2} onEdit={goToStep}><div className="grid gap-3">{reviewDocumentTypes.map(({ type, label, required }) => { const document = docs.find((item) => item.doc_type === type); return <div key={type} className="flex min-w-0 items-start justify-between gap-3 rounded-xl bg-slate-50 p-3"><div className="min-w-0"><p className="font-medium text-slate-800">{label}{required ? <span className="text-red-700"> *</span> : null}</p>{document ? <><p className="mt-1 truncate text-sm text-slate-600" title={document.file_name}>{document.file_name}</p><p className="mt-1 text-xs text-slate-500">Uploaded</p></> : <p className={`mt-1 text-sm ${required ? "font-medium text-red-700" : "text-slate-500"}`}>{required ? "Not uploaded - required" : "Not uploaded"}</p>}</div><FileText className="size-5 shrink-0 text-[#0F766E]" aria-hidden="true" /></div>})}</div></ReviewSection><ReviewSection title="Qualifications" step={3} onEdit={goToStep}><dl className="grid gap-4 sm:grid-cols-2"><ReviewValue label="Years of experience" value={data.experience} required /><ReviewValue label="PMDC number" value={data.pmdc} required /></dl><div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Degrees</p>{qualifications.length ? <div className="mt-2 grid gap-2">{qualifications.map((qualification, index) => <p key={index} className="break-words rounded-xl bg-slate-50 p-3 text-sm text-slate-700">{[qualification.degree, qualification.institution, qualification.year].filter(Boolean).join(" · ") || "Not provided"}</p>)}</div> : <p className="mt-1 text-sm font-medium text-red-700">Required - go back to add it</p>}</div></ReviewSection><ReviewSection title="Languages and practice" step={4} onEdit={goToStep}><dl className="grid gap-4 sm:grid-cols-2"><ReviewValue label="Specialty" value={selectedSpecialty} required /><ReviewValue label="Clinic or hospital" value={data.clinic} /></dl><div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Languages</p>{languages.length ? <div className="mt-2 flex flex-wrap gap-2">{languages.map((language) => <span key={language} className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-sm font-medium text-[#0F766E]">{language}</span>)}</div> : <p className="mt-1 text-sm font-medium text-red-700">Required - go back to add it</p>}</div></ReviewSection></div><aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-6 sm:p-5"><h3 className="text-lg font-semibold text-slate-900">Submit application</h3><p className="mt-1 text-sm leading-6 text-slate-600">Confirm your details before the clinic reviews your application.</p><OnboardingField label="Consultation fee (Rs.)" htmlFor="onboarding-fee" required className="mt-5"><Input id="onboarding-fee" className={inputClass} type="number" min="1" value={data.fee} onChange={(event) => setField("fee", event.target.value)} /></OnboardingField><label className="mt-5 flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-3 text-sm text-slate-700 hover:bg-slate-50"><input type="checkbox" checked={reviewConfirmed} onChange={(event) => { setReviewConfirmed(event.target.checked); setReviewMessage("") }} aria-describedby={reviewMessage ? "review-confirmation-message" : undefined} className="mt-0.5 size-4 rounded border-slate-300 text-[#0F766E] focus:ring-[#0F766E]" /><span>I confirm the information and documents are correct.</span></label>{reviewMessage ? <p id="review-confirmation-message" role="alert" className="mt-3 flex items-start gap-1.5 text-sm text-red-700"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{reviewMessage}</p> : null}<div className="mt-5 grid gap-3 border-t border-slate-100 pt-5"><Button type="button" variant="outline" disabled={saving} onClick={() => goToStep(4)} className="h-11 w-full rounded-xl"><ChevronLeft />Back</Button><Button type="button" disabled={saving} onClick={() => void submitReview()} className="h-11 w-full rounded-xl bg-[#0F766E] text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}Submit for review</Button></div></aside></div>
+  }
+
   return (
     <main data-doctor-onboarding className="relative overflow-hidden bg-[#F8FAFC] px-5 py-7 sm:px-8 sm:py-10">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(204,251,241,0.8),_transparent_38%),radial-gradient(circle_at_bottom_left,_rgba(204,251,241,0.45),_transparent_34%)]" />
@@ -269,10 +323,10 @@ export function DoctorOnboardingForm({
           <div className="flex items-center gap-3"><div className="relative grid size-16 place-items-center"><svg className="size-16 -rotate-90" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18" fill="none" stroke="#CCFBF1" strokeWidth="4" /><circle cx="22" cy="22" r="18" fill="none" stroke="#0F766E" strokeWidth="4" strokeLinecap="round" strokeDasharray="113" strokeDashoffset={113 - 113 * step / 5} /></svg><span className="absolute text-sm font-bold text-[#0F766E]">{Math.round(step / 5 * 100)}%</span></div><p className="text-sm font-semibold text-slate-900">Step {step} of 5</p></div>
           <ol className="mt-6 grid gap-1">{steps.map((item, index) => <li key={item} aria-current={step === index + 1 ? "step" : undefined} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 ${step === index + 1 ? "bg-teal-50" : ""}`}><span className={`grid size-7 place-items-center rounded-full text-xs font-bold ${index + 1 < step ? "bg-[#0F766E] text-white" : step === index + 1 ? "border-2 border-[#0F766E] text-[#0F766E]" : "bg-slate-100 text-slate-500"}`}>{index + 1 < step ? <Check className="size-4" /> : index + 1}</span><span><span className="block text-sm font-semibold text-slate-800">{item}</span><span className="text-xs text-slate-500">{stepDetails[index]}</span></span></li>)}</ol>
         </aside>
-        <section className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className={`w-full ${step === 5 ? "max-w-5xl" : "max-w-3xl"} rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6`}>
           <p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Doctor onboarding</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{steps[step - 1]}</h2>
-          <p className="mt-2 text-sm text-slate-600">Your progress is saved when you continue to the next step.</p>
+          <p className="mt-2 text-sm text-slate-600">{step === 5 ? "Review everything once. You can edit any section before submitting." : "Your progress is saved when you continue to the next step."}</p>
           {step === 1 ? <div className={`mt-5 flex flex-col items-center gap-5 rounded-2xl border border-dashed bg-teal-50/60 p-5 text-center sm:flex-row sm:text-left ${photoError ? "border-red-300" : "border-teal-200"}`}><div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-full border-4 border-white bg-teal-100 text-lg font-bold text-[#0F766E] shadow-sm">{data.photo ? <Image src={data.photo} alt="Profile preview" width={80} height={80} unoptimized className="size-full object-cover" /> : data.name.split(" ").filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</div><div className="min-w-0 flex-1"><p className="font-semibold text-slate-900">Professional photo <span className="text-red-600">*</span></p><p className="mt-1 text-sm text-slate-600">JPG, PNG or WebP, max 5 MB. Your face should be clearly visible.</p>{photoError ? <p role="alert" className="mt-2 flex items-start gap-1.5 text-sm text-red-700"><CircleAlert className="mt-0.5 size-4 shrink-0" />{photoError}</p> : null}<label className="mt-3 flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#0F766E] px-4 text-sm font-semibold text-white hover:bg-[#0D5F59] focus-within:ring-2 focus-within:ring-[#0F766E] focus-within:ring-offset-2 sm:inline-flex sm:w-auto"><Upload className="size-4" />{saving ? <Loader2 className="size-4 animate-spin" /> : data.photo ? "Change photo" : "Upload photo"}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void uploadPhoto(event)} /></label></div></div> : null}
           {error ? <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
           <div key={step} className="mt-7 space-y-5 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-2">
@@ -280,9 +334,9 @@ export function DoctorOnboardingForm({
             {step === 2 ? <>{documentCard("cnic", "CNIC", true)}{documentCard("pmdc_license", "PMDC license", true)}{documentCard("degree", "Degree certificate")}</> : null}
             {step === 3 ? <><label>Years of experience *<Input className={inputClass} type="number" min="0" value={data.experience} onChange={(event) => setField("experience", event.target.value)} /></label><label className="mt-5 block">PMDC number *<Input className={inputClass} value={data.pmdc} onChange={(event) => setField("pmdc", event.target.value)} /></label><Button type="button" variant="outline" onClick={() => setQualifications((current) => [...current, { degree: "", institution: "", year: "" }])} className="mt-3 h-11 w-full rounded-xl border-teal-200 bg-white text-sm font-semibold text-[#0F766E] hover:bg-teal-50 sm:w-fit"><Plus className="size-4" />Add degree</Button>{qualifications.map((qualification, index) => <div key={index} className="grid gap-2 sm:grid-cols-3"><Input placeholder="Degree" value={qualification.degree} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, degree: event.target.value } : item))} /><Input placeholder="Institution" value={qualification.institution} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, institution: event.target.value } : item))} /><div className="flex gap-2"><Input placeholder="Year" value={qualification.year} onChange={(event) => setQualifications((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, year: event.target.value } : item))} /><button type="button" aria-label="Remove qualification" onClick={() => setQualifications((current) => current.filter((_, itemIndex) => itemIndex !== index))}><Trash2 className="text-red-600" /></button></div></div>)}</> : null}
             {step === 4 ? <><label htmlFor="onboarding-specialty" className="block text-sm font-semibold text-slate-700">Specialty <span className="text-red-600">*</span><Select items={specialties.map((specialty) => ({ value: String(specialty.id), label: specialty.name }))} value={data.specialty} onValueChange={(value) => setField("specialty", value ?? "")}><SelectTrigger id="onboarding-specialty" className="mt-2 !h-11 w-full rounded-xl border-slate-200 px-3 shadow-sm focus-visible:border-[#0F766E] focus-visible:ring-teal-100"><SelectValue placeholder="Choose specialty" /></SelectTrigger><SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">{specialties.map((specialty) => <SelectItem key={specialty.id} value={String(specialty.id)} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-medium data-[selected]:text-[#0F766E]">{specialty.name}</SelectItem>)}</SelectContent></Select></label><fieldset><legend className="text-sm font-semibold text-slate-700">Languages <span className="text-red-600">*</span></legend><p className="mt-1 text-xs text-slate-500">Choose all languages you can comfortably use with patients.</p><div className="mt-3 flex flex-wrap gap-2">{languageOptions.map((language) => { const selected = data.languages.split(",").map((item) => item.trim()).includes(language); return <button key={language} type="button" aria-pressed={selected} onClick={() => { const current = data.languages.split(",").map((item) => item.trim()).filter(Boolean); setField("languages", selected ? current.filter((item) => item !== language).join(", ") : [...current, language].join(", ")) }} className={`min-h-10 rounded-full border px-4 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] ${selected ? "border-[#0F766E] bg-[#0F766E] text-white" : "border-teal-100 bg-teal-50 text-[#0F766E]"}`}>{selected ? <Check className="mr-1 inline size-3.5" /> : null}{language}</button> })}</div></fieldset><label className="block text-sm font-semibold text-slate-700">Clinic or hospital name <span className="text-xs font-normal text-slate-500">(optional)</span><Input className={inputClass} value={data.clinic} onChange={(event) => setField("clinic", event.target.value)} /></label></> : null}
-            {step === 5 ? <><label>Consultation fee (Rs.) *<Input className={inputClass} type="number" min="1" value={data.fee} onChange={(event) => setField("fee", event.target.value)} /></label><div className="rounded-xl bg-teal-50 p-4 text-sm"><p className="font-semibold text-[#0F766E]">Review your application</p><p className="mt-2">{data.name} · {specialties.find((specialty) => specialty.id === Number(data.specialty))?.name ?? "No specialty"}</p><p className="mt-1">Required documents: {docs.some((document) => document.doc_type === "cnic") && docs.some((document) => document.doc_type === "pmdc_license") ? "Uploaded" : "Missing"}</p></div></> : null}
+            {step === 5 ? reviewContent() : null}
           </div>
-          <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between"><Button type="button" variant="outline" disabled={step === 1 || saving} onClick={() => { setPhotoError(""); setStep((current) => current - 1) }} className="h-11 rounded-xl px-4"><ChevronLeft />Back</Button>{step === 5 ? <Button type="button" disabled={saving} onClick={() => void submit()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}Submit for review</Button> : <Button type="button" disabled={saving} onClick={() => void continueStep()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : null}Continue<ChevronRight /></Button>}</div>
+          {step !== 5 ? <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-between"><Button type="button" variant="outline" disabled={step === 1 || saving} onClick={() => { setPhotoError(""); setStep((current) => current - 1) }} className="h-11 rounded-xl px-4"><ChevronLeft />Back</Button><Button type="button" disabled={saving} onClick={() => void continueStep()} className="h-11 rounded-xl bg-[#0F766E] px-5 text-white hover:bg-[#0D5F59]">{saving ? <Loader2 className="animate-spin" /> : null}Continue<ChevronRight /></Button></div> : null}
         </section>
       </div></div>
     </main>
