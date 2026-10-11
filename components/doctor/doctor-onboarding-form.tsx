@@ -159,8 +159,7 @@ export function DoctorOnboardingForm({
     }
 
     const extension = file.name.split(".").pop() || "file"
-    // eslint-disable-next-line react-hooks/purity -- timestamp is generated only after a user file selection.
-    const filePath = `${userId}/${type}-${Date.now()}.${extension}`
+    const filePath = `${userId}/${type}-${crypto.randomUUID()}.${extension}`
     setSaving(true)
     setError("")
     const uploadResult = await supabase.storage.from("doctor-documents").upload(filePath, file)

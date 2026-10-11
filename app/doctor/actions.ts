@@ -11,6 +11,7 @@ type AppointmentMutationResult = { error?: string; success?: true }
 type AppointmentStatus = "confirmed" | "cancelled" | "completed"
 type AvailabilityResult = { error?: string; success?: true }
 type ProfileResult = { error?: string; success?: true }
+type DocumentMutationResult = { error?: string; success?: true }
 type Qualification = { degree: string; institution: string; year: string }
 type ProfileInput = { fullName: string; phone: string; bio: string; fee: string; photoUrl: string; specialtyId: string; experienceYears: string; languages: string[]; clinicName: string; city: string; qualifications: Qualification[] }
 
@@ -29,6 +30,51 @@ function friendlyAppointmentError(message: string) {
   if (normalized.includes("only pending appointments can be confirmed")) return "Only pending appointments can be confirmed."
   if (normalized.includes("before it starts")) return "You can complete an appointment only after it starts."
   return "We couldn't update this appointment. Please try again."
+}
+
+const allowedDocumentTypes = ["cnic", "pmdc_license", "degree"] as const
+const allowedDocumentMimeTypes = ["image/jpeg", "image/png", "application/pdf"]
+
+export async function replaceDoctorDocument(formData: FormData): Promise<DocumentMutationResult> {
+  const auth = await requireDoctor()
+  const doctor = await getDoctorRecord()
+  const docType = String(formData.get("doc_type") ?? "")
+  const file = formData.get("file")
+  if (!doctor || !allowedDocumentTypes.includes(docType as typeof allowedDocumentTypes[number]) || !(file instanceof File)) {
+    return { error: "Choose a valid document to upload." }
+  }
+  const documentType = docType as typeof allowedDocumentTypes[number]
+  if (!allowedDocumentMimeTypes.includes(file.type) || file.size <= 0 || file.size > 5_242_880) {
+    return { error: "Use a JPG, PNG, or PDF file smaller than 5 MB." }
+  }
+
+  const supabase = await createClient()
+  const { data: existing, error: lookupError } = await supabase
+    .from("doctor_documents")
+    .select("id,status")
+    .eq("doctor_id", doctor.id)
+    .eq("doc_type", documentType)
+    .maybeSingle()
+  if (lookupError) return { error: "We couldn't check this document. Please try again." }
+  if (existing?.status === "pending") {
+    return { error: "This document is waiting for admin review. You can replace it only if the admin asks for changes." }
+  }
+  if (existing?.status === "verified") return { error: "This document has been verified and cannot be replaced." }
+  if (existing && existing.status !== "needs_action") return { error: "This document can't be replaced right now. Please try again." }
+
+  const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "pdf"
+  const filePath = `${auth.user.id}/${documentType}-${crypto.randomUUID()}.${extension}`
+  const { error: uploadError } = await supabase.storage.from("doctor-documents").upload(filePath, file)
+  if (uploadError) return { error: "Your document couldn't be uploaded. Please try again." }
+
+  const { error: saveError } = await supabase
+    .from("doctor_documents")
+    .upsert({ doctor_id: doctor.id, doc_type: documentType, file_path: filePath, file_name: file.name, status: "pending", reviewer_note: null }, { onConflict: "doctor_id,doc_type" })
+  if (saveError) return { error: "Your document couldn't be saved. Please try again." }
+
+  revalidatePath("/doctor/documents")
+  revalidatePath("/admin/doctors/applications")
+  return { success: true }
 }
 
 export async function updateDoctorAppointment(input: { appointmentId: string; status: AppointmentStatus; cancelReason?: string }): Promise<AppointmentMutationResult> {
