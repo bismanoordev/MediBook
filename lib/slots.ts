@@ -1,4 +1,7 @@
 export const PAKISTAN_TIME_ZONE = "Asia/Karachi"
+/** The last selectable day is this many calendar days after today in Pakistan. */
+export const BOOKING_WINDOW_DAYS = 30
+export const MAX_UPCOMING_PER_DOCTOR = 3
 
 function formattedParts(options: Intl.DateTimeFormatOptions) {
   return new Intl.DateTimeFormat("en-US", {
@@ -21,6 +24,12 @@ export function pakistanMinutesNow() {
 
 export function isoDate(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
+}
+
+export function pakistanBookingWindowEnd() {
+  const end = pakistanToday()
+  end.setDate(end.getDate() + BOOKING_WINDOW_DAYS)
+  return end
 }
 
 export function generateSlots(start: string, end: string, minutes: number) {

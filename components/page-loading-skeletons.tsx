@@ -114,6 +114,7 @@ export function DoctorDetailsLoading() {
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <Skeleton className="h-4 w-32 bg-teal-100" /><Skeleton className="mt-3 h-8 w-64 max-w-full" /><Skeleton className="mt-3 h-4 w-full max-w-lg" />
             <div className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-7">{Array.from({ length: 7 }, (_, index) => <Skeleton key={index} className="h-16 w-full rounded-xl" />)}</div>
+            <div className="mt-7 border-t border-slate-100 pt-6"><Skeleton className="h-5 w-36 max-w-full" /><Skeleton className="mt-2 h-3 w-64 max-w-full" /><div className="mt-4 grid grid-cols-7 gap-1">{Array.from({ length: 35 }, (_, index) => <Skeleton key={index} className="aspect-square w-full rounded-lg" />)}</div></div>
             <div className="mt-7 border-t border-slate-100 pt-6"><Skeleton className="h-5 w-64 max-w-full" /><div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }, (_, index) => <Skeleton key={index} className="h-11 w-full rounded-xl" />)}</div></div>
           </div>
           <aside className="hidden rounded-2xl border border-teal-100 bg-teal-50/70 p-5 shadow-sm lg:block"><Skeleton className="h-4 w-36 bg-teal-100" /><Skeleton className="mt-5 h-4 w-full" /><Skeleton className="mt-2 h-4 w-4/5" /><Skeleton className="mt-6 h-11 w-full bg-teal-100" /></aside>

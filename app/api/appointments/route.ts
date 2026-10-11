@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { sendNewBookingRequestEmail } from "@/lib/email/booking-emails"
+import { BOOKING_WINDOW_DAYS, MAX_UPCOMING_PER_DOCTOR, isoDate, pakistanToday } from "@/lib/slots"
 import { createClient } from "@/lib/supabase/server"
 
 type BookingRequest = {
@@ -34,6 +35,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Reason for visit must be 300 characters or fewer." }, { status: 400 })
   }
 
+  const requestedDate = new Date(`${body.date}T12:00:00`)
+  const today = pakistanToday()
+  const maxDate = new Date(today)
+  maxDate.setDate(maxDate.getDate() + BOOKING_WINDOW_DAYS)
+  if (Number.isNaN(requestedDate.getTime()) || isoDate(requestedDate) !== body.date || requestedDate < today) {
+    return NextResponse.json({ error: "You cannot book an appointment in the past." }, { status: 400 })
+  }
+  if (requestedDate > maxDate) {
+    return NextResponse.json({ error: `You can book up to ${BOOKING_WINDOW_DAYS} days ahead.` }, { status: 400 })
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -44,6 +56,22 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
   if (profile?.role !== "patient") {
     return NextResponse.json({ error: "Only patient accounts can book appointments." }, { status: 403 })
+  }
+
+  const { count: upcomingCount, error: upcomingError } = await supabase
+    .from("appointments")
+    .select("id", { count: "exact", head: true })
+    .eq("patient_id", user.id)
+    .eq("doctor_id", body.doctorId)
+    .in("status", ["pending", "confirmed"])
+    .gte("appointment_date", isoDate(today))
+
+  if (upcomingError) {
+    console.error("Could not check upcoming appointment limit", upcomingError)
+    return NextResponse.json({ error: "We could not check your upcoming appointments. Please try again." }, { status: 500 })
+  }
+  if ((upcomingCount ?? 0) >= MAX_UPCOMING_PER_DOCTOR) {
+    return NextResponse.json({ error: `You already have ${MAX_UPCOMING_PER_DOCTOR} upcoming appointments with this doctor.` }, { status: 400 })
   }
 
   const { data: appointment, error } = await supabase

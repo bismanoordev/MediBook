@@ -9,7 +9,7 @@ import { DoctorPhoto } from "@/components/doctor-photo"
 import { DoctorBookingFlow } from "@/components/patient/doctor-booking-flow"
 import { buttonVariants } from "@/components/ui/button"
 import { getAuthState } from "@/lib/auth"
-import { generateSlots, isoDate, pakistanMinutesNow, pakistanToday } from "@/lib/slots"
+import { BOOKING_WINDOW_DAYS, generateSlots, isoDate, pakistanBookingWindowEnd, pakistanMinutesNow, pakistanToday } from "@/lib/slots"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
@@ -96,7 +96,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
           </div>
         </section>
 
-        {profile?.role === "doctor" || profile?.role === "admin" ? <section className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/70 p-5 text-sm leading-6 text-slate-700">Booking is available for patient accounts.</section> : <DoctorBookingFlow doctorId={id} days={days} loggedIn={Boolean(user)} role={profile?.role} />}
+        {profile?.role === "doctor" || profile?.role === "admin" ? <section className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/70 p-5 text-sm leading-6 text-slate-700">Booking is available for patient accounts.</section> : <DoctorBookingFlow doctorId={id} days={days} schedules={schedules ?? []} timeOff={timeOff ?? []} windowStart={isoDate(today)} windowEnd={isoDate(pakistanBookingWindowEnd())} bookingWindowDays={BOOKING_WINDOW_DAYS} loggedIn={Boolean(user)} role={profile?.role} />}
       </main>
     </div>
   )

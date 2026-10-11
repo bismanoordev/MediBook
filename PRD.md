@@ -30,7 +30,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 
 - Sign up, log in, and log out.
 - See doctors and filter them by specialty.
-- See available time slots for the next 7 days.
+- See available time slots for the next 30 days.
 - Book an available slot.
 - See and cancel their own appointments.
 - Receive live notifications from the bell icon.
@@ -137,6 +137,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 13. Doctor documents are private and never publicly accessible. Only the doctor and admins can open them.
 14. A doctor's days off are hidden from patients and cannot be booked.
 15. Users can never choose the `admin` role from the browser. Doctor sign-up creates a `doctor` role only.
+16. Patients can book from today through 30 calendar days ahead, with at most 3 upcoming appointments with the same doctor.
 
 ## 9. Done When
 
