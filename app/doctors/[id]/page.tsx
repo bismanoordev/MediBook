@@ -1,9 +1,8 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowLeft, BriefcaseBusiness, GraduationCap, Languages, MapPin } from "lucide-react"
+import { ArrowLeft, BriefcaseBusiness, Check, Languages, MapPin } from "lucide-react"
 
 import { AppHeader } from "@/components/app-header"
-import { DoctorAbout } from "@/components/doctor-about"
 import { getDoctorCharacter } from "@/components/doctor-card"
 import { DoctorPhoto } from "@/components/doctor-photo"
 import { DoctorBookingFlow } from "@/components/patient/doctor-booking-flow"
@@ -15,18 +14,6 @@ import { cn } from "@/lib/utils"
 
 const dayName = new Intl.DateTimeFormat("en-PK", { weekday: "short" })
 const dateName = new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short" })
-
-function qualificationNames(value: unknown) {
-  if (!Array.isArray(value)) return []
-
-  return value.flatMap((item) => {
-    if (typeof item === "string") return item.trim() ? [item.trim()] : []
-    if (!item || typeof item !== "object" || Array.isArray(item)) return []
-    const record = item as Record<string, unknown>
-    const name = typeof record.degree === "string" ? record.degree : typeof record.title === "string" ? record.title : ""
-    return name.trim() ? [name.trim()] : []
-  })
-}
 
 export default async function DoctorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -66,8 +53,6 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   })
   const specialty = (doctor.specialties as unknown as { name: string } | null)?.name ?? "Clinic doctor"
   const fee = Number(doctor.fee)
-  const qualifications = qualificationNames(doctor.qualifications)
-  const qualificationLabel = qualifications.length ? `${qualifications.slice(0, 2).join(", ")}${qualifications.length > 2 ? ` +${qualifications.length - 2}` : ""}` : null
   const locationLabel = [doctor.city, doctor.clinic_name].filter((value): value is string => Boolean(value?.trim())).join(" · ")
 
   return (
@@ -83,7 +68,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
         </header>
       )}
 
-      <main className="mx-auto max-w-6xl px-5 py-8 pb-28 sm:px-8 sm:py-10 lg:pb-12">
+      <main className="mx-auto max-w-[1260px] px-5 py-8 pb-16 sm:px-8 sm:py-10">
         <Link href="/doctors" className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-2 text-sm font-semibold text-[#0F766E] transition hover:bg-teal-50 hover:text-[#0D5F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">
           <ArrowLeft className="size-4" aria-hidden="true" />
           All doctors
@@ -91,15 +76,15 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
 
         <section className="mt-5 max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#0F766E]">Book your visit</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Choose a time that works for you</h1>
-          <p className="mt-3 text-base leading-7 text-slate-600">Review the doctor, select a visit time, then send your appointment request.</p>
+          <h1 className="mt-2 max-w-full break-words text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Choose a time that works for you</h1>
+          <p className="mt-3 max-w-full break-words text-base leading-7 text-slate-600">Review the doctor, select a visit time, then send your appointment request.</p>
         </section>
 
-        <section className="mt-7 overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm">
-          <div className="grid min-w-0 gap-5 p-5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-6 sm:p-7 lg:grid-cols-[10rem_minmax(0,1fr)_11rem] lg:items-start">
-            <DoctorPhoto fullName={doctor.full_name} photoUrl={doctor.photo_url} fallbackImageUrl={getDoctorCharacter(specialty)} fallbackAlt={`Illustrated ${specialty} clinician`} className="size-28 rounded-2xl text-lg sm:size-36 sm:text-xl lg:size-40" sizes="(min-width: 1024px) 160px, (min-width: 640px) 144px, 112px" priority />
-            <div className="min-w-0"><p className="inline-flex max-w-full break-words rounded-full bg-[#CCFBF1] px-3 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p><h2 className="mt-3 break-words text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{doctor.full_name}</h2>{locationLabel ? <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-600"><MapPin className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" />{locationLabel}</p> : <p className="mt-2 text-sm text-slate-600">{specialty} care</p>}<div className="mt-5 flex flex-wrap gap-2">{typeof doctor.experience_years === "number" ? <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700"><BriefcaseBusiness className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" />{doctor.experience_years} years experience</span> : null}{doctor.languages?.length ? <span title={doctor.languages.join(", ")} className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700"><Languages className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" /><span className="truncate">{doctor.languages.join(", ")}</span></span> : null}{locationLabel ? <span title={locationLabel} className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700"><MapPin className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" /><span className="truncate">{locationLabel}</span></span> : null}{qualificationLabel ? <span title={qualificationLabel} className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-700"><GraduationCap className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" /><span className="truncate">{qualificationLabel}</span></span> : null}</div><DoctorAbout bio={doctor.bio} /></div>
-            <div className="rounded-2xl border border-teal-100 bg-teal-50/70 p-4 lg:mt-1 lg:text-right"><p className="text-xs font-medium text-slate-500">Consultation fee</p><p className="mt-1 text-xl font-semibold tracking-tight text-slate-900">{Number.isFinite(fee) ? `Rs. ${fee.toLocaleString()}` : "Contact clinic"}</p></div>
+        <section className="mt-7 overflow-hidden rounded-[22px] border border-teal-100 bg-gradient-to-br from-[#ECFDF5] to-[#DDF8F3] shadow-[0_14px_35px_rgba(15,118,110,0.08)]">
+          <div className="grid min-w-0 gap-5 p-5 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6 sm:p-7 lg:grid-cols-[10rem_minmax(0,1fr)_14rem] lg:items-center">
+            <DoctorPhoto fullName={doctor.full_name} photoUrl={doctor.photo_url} fallbackImageUrl={getDoctorCharacter(specialty)} fallbackAlt={`Illustrated ${specialty} clinician`} className="h-[166px] w-40 rounded-2xl text-lg" sizes="160px" priority />
+            <div className="min-w-0"><p className="inline-flex max-w-full break-words rounded-full bg-[#CCFBF1] px-3 py-1 text-xs font-semibold text-[#0F766E]">{specialty}</p><h2 className="mt-3 break-words text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{doctor.full_name}</h2><p className="mt-2 text-sm text-slate-600">Consultant {specialty.toLowerCase()} {doctor.city ? `· ${doctor.city}` : ""}</p><div className="mt-5 flex flex-wrap gap-2">{typeof doctor.experience_years === "number" ? <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/80 bg-white/75 px-3 py-1.5 text-sm text-slate-700"><BriefcaseBusiness className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" />{doctor.experience_years} years experience</span> : null}{doctor.languages?.length ? <span title={doctor.languages.join(", ")} className="inline-flex min-w-0 max-w-full basis-full items-center gap-1.5 rounded-full border border-white/80 bg-white/75 px-3 py-1.5 text-sm text-slate-700 sm:basis-auto sm:flex-1"><Languages className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" /><span className="truncate">{doctor.languages.join(", ")}</span></span> : null}{locationLabel ? <span title={locationLabel} className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border border-white/80 bg-white/75 px-3 py-1.5 text-sm text-slate-700"><MapPin className="size-4 shrink-0 text-[#0F766E]" aria-hidden="true" /><span className="truncate">{locationLabel}</span></span> : null}</div></div>
+            <div className="w-full rounded-2xl border border-white bg-white p-5 shadow-sm lg:w-56"><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0F766E]">Consultation fee</p><p className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{Number.isFinite(fee) ? `Rs. ${fee.toLocaleString()}` : "Contact clinic"}</p><div className="my-4 border-t border-slate-100" /><p className="flex items-center gap-2 text-sm font-medium text-slate-600"><Check className="size-4 text-[#0F766E]" aria-hidden="true" />Pay at the clinic</p></div>
           </div>
         </section>
 
