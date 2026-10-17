@@ -1,6 +1,6 @@
 export const PAKISTAN_TIME_ZONE = "Asia/Karachi"
 /** The last selectable day is this many calendar days after today in Pakistan. */
-export const BOOKING_WINDOW_DAYS = 30
+export const BOOKING_WINDOW_DAYS = 60
 export const MAX_UPCOMING_PER_DOCTOR = 3
 
 function formattedParts(options: Intl.DateTimeFormatOptions) {
