@@ -73,13 +73,39 @@ export function AppointmentsLoading({ doctor = false, admin = false }: { doctor?
 export function AvailabilityLoading() {
   return <main className="mx-auto max-w-5xl px-5 py-7 sm:px-8 sm:py-9" aria-label="Loading availability">
     <PageIntro labelWidth="w-44" titleWidth="w-full max-w-80" copyWidth="w-full max-w-[32rem]" />
-    <div className="mt-8"><Skeleton className="h-5 w-40" /><Skeleton className="mt-2 h-4 w-full max-w-80" /><div className="mt-5 grid gap-3">{Array.from({ length: 7 }, (_, index) => <div key={index} className="flex h-20 items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><Skeleton className="size-5" /><Skeleton className="h-4 w-24" /><Skeleton className="ml-auto h-10 w-44" /></div>)}</div></div>
-    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"><Skeleton className="h-64 w-full border border-slate-200 bg-white" /><Skeleton className="h-64 w-full border border-slate-200 bg-white" /></div>
+    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="min-w-0 flex-1"><Skeleton className="h-5 w-44" /><Skeleton className="mt-2 h-4 w-full max-w-md" /></div></div>
+      <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+        <Skeleton className="h-12 w-56 bg-white" />
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <div key={index}><Skeleton className="h-3 w-20" /><Skeleton className="mt-2 h-11 w-full bg-white" /></div>)}</div>
+        <Skeleton className="mt-4 h-11 w-36 bg-teal-100" />
+      </div>
+      <div className="mt-7 border-t border-slate-100 pt-5"><Skeleton className="h-4 w-48" /><div className="mt-3 grid gap-3">{Array.from({ length: 2 }, (_, index) => <div key={index} className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 p-4"><div className="min-w-0 flex-1"><Skeleton className="h-4 w-40 max-w-full" /><Skeleton className="mt-2 h-3 w-56 max-w-full" /></div><Skeleton className="h-10 w-24 shrink-0" /></div>)}</div></div>
+    </section>
+    <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-32" /><Skeleton className="mt-2 h-4 w-full max-w-sm" /></div></div><div className="mt-5 grid gap-3 sm:grid-cols-3"><Skeleton className="h-11 w-full" /><Skeleton className="h-11 w-full" /><Skeleton className="h-11 w-full bg-teal-100" /></div></section>
+      <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><Skeleton className="h-5 w-40" /><Skeleton className="mt-3 h-3 w-full" /><Skeleton className="mt-2 h-3 w-4/5" /><Skeleton className="mt-5 h-9 w-full bg-amber-100" /><Skeleton className="mt-2 h-9 w-full bg-amber-100" /></aside>
+    </div>
+    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-28" /><Skeleton className="mt-2 h-4 w-full max-w-md" /></div></div><div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="rounded-xl border border-slate-200 p-3"><div className="flex items-center justify-between gap-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-6 w-24 rounded-full" /></div><Skeleton className="mt-3 h-3 w-40 max-w-full" /><Skeleton className="mt-2 h-3 w-28" /></div>)}</div></section>
   </main>
 }
 
 export function ProfileLoading() {
-  return <main className="mx-auto max-w-4xl px-5 py-8 sm:px-8 sm:py-10" aria-label="Loading profile"><PageIntro labelWidth="w-28" titleWidth="w-52" copyWidth="w-full max-w-80" /><div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><div className="flex gap-4"><Skeleton className="size-20 rounded-2xl bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-48" /><Skeleton className="mt-3 h-4 w-64" /></div></div><div className="mt-7 grid gap-4 sm:grid-cols-2">{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-11 w-full" />)}</div><Skeleton className="mt-4 h-28 w-full" /></div></main>
+  return <main className="mx-auto max-w-4xl px-5 py-8 sm:px-8 sm:py-12" aria-label="Loading profile">
+    <PageIntro labelWidth="w-28" titleWidth="w-52" copyWidth="w-full max-w-[28rem]" />
+    <section className="mt-8 rounded-3xl border border-teal-100 bg-white p-5 shadow-sm sm:p-7"><div className="flex flex-col items-center gap-5 sm:flex-row"><Skeleton className="size-24 shrink-0 rounded-full bg-teal-100" /><div className="min-w-0 flex-1 text-center sm:text-left"><Skeleton className="mx-auto h-6 w-32 rounded-full bg-teal-100 sm:mx-0" /><Skeleton className="mx-auto mt-3 h-7 w-56 max-w-full sm:mx-0" /><Skeleton className="mx-auto mt-3 h-4 w-64 max-w-full sm:mx-0" /><div className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start"><Skeleton className="h-7 w-32 rounded-full" /><Skeleton className="h-7 w-28 rounded-full" /></div></div></div></section>
+    <section className="mt-6 flex flex-col gap-6 lg:flex-row">
+      <div className="flex min-w-0 flex-col gap-6 lg:flex-[1.35]">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-40" /><Skeleton className="mt-2 h-4 w-52 max-w-full" /></div></div><div className="mt-6 grid grid-cols-3 gap-2.5">{Array.from({ length: 3 }, (_, index) => <div key={index} className="rounded-2xl bg-slate-50 p-3 sm:p-4"><Skeleton className="size-9 rounded-full" /><Skeleton className="mt-3 h-6 w-8" /><Skeleton className="mt-2 h-3 w-14" /></div>)}</div><div className="mt-6 rounded-2xl border border-slate-200 p-4 sm:p-5"><Skeleton className="h-5 w-40" /><Skeleton className="mt-3 h-4 w-56 max-w-full" /><Skeleton className="mt-4 h-10 w-32 bg-teal-100" /></div></div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-36" /><Skeleton className="mt-2 h-4 w-60 max-w-full" /></div></div><div className="mt-6 grid gap-5 sm:grid-cols-2"><div><Skeleton className="h-3 w-20" /><Skeleton className="mt-2 h-11 w-full" /></div><div><Skeleton className="h-3 w-24" /><Skeleton className="mt-2 h-11 w-full" /></div></div><Skeleton className="mt-5 h-11 w-36 bg-teal-100" /></div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-24" /><Skeleton className="mt-2 h-4 w-56 max-w-full" /></div></div><div className="mt-6 grid gap-5 sm:grid-cols-2"><div><Skeleton className="h-3 w-24" /><Skeleton className="mt-2 h-11 w-full" /></div><div><Skeleton className="h-3 w-28" /><Skeleton className="mt-2 h-11 w-full" /></div></div><Skeleton className="mt-5 h-11 w-36 bg-teal-100" /></div>
+      </div>
+      <div className="flex min-w-0 flex-col gap-6 lg:min-w-[18rem] lg:flex-[.65]">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-28" /><Skeleton className="mt-2 h-4 w-40 max-w-full" /></div></div><div className="mt-5 grid gap-2">{Array.from({ length: 3 }, (_, index) => <div key={index} className="flex items-center gap-3 rounded-2xl p-2"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-4 w-32" /><Skeleton className="mt-2 h-3 w-24" /></div></div>)}</div></div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"><div className="flex items-start gap-3"><Skeleton className="size-10 shrink-0 bg-teal-100" /><div className="flex-1"><Skeleton className="h-5 w-32" /><Skeleton className="mt-2 h-4 w-40 max-w-full" /></div></div><div className="mt-5 grid gap-3"><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /><Skeleton className="h-11 w-full" /></div></div>
+      </div>
+    </section>
+  </main>
 }
 
 export function DocumentsLoading() {
@@ -101,24 +127,30 @@ export function DoctorFormLoading() {
 export function DoctorDetailsLoading() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <main className="mx-auto max-w-6xl px-5 py-8 pb-28 sm:px-8 sm:py-10 lg:pb-12" aria-label="Loading doctor details">
-        <Skeleton className="h-4 w-28 bg-teal-100" />
-        <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-start gap-4 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-6">
-            <Skeleton className="size-20 rounded-2xl bg-teal-100 sm:size-32" />
-            <div className="min-w-0"><div className="flex items-start justify-between gap-3"><div className="min-w-0 flex-1"><Skeleton className="h-6 w-28" /><Skeleton className="mt-3 h-9 w-64 max-w-full" /></div><div className="hidden rounded-xl border border-teal-100 bg-teal-50 px-4 py-3 sm:block"><Skeleton className="h-3 w-24" /><Skeleton className="mt-2 h-6 w-20" /></div></div><Skeleton className="mt-3 h-4 w-36 sm:hidden" /></div>
-            <div className="col-span-2 min-w-0 sm:col-start-2 sm:col-span-1"><div className="flex flex-wrap gap-2"><Skeleton className="h-8 w-36" /><Skeleton className="h-8 w-40 max-w-full" /><Skeleton className="h-8 w-32" /></div><Skeleton className="mt-5 h-3 w-12" /><Skeleton className="mt-3 h-4 w-full max-w-2xl" /><Skeleton className="mt-2 h-4 w-4/5 max-w-xl" /><Skeleton className="mt-2 h-4 w-3/5 max-w-lg" /></div>
+      <main className="mx-auto max-w-[1260px] px-5 py-8 pb-16 sm:px-8 sm:py-10" aria-label="Loading doctor details">
+        <Skeleton className="h-11 w-32 bg-teal-100" />
+        <section className="mt-5 max-w-3xl"><Skeleton className="h-4 w-32 bg-teal-100" /><Skeleton className="mt-3 h-9 w-full max-w-md" /><Skeleton className="mt-3 h-4 w-full max-w-lg" /></section>
+        <section className="mt-7 overflow-hidden rounded-[22px] border border-teal-100 bg-gradient-to-br from-[#ECFDF5] to-[#DDF8F3] shadow-sm">
+          <div className="grid min-w-0 gap-5 p-5 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-6 sm:p-7 lg:grid-cols-[10rem_minmax(0,1fr)_14rem] lg:items-center">
+            <Skeleton className="h-[166px] w-40 rounded-2xl bg-teal-100" />
+            <div className="min-w-0"><Skeleton className="h-6 w-28 rounded-full bg-teal-100" /><Skeleton className="mt-3 h-9 w-64 max-w-full" /><Skeleton className="mt-3 h-4 w-52 max-w-full" /><div className="mt-5 flex flex-wrap gap-2"><Skeleton className="h-9 w-36 rounded-full bg-white" /><Skeleton className="h-9 w-44 rounded-full bg-white" /><Skeleton className="h-9 w-28 rounded-full bg-white" /></div></div>
+            <div className="rounded-2xl border border-white bg-white p-5 shadow-sm lg:w-56"><Skeleton className="h-3 w-28" /><Skeleton className="mt-3 h-8 w-24" /><div className="my-4 border-t border-slate-100" /><Skeleton className="h-4 w-32" /></div>
           </div>
         </section>
-        <section className="mt-8 grid gap-6 pb-24 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:pb-0">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-            <Skeleton className="h-4 w-32 bg-teal-100" /><Skeleton className="mt-3 h-8 w-64 max-w-full" /><Skeleton className="mt-3 h-4 w-full max-w-lg" />
-            <div className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-7">{Array.from({ length: 7 }, (_, index) => <Skeleton key={index} className="h-16 w-full rounded-xl" />)}</div>
-            <div className="mt-7 border-t border-slate-100 pt-6"><Skeleton className="h-5 w-36 max-w-full" /><Skeleton className="mt-2 h-3 w-64 max-w-full" /><div className="mt-4 grid grid-cols-7 gap-1">{Array.from({ length: 35 }, (_, index) => <Skeleton key={index} className="aspect-square w-full rounded-lg" />)}</div></div>
-            <div className="mt-7 border-t border-slate-100 pt-6"><Skeleton className="h-5 w-64 max-w-full" /><div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">{Array.from({ length: 8 }, (_, index) => <Skeleton key={index} className="h-11 w-full rounded-xl" />)}</div></div>
+        <section className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,838px)_minmax(320px,389px)] lg:items-start lg:gap-8">
+          <div className="min-w-0 rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <Skeleton className="h-3 w-32 bg-teal-100" /><Skeleton className="mt-3 h-7 w-72 max-w-full" /><Skeleton className="mt-2 h-4 w-64 max-w-full" />
+            <div className="mt-5 rounded-2xl border border-slate-100 bg-slate-50/70 p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2"><Skeleton className="size-11 shrink-0 bg-white" /><Skeleton className="h-5 w-40" /><Skeleton className="size-11 shrink-0 bg-white" /></div>
+              <div className="mt-3 flex gap-2">{Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className="h-11 w-16 bg-white" />)}</div>
+              <div className="mt-4 grid grid-cols-7 gap-1.5">{Array.from({ length: 7 }, (_, index) => <Skeleton key={index} className="mx-auto h-3 w-6" />)}{Array.from({ length: 35 }, (_, index) => <Skeleton key={index} className="h-10 w-full rounded-lg sm:h-11" />)}</div>
+            </div>
+            <div className="mt-6 border-t border-slate-100 pt-6"><Skeleton className="h-3 w-32 bg-teal-100" /><Skeleton className="mt-3 h-7 w-56 max-w-full" /><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-[55px] w-full" />)}</div></div>
           </div>
-          <aside className="hidden rounded-2xl border border-teal-100 bg-teal-50/70 p-5 shadow-sm lg:block"><Skeleton className="h-4 w-36 bg-teal-100" /><Skeleton className="mt-5 h-4 w-full" /><Skeleton className="mt-2 h-4 w-4/5" /><Skeleton className="mt-6 h-11 w-full bg-teal-100" /></aside>
-          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 p-4 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden"><div className="mx-auto flex max-w-xl items-center gap-3"><Skeleton className="h-4 flex-1" /><Skeleton className="h-11 w-28 shrink-0 bg-teal-100" /></div></div>
+          <aside className="space-y-4 lg:sticky lg:top-6">
+            <div className="rounded-[22px] border border-teal-100 bg-white p-5 shadow-sm sm:p-6"><Skeleton className="h-3 w-32 bg-teal-100" /><Skeleton className="mt-3 h-6 w-36" /><Skeleton className="mt-5 h-24 w-full bg-teal-50" /><Skeleton className="mt-6 h-12 w-full bg-teal-100" /></div>
+            <div className="rounded-2xl border border-teal-100 bg-white p-4"><div className="flex gap-3"><Skeleton className="size-9 shrink-0 rounded-full bg-teal-100" /><div className="flex-1"><Skeleton className="h-4 w-28" /><Skeleton className="mt-2 h-3 w-full" /></div></div></div>
+          </aside>
         </section>
       </main>
     </div>

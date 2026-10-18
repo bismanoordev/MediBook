@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { AvailabilityDateInput, AvailabilityResult, AvailabilityUpdateInput } from "@/lib/availability"
 import { cn } from "@/lib/utils"
 
@@ -28,6 +29,7 @@ const weekdayOptions = [
   { value: 6, label: "Sat" },
   { value: 0, label: "Sun" },
 ]
+const slotOptions = [15, 20, 30, 60].map((minutes) => ({ value: String(minutes), label: `${minutes} minutes` }))
 const dateFormatter = new Intl.DateTimeFormat("en-PK", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
 const timeFormatter = new Intl.DateTimeFormat("en-PK", { hour: "numeric", minute: "2-digit" })
 const timeLabel = (time: string) => timeFormatter.format(new Date(`2000-01-01T${time}`))
@@ -140,7 +142,15 @@ export function AvailabilityManager({
         )}
         <label className="grid gap-1.5 text-sm font-medium text-slate-700">Start time<input type="time" value={form.start} disabled={pending} onChange={(event) => setForm((current) => ({ ...current, start: event.target.value }))} className={fieldClass} /></label>
         <label className="grid gap-1.5 text-sm font-medium text-slate-700">End time<input type="time" value={form.end} disabled={pending} onChange={(event) => setForm((current) => ({ ...current, end: event.target.value }))} className={fieldClass} /></label>
-        <label className="grid gap-1.5 text-sm font-medium text-slate-700">Slot length<select value={form.minutes} disabled={pending} onChange={(event) => setForm((current) => ({ ...current, minutes: Number(event.target.value) }))} className={fieldClass}>{[15, 20, 30, 60].map((minutes) => <option key={minutes} value={minutes}>{minutes} minutes</option>)}</select></label>
+        <div className="grid gap-1.5 text-sm font-medium text-slate-700">
+          <label htmlFor="availability-slot-length">Slot length</label>
+          <Select items={slotOptions} value={String(form.minutes)} disabled={pending} onValueChange={(value) => { if (value) setForm((current) => ({ ...current, minutes: Number(value) })) }}>
+            <SelectTrigger id="availability-slot-length" className="w-full rounded-xl border-slate-200 bg-white px-3 data-[size=default]:h-11 focus-visible:border-[#0F766E] focus-visible:ring-2 focus-visible:ring-teal-100"><SelectValue /></SelectTrigger>
+            <SelectContent alignItemWithTrigger={false} className="rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+              {slotOptions.map((option) => <SelectItem key={option.value} value={option.value} className="rounded-lg px-3 py-2.5 text-slate-700 data-[highlighted]:bg-teal-50 data-[highlighted]:text-[#0F766E] data-[selected]:bg-teal-50 data-[selected]:font-medium data-[selected]:text-[#0F766E]">{option.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {activeMode === "range" ? (
