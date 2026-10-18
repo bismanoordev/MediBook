@@ -59,6 +59,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     from = requestedFrom && requestedFrom > start ? requestedFrom : start
     to = requestedTo && requestedTo < end ? requestedTo : end
     if (from > to) return NextResponse.json({ error: "Choose a valid availability range." }, { status: 400 })
+    const fromDate = new Date(`${from}T12:00:00`)
+    const toDate = new Date(`${to}T12:00:00`)
+    if (fromDate.getFullYear() !== toDate.getFullYear() || fromDate.getMonth() !== toDate.getMonth()) {
+      return NextResponse.json({ error: "Choose availability dates from one calendar month." }, { status: 400 })
+    }
   }
 
   const supabase = await createClient()

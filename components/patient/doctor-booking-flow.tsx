@@ -25,6 +25,27 @@ const parseDate = (value: string) => new Date(`${value}T12:00:00`)
 const formatTime = (time: string) => timeFormatter.format(new Date(`2000-01-01T${time}`))
 const formatDate = (value: string) => fullDateFormatter.format(parseDate(value))
 const formatVisitDate = (value: string) => visitDateFormatter.format(parseDate(value))
+const monthFormatter = new Intl.DateTimeFormat("en-PK", { month: "long", year: "numeric" })
+
+function datesBetween(from: string, to: string) {
+  const dates: string[] = []
+  const cursor = parseDate(from)
+  const end = parseDate(to)
+  while (cursor <= end) {
+    dates.push(iso(cursor))
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return dates
+}
+
+function monthRange(month: Date, windowStart: string, windowEnd: string) {
+  const first = new Date(month.getFullYear(), month.getMonth(), 1, 12)
+  const last = new Date(month.getFullYear(), month.getMonth() + 1, 0, 12)
+  return {
+    from: iso(first) < windowStart ? windowStart : iso(first),
+    to: iso(last) > windowEnd ? windowEnd : iso(last),
+  }
+}
 
 export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, windowStart, windowEnd, bookingWindowDays, loggedIn, role }: { doctorId: string; doctor: BookingDoctor; days: Day[]; schedules: Schedule[]; timeOff: TimeOff[]; windowStart: string; windowEnd: string; bookingWindowDays: number; loggedIn: boolean; role?: "patient" | "doctor" | "admin" | null }) {
   const router = useRouter()
@@ -34,7 +55,7 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, 
   const [selectedDate, setSelectedDate] = useState(() => days.find((item) => item.slots.length > 0)?.date ?? windowStart)
   const [slotsByDate, setSlotsByDate] = useState<Record<string, string[]>>(initialSlots)
   const [availability, setAvailability] = useState<Availability>(initialAvailability)
-  const [availabilityLoading, setAvailabilityLoading] = useState(true)
+  const [availabilityLoading, setAvailabilityLoading] = useState(false)
   const [availabilityError, setAvailabilityError] = useState(false)
   const [slotsLoading, setSlotsLoading] = useState(false)
   const [slotsError, setSlotsError] = useState(false)
@@ -45,7 +66,10 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, 
   const [reasonError, setReasonError] = useState("")
   const [month, setMonth] = useState(() => parseDate(windowStart))
   const [calendarOpen, setCalendarOpen] = useState(false)
+  const availabilityRequestId = useRef(0)
   const slots = slotsByDate[selectedDate] ?? []
+  const visibleMonth = useMemo(() => monthRange(month, windowStart, windowEnd), [month, windowEnd, windowStart])
+  const visibleMonthDates = useMemo(() => datesBetween(visibleMonth.from, visibleMonth.to), [visibleMonth.from, visibleMonth.to])
 
   const isAway = (date: string) => timeOff.some((range) => range.start_date <= date && range.end_date >= date)
   const hasSchedule = (date: string) => schedules.some((item) => item.day_of_week === parseDate(date).getDay())
@@ -58,28 +82,31 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, 
   }
 
   const loadAvailability = useCallback(async () => {
-    const cursor = parseDate(windowStart)
-    cursor.setDate(cursor.getDate() + 7)
-    const from = iso(cursor)
-    if (from > windowEnd) { setAvailabilityLoading(false); return }
+    if (visibleMonthDates.every((date) => Object.prototype.hasOwnProperty.call(availability, date))) {
+      setAvailabilityLoading(false)
+      return
+    }
+    const requestId = ++availabilityRequestId.current
     setAvailabilityLoading(true)
     setAvailabilityError(false)
     try {
-      const response = await fetch(`/api/doctors/${doctorId}/availability?from=${from}&to=${windowEnd}`)
+      const response = await fetch(`/api/doctors/${doctorId}/availability?from=${visibleMonth.from}&to=${visibleMonth.to}`)
       const payload = await response.json() as { availability?: { date: string; freeSlots: number }[] }
       if (!response.ok) throw new Error("Availability request failed")
+      if (requestId !== availabilityRequestId.current) return
       setAvailability((current) => ({ ...current, ...Object.fromEntries((payload.availability ?? []).map((item) => [item.date, item.freeSlots])) }))
     } catch {
-      setAvailabilityError(true)
+      if (requestId === availabilityRequestId.current) setAvailabilityError(true)
     } finally {
-      setAvailabilityLoading(false)
+      if (requestId === availabilityRequestId.current) setAvailabilityLoading(false)
     }
-  }, [doctorId, windowEnd, windowStart])
+  }, [availability, doctorId, visibleMonth, visibleMonthDates])
 
   useEffect(() => {
+    if (!calendarOpen) return
     const request = window.setTimeout(() => { void loadAvailability() }, 0)
     return () => window.clearTimeout(request)
-  }, [loadAvailability])
+  }, [calendarOpen, loadAvailability])
 
   useEffect(() => {
     if (slotsByDate[selectedDate]) return
@@ -148,6 +175,8 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, 
 
   const nextAvailable = Object.entries(availability).filter(([date, count]) => date > selectedDate && count > 0).sort(([a], [b]) => a.localeCompare(b))[0]?.[0]
   const availableDates = Object.entries(availability).filter(([, count]) => count > 0).map(([date]) => parseDate(date))
+  const visibleMonthLoaded = visibleMonthDates.every((date) => Object.prototype.hasOwnProperty.call(availability, date))
+  const visibleMonthHasAvailability = visibleMonthDates.some((date) => (availability[date] ?? 0) > 0)
   const feeLabel = typeof doctor.fee === "number" && Number.isFinite(doctor.fee) ? `Rs. ${doctor.fee.toLocaleString()}` : "Contact clinic"
 
   return <section className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,838px)_minmax(320px,389px)] lg:items-start lg:gap-8">
@@ -170,15 +199,15 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, 
           <button type="button" aria-expanded={calendarOpen} aria-controls="full-booking-calendar" onClick={() => setCalendarOpen((open) => !open)} className="min-h-11 rounded-xl px-2 text-sm font-semibold text-[#0F766E] transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">{calendarOpen ? "Hide calendar" : "Choose another date"}</button>
           {availabilityLoading ? <span className="inline-flex items-center gap-1.5 text-xs text-slate-500"><Loader2 className="size-3.5 animate-spin" /> Checking availability</span> : null}
         </div>
-        {availabilityError ? <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><span>We could not refresh every date. Please try again.</span><Button type="button" variant="ghost" onClick={() => void loadAvailability()} className="h-10 text-[#0F766E] hover:bg-white"><RotateCcw className="size-4" /> Retry</Button></div> : null}
-        {calendarOpen ? <div id="full-booking-calendar" className="mt-2 rounded-2xl border border-slate-100 bg-slate-50/70 p-3"><Calendar mode="single" selected={parseDate(selectedDate)} onSelect={(date) => date && selectDate(iso(date))} month={month} onMonthChange={setMonth} startMonth={parseDate(windowStart)} endMonth={parseDate(windowEnd)} disabled={(date) => Boolean(disabledReason(iso(date)))} modifiers={{ available: availableDates }} modifiersClassNames={{ available: "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-[#0F766E] data-[selected-single=true]:after:bg-white" }} labels={{ labelDayButton: (date) => { const key = iso(date); return `${formatDate(key)}. ${disabledReason(key) || (availability[key] === undefined ? "Checking availability" : availability[key] ? `${availability[key]} times available` : "No availability")}` } }} className="w-full justify-center p-0 [--cell-size:2.35rem] sm:[--cell-size:2.6rem]" classNames={{ root: "w-full", months: "w-full", month: "w-full", month_grid: "w-full", selected: "[&>button]:bg-[#0F766E] [&>button]:text-white", today: "[&>button]:border [&>button]:border-[#0F766E]" }} /><p className="mt-2 text-xs leading-5 text-slate-500">Unavailable dates include days off, non-working days, and fully booked times.</p></div> : null}
+        {availabilityError ? <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><span>We could not refresh this month&apos;s availability. Please try again.</span><Button type="button" variant="ghost" onClick={() => void loadAvailability()} className="h-10 text-[#0F766E] hover:bg-white"><RotateCcw className="size-4" /> Retry</Button></div> : null}
+        {calendarOpen ? <div id="full-booking-calendar" className="mt-2 rounded-2xl border border-slate-100 bg-slate-50/70 p-3"><Calendar mode="single" selected={parseDate(selectedDate)} onSelect={(date) => date && selectDate(iso(date))} month={month} onMonthChange={setMonth} startMonth={parseDate(windowStart)} endMonth={parseDate(windowEnd)} disabled={(date) => Boolean(disabledReason(iso(date)))} modifiers={{ available: availableDates }} modifiersClassNames={{ available: "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-[#0F766E] data-[selected-single=true]:after:bg-white" }} labels={{ labelDayButton: (date) => { const key = iso(date); return `${formatDate(key)}. ${disabledReason(key) || (availability[key] === undefined ? "Checking availability" : availability[key] ? `${availability[key]} times available` : "No availability")}` } }} className="w-full justify-center p-0 [--cell-size:2.35rem] sm:[--cell-size:2.6rem]" classNames={{ root: "w-full", months: "w-full", month: "w-full", month_grid: "w-full", selected: "[&>button]:bg-[#0F766E] [&>button]:text-white", today: "[&>button]:border [&>button]:border-[#0F766E]" }} />{visibleMonthLoaded && !visibleMonthHasAvailability ? <p className="mt-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">No appointments are available in {monthFormatter.format(month)}. Try another month or check again later.</p> : null}<p className="mt-2 text-xs leading-5 text-slate-500">Unavailable dates include days off, non-working days, and fully booked times.</p></div> : null}
       </section>
 
       <section ref={availableSection} tabIndex={-1} className="mt-6 scroll-mt-6 border-t border-slate-100 pt-6 focus:outline-none">
         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#0F766E]"><span className="mr-2">02</span> Choose a time</p>
         <h2 className="mt-3 text-xl font-semibold tracking-tight text-slate-900">{formatVisitDate(selectedDate)}</h2>
         <p className="mt-1 text-sm text-slate-500">All times are shown in Pakistan Standard Time.</p>
-        {slotsLoading ? <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-[55px] animate-pulse rounded-xl bg-slate-100" />)}</div> : slotsError ? <div role="alert" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">We could not load times for this date. <button type="button" onClick={() => setSlotsByDate((current) => { const next = { ...current }; delete next[selectedDate]; return next })} className="font-semibold underline underline-offset-2">Try again</button></div> : slots.length ? <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4" role="radiogroup" aria-label="Appointment time">{slots.map((time) => <button key={time} type="button" role="radio" aria-checked={selectedTime === time} onClick={() => setSelectedTime(time)} className={`flex h-[55px] items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] ${selectedTime === time ? "border-[#0F766E] bg-[#0F766E] text-white shadow-sm" : "border-slate-200 bg-white text-slate-800 hover:border-teal-300 hover:bg-teal-50"}`}>{selectedTime === time ? <Check className="size-4" aria-hidden="true" /> : null}{formatTime(time)}</button>)}</div> : <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600"><p className="font-medium text-slate-800">No times are available for this day.</p>{nextAvailable ? <Button type="button" variant="ghost" onClick={() => selectDate(nextAvailable)} className="mt-2 h-11 px-0 font-semibold text-[#0F766E] hover:bg-transparent hover:text-[#0D5F59]">View next available day <ArrowRight className="size-4" /></Button> : !availabilityLoading ? <p className="mt-1">There are no available appointments in the next {bookingWindowDays} days. Please check again later.</p> : null}</div>}
+        {slotsLoading ? <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-[55px] animate-pulse rounded-xl bg-slate-100" />)}</div> : slotsError ? <div role="alert" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">We could not load times for this date. <button type="button" onClick={() => setSlotsByDate((current) => { const next = { ...current }; delete next[selectedDate]; return next })} className="font-semibold underline underline-offset-2">Try again</button></div> : slots.length ? <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4" role="radiogroup" aria-label="Appointment time">{slots.map((time) => <button key={time} type="button" role="radio" aria-checked={selectedTime === time} onClick={() => setSelectedTime(time)} className={`flex h-[55px] items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] ${selectedTime === time ? "border-[#0F766E] bg-[#0F766E] text-white shadow-sm" : "border-slate-200 bg-white text-slate-800 hover:border-teal-300 hover:bg-teal-50"}`}>{selectedTime === time ? <Check className="size-4" aria-hidden="true" /> : null}{formatTime(time)}</button>)}</div> : <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600"><p className="font-medium text-slate-800">No times are available for this day.</p>{nextAvailable ? <Button type="button" variant="ghost" onClick={() => selectDate(nextAvailable)} className="mt-2 h-11 px-0 font-semibold text-[#0F766E] hover:bg-transparent hover:text-[#0D5F59]">View next available day <ArrowRight className="size-4" /></Button> : <p className="mt-1">Choose another date to see its available times.</p>}</div>}
         <button type="button" aria-expanded={calendarOpen} aria-controls="full-booking-calendar" onClick={() => setCalendarOpen((open) => !open)} className="mt-5 inline-flex min-h-11 items-center gap-1 rounded-xl px-1 text-sm font-semibold text-[#0F766E] transition hover:text-[#0D5F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">{calendarOpen ? "View less available times" : "View more available times"} <ArrowRight className={`size-4 transition-transform ${calendarOpen ? "rotate-90" : ""}`} /></button>
       </section>
     </div>
