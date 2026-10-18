@@ -12,22 +12,18 @@ import { BOOKING_WINDOW_DAYS, generateSlots, isoDate, pakistanBookingWindowEnd, 
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
-const dayName = new Intl.DateTimeFormat("en-PK", { weekday: "short" })
-const dateName = new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short" })
-
 export default async function DoctorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const { user, profile } = await getAuthState()
   const supabase = await createClient()
   const today = pakistanToday()
   const windowEnd = isoDate(pakistanBookingWindowEnd())
-  const [{ data: doctor, error: doctorError }, { data: schedules, error: schedulesError }, { data: timeOff, error: timeOffError }, { data: overrides, error: overridesError }] = await Promise.all([
+  const [{ data: doctor, error: doctorError }, { data: timeOff, error: timeOffError }, { data: overrides, error: overridesError }] = await Promise.all([
     supabase.from("doctors").select("id, full_name, bio, fee, photo_url, experience_years, languages, city, clinic_name, qualifications, specialties(name)").eq("id", id).eq("is_active", true).eq("approval_status", "approved").maybeSingle(),
-    supabase.from("doctor_schedules").select("day_of_week, start_time, end_time, slot_minutes").eq("doctor_id", id),
     supabase.from("doctor_time_off").select("start_date,end_date").eq("doctor_id", id),
     supabase.from("doctor_availability_overrides").select("override_date,start_time,end_time,slot_minutes").eq("doctor_id", id).gte("override_date", isoDate(today)).lte("override_date", windowEnd),
   ])
-  if (doctorError || schedulesError || timeOffError || overridesError) throw new Error("Doctor booking details could not be loaded.")
+  if (doctorError || timeOffError || overridesError) throw new Error("Doctor booking details could not be loaded.")
   if (!doctor) notFound()
 
   const nowMinutes = pakistanMinutesNow()
@@ -39,14 +35,12 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   const booked = await Promise.all(dates.map((date) => supabase.rpc("get_booked_slots", { p_doctor_id: id, p_date: isoDate(date) })))
   const days = dates.map((date, index) => {
     const dateValue = isoDate(date)
-    const schedule = workingHoursForDate(dateValue, schedules ?? [], overrides ?? [])
+    const schedule = workingHoursForDate(dateValue, overrides ?? [])
     const taken = new Set((booked[index].data ?? []).map((item) => item.start_time))
     const away = (timeOff ?? []).some((range) => range.start_date <= dateValue && range.end_date >= dateValue)
 
     return {
       date: dateValue,
-      day: index === 0 ? "Today" : dayName.format(date),
-      label: dateName.format(date),
       away,
       slots: !away && schedule
         ? generateSlots(schedule.start_time, schedule.end_time, schedule.slot_minutes).filter((time) => !taken.has(time) && (index !== 0 || Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5)) > nowMinutes))
@@ -90,7 +84,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
           </div>
         </section>
 
-        {profile?.role === "doctor" || profile?.role === "admin" ? <section className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/70 p-5 text-sm leading-6 text-slate-700">Booking is available for patient accounts.</section> : <DoctorBookingFlow doctorId={id} doctor={{ name: doctor.full_name, specialty, location: locationLabel || null, fee: Number.isFinite(fee) ? fee : null }} days={days} schedules={schedules ?? []} overrides={overrides ?? []} timeOff={timeOff ?? []} windowStart={isoDate(today)} windowEnd={windowEnd} bookingWindowDays={BOOKING_WINDOW_DAYS} loggedIn={Boolean(user)} role={profile?.role} />}
+        {profile?.role === "doctor" || profile?.role === "admin" ? <section className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/70 p-5 text-sm leading-6 text-slate-700">Booking is available for patient accounts.</section> : <DoctorBookingFlow doctorId={id} doctor={{ name: doctor.full_name, specialty, location: locationLabel || null, fee: Number.isFinite(fee) ? fee : null }} days={days} overrides={overrides ?? []} timeOff={timeOff ?? []} hasFutureDates={(overrides ?? []).some((override) => !(timeOff ?? []).some((range) => range.start_date <= override.override_date && range.end_date >= override.override_date))} windowStart={isoDate(today)} windowEnd={windowEnd} bookingWindowDays={BOOKING_WINDOW_DAYS} loggedIn={Boolean(user)} role={profile?.role} />}
       </main>
     </div>
   )

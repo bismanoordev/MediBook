@@ -43,7 +43,7 @@ Prompt the owner can paste into the coding assistant:
 | `/doctor/onboarding` | doctor | 5-step registration |
 | `/doctor` | doctor | Dashboard |
 | `/doctor/appointments` | doctor | Pending, Upcoming, Completed, Cancelled tabs |
-| `/doctor/availability` | doctor | Weekly hours and days off |
+| `/doctor/availability` | doctor | Open dates, hours, and days off |
 | `/doctor/profile` | doctor | Edit public profile (sent for review) |
 | `/doctor/documents` | doctor | Upload and track documents |
 | `/doctor/notifications` | doctor | Notification list |
@@ -181,6 +181,8 @@ Goal: `/doctor/appointments`.
 - Realtime: new bookings and status changes update the list without refresh (reuse the pattern in `components/admin/appointments-realtime.tsx`).
 - Also change the admin appointments buttons to use `rpc('set_appointment_status')` so both roles follow the same rules.
 Test: patient books → doctor sees it live; doctor confirms → patient sees "Confirmed" and gets a notification; confirming twice (doctor then admin) shows the friendly "already updated" message.
+
+> **Update:** availability is now set only by specific dates (`doctor_availability_overrides`). The weekly schedule was removed from the doctor and admin pages and is no longer used for booking (`doctor_schedules` is kept but unused). Doctors add one date or a date range with weekdays; admins can do the same for any doctor. Steps 9 and 14 below describe the earlier design.
 
 ### [x] Step 9 — Availability (hours and days off)
 Goal: `/doctor/availability`.

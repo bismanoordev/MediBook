@@ -11,8 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { workingHoursForDate } from "@/lib/slots"
 
-type Day = { date: string; label: string; day: string; slots: string[]; away?: boolean }
-type Schedule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number }
+type Day = { date: string; slots: string[]; away?: boolean }
 type AvailabilityOverride = { override_date: string; start_time: string; end_time: string; slot_minutes: number }
 type TimeOff = { start_date: string; end_date: string }
 type Availability = Record<string, number>
@@ -29,6 +28,13 @@ const formatDate = (value: string) => fullDateFormatter.format(parseDate(value))
 const formatVisitDate = (value: string) => visitDateFormatter.format(parseDate(value))
 const monthFormatter = new Intl.DateTimeFormat("en-PK", { month: "long", year: "numeric" })
 const shortDateFormatter = new Intl.DateTimeFormat("en-PK", { weekday: "short", day: "numeric", month: "short" })
+
+function firstOpenDate(days: Day[], overrides: AvailabilityOverride[], timeOff: TimeOff[], fallback: string) {
+  const withSlots = days.find((item) => item.slots.length > 0)?.date
+  if (withSlots) return withSlots
+  const isAway = (date: string) => timeOff.some((range) => range.start_date <= date && range.end_date >= date)
+  return overrides.map((item) => item.override_date).filter((date) => !isAway(date)).sort()[0] ?? fallback
+}
 
 function datesBetween(from: string, to: string) {
   const dates: string[] = []
@@ -69,12 +75,12 @@ function monthsBetween(start: Date, end: Date) {
   return months
 }
 
-export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides, timeOff, windowStart, windowEnd, bookingWindowDays, loggedIn, role }: { doctorId: string; doctor: BookingDoctor; days: Day[]; schedules: Schedule[]; overrides: AvailabilityOverride[]; timeOff: TimeOff[]; windowStart: string; windowEnd: string; bookingWindowDays: number; loggedIn: boolean; role?: "patient" | "doctor" | "admin" | null }) {
+export function DoctorBookingFlow({ doctorId, doctor, days, overrides, hasFutureDates, timeOff, windowStart, windowEnd, bookingWindowDays, loggedIn, role }: { doctorId: string; doctor: BookingDoctor; days: Day[]; overrides: AvailabilityOverride[]; hasFutureDates: boolean; timeOff: TimeOff[]; windowStart: string; windowEnd: string; bookingWindowDays: number; loggedIn: boolean; role?: "patient" | "doctor" | "admin" | null }) {
   const router = useRouter()
   const availableSection = useRef<HTMLDivElement>(null)
   const initialSlots = useMemo(() => Object.fromEntries(days.map((item) => [item.date, item.slots])), [days])
   const initialAvailability = useMemo(() => Object.fromEntries(days.map((item) => [item.date, item.slots.length])), [days])
-  const [selectedDate, setSelectedDate] = useState(() => days.find((item) => item.slots.length > 0)?.date ?? windowStart)
+  const [selectedDate, setSelectedDate] = useState(() => firstOpenDate(days, overrides, timeOff, windowStart))
   const [slotsByDate, setSlotsByDate] = useState<Record<string, string[]>>(initialSlots)
   const [availability, setAvailability] = useState<Availability>(initialAvailability)
   const [availabilityLoading, setAvailabilityLoading] = useState(false)
@@ -86,8 +92,7 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
   const [reason, setReason] = useState("")
   const [loading, setLoading] = useState(false)
   const [reasonError, setReasonError] = useState("")
-  const [month, setMonth] = useState(() => parseDate(windowStart))
-  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [month, setMonth] = useState(() => parseDate(selectedDate))
   const availabilityRequestId = useRef(0)
   const slots = slotsByDate[selectedDate] ?? []
   const visibleMonth = useMemo(() => monthRange(month, windowStart, windowEnd), [month, windowEnd, windowStart])
@@ -97,11 +102,11 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
   const lastBookingMonth = bookingMonths[bookingMonths.length - 1] ?? startOfMonth(parseDate(windowEnd))
 
   const isAway = (date: string) => timeOff.some((range) => range.start_date <= date && range.end_date >= date)
-  const hasSchedule = (date: string) => Boolean(workingHoursForDate(date, schedules, overrides))
+  const hasSchedule = (date: string) => Boolean(workingHoursForDate(date, overrides))
   const disabledReason = (date: string) => {
     if (date < windowStart || date > windowEnd) return "Outside the booking window"
     if (isAway(date)) return "Doctor is away"
-    if (!hasSchedule(date)) return "Doctor does not work on this day"
+    if (!hasSchedule(date)) return "The doctor has not opened this date"
     if (Object.prototype.hasOwnProperty.call(availability, date) && availability[date] === 0) return "No availability"
     return ""
   }
@@ -128,10 +133,9 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
   }, [availability, doctorId, visibleMonth, visibleMonthDates])
 
   useEffect(() => {
-    if (!calendarOpen) return
     const request = window.setTimeout(() => { void loadAvailability() }, 0)
     return () => window.clearTimeout(request)
-  }, [calendarOpen, loadAvailability])
+  }, [loadAvailability])
 
   useEffect(() => {
     if (slotsByDate[selectedDate]) return
@@ -190,7 +194,7 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
       if (response.status === 401) { router.push(`/login?next=${encodeURIComponent(`/doctors/${doctorId}`)}`); return }
       if (response.status === 403) { toast.error("Booking is available for patient accounts."); return }
       if (!response.ok) {
-        toast.error(result.error ?? "We could not save your appointment. Please try again.")
+        toast.error(/does not work on this day/i.test(result.error ?? "") ? "This date is no longer available. Please choose another date." : result.error ?? "We could not save your appointment. Please try again.")
         if (response.status === 409 || response.status === 400) { setDialogOpen(false); setSelectedTime(null); router.refresh() }
         return
       }
@@ -213,6 +217,14 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
   const isLastBookingMonth = monthKey(month) === monthKey(lastBookingMonth)
   const feeLabel = typeof doctor.fee === "number" && Number.isFinite(doctor.fee) ? `Rs. ${doctor.fee.toLocaleString()}` : "Contact clinic"
 
+  if (!hasFutureDates) {
+    return <section className="mt-7 rounded-[22px] border border-slate-200 bg-white p-6 text-center shadow-[0_12px_28px_rgba(15,23,42,0.06)] sm:p-10">
+      <span className="mx-auto grid size-12 place-items-center rounded-full bg-teal-50 text-[#0F766E]"><CalendarDays className="size-6" aria-hidden="true" /></span>
+      <h2 className="mt-4 text-xl font-semibold tracking-tight text-slate-900">No dates are open yet</h2>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600">This doctor has not opened any dates yet. Please check back soon.</p>
+    </section>
+  }
+
   return <section className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,838px)_minmax(320px,389px)] lg:items-start lg:gap-8">
     <div className="min-w-0 rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_12px_28px_rgba(15,23,42,0.06)] sm:p-7">
       <section>
@@ -220,21 +232,12 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
         <h2 className="mt-3 text-xl font-semibold tracking-tight text-slate-900">When would you like to visit?</h2>
         <p className="mt-1 text-sm text-slate-500">Available appointments over the next {bookingWindowDays} days.</p>
 
-        <div className="mt-5 -mx-5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0" role="radiogroup" aria-label="Quick appointment dates">
-          <div className="grid min-w-[616px] grid-cols-7 gap-2">
-            {days.map((item) => {
-              const disabled = Boolean(disabledReason(item.date))
-              return <button key={item.date} type="button" role="radio" aria-checked={selectedDate === item.date} aria-label={`${item.day}, ${item.label}${disabled ? `: ${disabledReason(item.date)}` : `: ${item.slots.length} times available`}`} disabled={disabled} onClick={() => selectDate(item.date)} className={`min-h-[66px] rounded-xl border px-2 text-center text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 ${selectedDate === item.date && !disabled ? "border-[#0F766E] bg-[#0F766E] text-white shadow-sm" : "border-slate-200 bg-white text-slate-700 hover:border-teal-300 hover:bg-teal-50"}`}><span className="block text-[10px] font-bold uppercase tracking-wide opacity-70">{item.day}</span><span className="mt-1 block">{item.label}</span></button>
-            })}
-          </div>
-        </div>
-
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2" aria-busy={availabilityLoading}>
-          <button type="button" aria-expanded={calendarOpen} aria-controls="full-booking-calendar" onClick={() => setCalendarOpen((open) => !open)} className="min-h-11 rounded-xl px-2 text-sm font-semibold text-[#0F766E] transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">{calendarOpen ? "Hide calendar" : "Choose another date"}</button>
+          
           {availabilityLoading ? <span className="inline-flex items-center gap-1.5 text-xs text-slate-500"><Loader2 className="size-3.5 animate-spin" /> Checking availability</span> : null}
         </div>
         {availabilityError ? <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><span>We could not refresh this month&apos;s availability. Please try again.</span><Button type="button" variant="ghost" onClick={() => void loadAvailability()} className="h-10 text-[#0F766E] hover:bg-white"><RotateCcw className="size-4" /> Retry</Button></div> : null}
-        {calendarOpen ? <div id="full-booking-calendar" className="mt-2 rounded-2xl border border-slate-100 bg-slate-50/70 p-3 sm:p-4" aria-busy={availabilityLoading}>
+        <div id="full-booking-calendar" className="mt-2 rounded-2xl border border-slate-100 bg-slate-50/70 p-3 sm:p-4" aria-busy={availabilityLoading}>
           <div className="flex items-center justify-between gap-2">
             <button type="button" aria-label="Previous month" disabled={isFirstBookingMonth} onClick={() => changeMonth(-1)} className="grid size-11 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-teal-300 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"><ChevronLeft className="size-5" aria-hidden="true" /></button>
             <div className="min-w-0 text-center"><p className="truncate text-base font-semibold text-slate-900">{monthFormatter.format(month)}</p>{availabilityLoading ? <span className="mt-1 inline-flex items-center gap-1.5 text-xs text-slate-500"><Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> Updating availability</span> : null}</div>
@@ -251,8 +254,8 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
           <Calendar mode="single" selected={parseDate(selectedDate)} onSelect={(date) => date && selectDate(iso(date))} month={month} onMonthChange={setMonth} startMonth={parseDate(windowStart)} endMonth={parseDate(windowEnd)} disabled={(date) => Boolean(disabledReason(iso(date)))} modifiers={{ available: availableDates }} modifiersClassNames={{ available: "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-[#0F766E] data-[selected-single=true]:after:bg-white" }} labels={{ labelDayButton: (date) => { const key = iso(date); return `${formatDate(key)}. ${disabledReason(key) || (availability[key] === undefined ? "Checking availability" : availability[key] ? `${availability[key]} times available` : "No availability")}` } }} className="mt-3 w-full justify-center p-0 [--cell-size:min(2.5rem,calc((100vw-5rem)/7))] sm:[--cell-size:2.75rem]" classNames={{ root: "w-full", months: "w-full", month: "w-full gap-2", nav: "hidden", month_caption: "hidden", month_grid: "w-full table-fixed border-separate border-spacing-y-1", weekdays: "h-7", weekday: "w-[14.285%] text-center text-[11px] font-medium text-slate-500", week: "h-[var(--cell-size)]", day: "relative h-[var(--cell-size)] w-[14.285%] p-0 text-center", selected: "[&>button]:bg-[#0F766E] [&>button]:text-white", today: "[&>button]:border [&>button]:border-[#0F766E] [&>button]:bg-transparent", disabled: "[&>button]:text-slate-400 [&>button]:opacity-45", outside: "invisible", }} />
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500" aria-label="Calendar legend"><span className="inline-flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-[#0F766E]" aria-hidden="true" /> Times available</span><span className="inline-flex items-center gap-1.5"><span className="size-3 rounded border border-slate-300 bg-slate-100" aria-hidden="true" /> Not available</span></div>
           {visibleMonthLoaded ? visibleMonthHasAvailability && nextAvailableInVisibleMonth ? <button type="button" onClick={() => selectDate(nextAvailableInVisibleMonth)} className="mt-2 inline-flex min-h-11 items-center rounded-xl px-1 text-sm font-semibold text-[#0F766E] transition hover:text-[#0D5F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">Next available: {shortDateFormatter.format(parseDate(nextAvailableInVisibleMonth))}<ArrowRight className="ml-1 size-4" aria-hidden="true" /></button> : <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600"><span>No availability this month.</span>{!isLastBookingMonth ? <button type="button" onClick={() => changeMonth(1)} className="min-h-11 rounded-xl px-2 font-semibold text-[#0F766E] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">Go to next month</button> : null}</div> : null}
-          <p className="mt-2 text-xs leading-5 text-slate-500">Unavailable dates include days off, non-working days, and fully booked times.</p>
-        </div> : null}
+          <p className="mt-2 text-xs leading-5 text-slate-500">Only dates opened by the doctor can be booked. Days off and fully booked dates are unavailable.</p>
+        </div>
       </section>
 
       <section ref={availableSection} tabIndex={-1} className="mt-6 scroll-mt-6 border-t border-slate-100 pt-6 focus:outline-none">
@@ -260,7 +263,7 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
         <h2 className="mt-3 text-xl font-semibold tracking-tight text-slate-900">{formatVisitDate(selectedDate)}</h2>
         <p className="mt-1 text-sm text-slate-500">All times are shown in Pakistan Standard Time.</p>
         {slotsLoading ? <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">{Array.from({ length: 6 }).map((_, index) => <div key={index} className="h-[55px] animate-pulse rounded-xl bg-slate-100" />)}</div> : slotsError ? <div role="alert" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">We could not load times for this date. <button type="button" onClick={() => setSlotsByDate((current) => { const next = { ...current }; delete next[selectedDate]; return next })} className="font-semibold underline underline-offset-2">Try again</button></div> : slots.length ? <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4" role="radiogroup" aria-label="Appointment time">{slots.map((time) => <button key={time} type="button" role="radio" aria-checked={selectedTime === time} onClick={() => setSelectedTime(time)} className={`flex h-[55px] items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F766E] ${selectedTime === time ? "border-[#0F766E] bg-[#0F766E] text-white shadow-sm" : "border-slate-200 bg-white text-slate-800 hover:border-teal-300 hover:bg-teal-50"}`}>{selectedTime === time ? <Check className="size-4" aria-hidden="true" /> : null}{formatTime(time)}</button>)}</div> : <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600"><p className="font-medium text-slate-800">No times are available for this day.</p>{nextAvailable ? <Button type="button" variant="ghost" onClick={() => selectDate(nextAvailable)} className="mt-2 h-11 px-0 font-semibold text-[#0F766E] hover:bg-transparent hover:text-[#0D5F59]">View next available day <ArrowRight className="size-4" /></Button> : <p className="mt-1">Choose another date to see its available times.</p>}</div>}
-        <button type="button" aria-expanded={calendarOpen} aria-controls="full-booking-calendar" onClick={() => setCalendarOpen((open) => !open)} className="mt-5 inline-flex min-h-11 items-center gap-1 rounded-xl px-1 text-sm font-semibold text-[#0F766E] transition hover:text-[#0D5F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">{calendarOpen ? "View less available times" : "View more available times"} <ArrowRight className={`size-4 transition-transform ${calendarOpen ? "rotate-90" : ""}`} /></button>
+        
       </section>
     </div>
 

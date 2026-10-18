@@ -4,14 +4,15 @@ import { revalidatePath } from "next/cache"
 import * as yup from "yup"
 
 import { requireAdmin } from "@/lib/auth"
+import { availabilityDates, friendlyAvailabilityError, type AvailabilityDateInput, type AvailabilityResult, type AvailabilityUpdateInput, validAvailabilityUpdate } from "@/lib/availability"
 import { sendBookingAcceptedEmail, sendBookingCancelledByClinicEmail, sendBookingCancelledByClinicToDoctorEmail } from "@/lib/email/booking-emails"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
+import { isoDate, pakistanBookingWindowEnd, pakistanToday } from "@/lib/slots"
 import { doctorApprovalDocumentError, type ApprovalDocument } from "@/lib/validation/doctor-approval"
 
 const statuses = new Set(["confirmed", "cancelled", "completed"])
 const doctorSchema = yup.object({ fullName: yup.string().trim().matches(/^[\p{L}][\p{L}\s.'-]*$/u, "Enter a valid doctor name.").required("Enter the doctor’s full name."), fee: yup.number().typeError("Enter a valid consultation fee.").min(0, "Consultation fee cannot be negative.").required("Enter a consultation fee.") })
-const scheduleSchema = yup.object({ start: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid start time.").required("Choose a start time."), end: yup.string().matches(/^\d{2}:\d{2}$/, "Choose a valid end time.").required("Choose an end time."), minutes: yup.number().oneOf([15, 20, 30, 60], "Choose 15, 20, 30, or 60 minutes.").required() })
 const bucketPath = "/storage/v1/object/public/doctor-photos/"
 type DoctorMutationResult = { error?: string; success?: true }
 type ReviewResult = { error?: string; success?: true }
@@ -93,27 +94,49 @@ export async function deleteDoctor(doctorId: string): Promise<DoctorMutationResu
   return { success: true }
 }
 
-export async function saveSchedule(formData: FormData): Promise<DoctorMutationResult> {
+export async function addAdminDoctorAvailability(doctorId: string, input: AvailabilityDateInput): Promise<AvailabilityResult> {
   await requireAdmin()
-  const doctorId = String(formData.get("doctor_id") ?? "")
-  const day = Number(formData.get("day_of_week"))
-  const start = String(formData.get("start_time") ?? "")
-  const end = String(formData.get("end_time") ?? "")
-  const minutes = Number(formData.get("slot_minutes"))
-  if (!doctorId || !Number.isInteger(day) || day < 0 || day > 6) return { error: "We couldn't save these hours. Please try again." }
+  const id = doctorId.trim()
+  const today = isoDate(pakistanToday())
+  const lastAllowedDate = isoDate(pakistanBookingWindowEnd())
+  const dates = availabilityDates(input, today, lastAllowedDate)
+  if (!id || !dates) return { error: "Please provide valid date, time, and slot length." }
   const supabase = await createClient()
-  if (formData.get("enabled") !== "true") {
-    const { error } = await supabase.from("doctor_schedules").delete().eq("doctor_id", doctorId).eq("day_of_week", day)
-    if (error) return { error: "We couldn't turn off these hours. Please try again." }
-    revalidatePath(`/admin/doctors/${doctorId}/schedule`)
-    revalidatePath(`/doctors/${doctorId}`)
-    return { success: true }
-  }
-  if (!(await scheduleSchema.isValid({ start, end, minutes })) || end <= start) return { error: "Choose a valid start time, end time, and slot length." }
-  const { error } = await supabase.from("doctor_schedules").upsert({ doctor_id: doctorId, day_of_week: day, start_time: start, end_time: end, slot_minutes: minutes }, { onConflict: "doctor_id,day_of_week" })
-  if (error) return { error: "We couldn't save these hours. Please try again." }
-  revalidatePath(`/admin/doctors/${doctorId}/schedule`)
-  revalidatePath(`/doctors/${doctorId}`)
+  const { data: existing, error: existingError } = await supabase.from("doctor_availability_overrides").select("override_date").eq("doctor_id", id).in("override_date", dates)
+  if (existingError) return { error: "We couldn't check those dates. Please try again." }
+  const existingDates = new Set((existing ?? []).map((item) => item.override_date))
+  const datesToAdd = dates.filter((date) => !existingDates.has(date))
+  if (!datesToAdd.length) return { success: true, added: 0, skipped: dates.length }
+  const { error } = await supabase.from("doctor_availability_overrides").insert(datesToAdd.map((date) => ({ doctor_id: id, override_date: date, start_time: input.start, end_time: input.end, slot_minutes: input.minutes })))
+  if (error) return { error: friendlyAvailabilityError(error.message, "We couldn't save those availability dates. Please try again.") }
+  revalidatePath(`/admin/doctors/${id}/schedule`)
+  revalidatePath(`/doctors/${id}`)
+  return { success: true, added: datesToAdd.length, skipped: dates.length - datesToAdd.length }
+}
+
+export async function updateAdminDoctorAvailability(doctorId: string, input: AvailabilityUpdateInput): Promise<AvailabilityResult> {
+  await requireAdmin()
+  const id = doctorId.trim()
+  const today = isoDate(pakistanToday())
+  const lastAllowedDate = isoDate(pakistanBookingWindowEnd())
+  if (!id || !validAvailabilityUpdate(input, today, lastAllowedDate)) return { error: "Please provide valid date, time, and slot length." }
+  const supabase = await createClient()
+  const { error } = await supabase.from("doctor_availability_overrides").update({ override_date: input.date, start_time: input.start, end_time: input.end, slot_minutes: input.minutes }).eq("id", input.id).eq("doctor_id", id)
+  if (error) return { error: friendlyAvailabilityError(error.message, "We couldn't save this availability date. Please try again.") }
+  revalidatePath(`/admin/doctors/${id}/schedule`)
+  revalidatePath(`/doctors/${id}`)
+  return { success: true }
+}
+
+export async function removeAdminDoctorAvailability(doctorId: string, id: number): Promise<AvailabilityResult> {
+  await requireAdmin()
+  const doctorIdValue = doctorId.trim()
+  if (!doctorIdValue || !Number.isInteger(id) || id < 1) return { error: "We couldn't remove this availability date. Please try again." }
+  const supabase = await createClient()
+  const { error } = await supabase.from("doctor_availability_overrides").delete().eq("id", id).eq("doctor_id", doctorIdValue)
+  if (error) return { error: friendlyAvailabilityError(error.message, "We couldn't remove this availability date. Please try again.") }
+  revalidatePath(`/admin/doctors/${doctorIdValue}/schedule`)
+  revalidatePath(`/doctors/${doctorIdValue}`)
   return { success: true }
 }
 

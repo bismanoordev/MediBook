@@ -1,15 +1,13 @@
-import { CalendarDays, CalendarRange } from "lucide-react"
+import { CalendarDays } from "lucide-react"
 import { redirect } from "next/navigation"
 
-import { saveDoctorSchedule } from "@/app/doctor/actions"
-import { ScheduleForm } from "@/components/admin/schedule-form"
-import { DoctorSpecificAvailability } from "@/components/doctor/doctor-specific-availability"
+import { addDoctorAvailabilityDates, removeDoctorAvailability, updateDoctorAvailability } from "@/app/doctor/actions"
+import { AvailabilityManager } from "@/components/doctor/availability-manager"
 import { DoctorTimeOffForm } from "@/components/doctor/doctor-time-off-form"
 import { getDoctorRecord } from "@/lib/auth"
 import { isoDate, pakistanBookingWindowEnd, pakistanToday, workingHoursForDate } from "@/lib/slots"
 import { createClient } from "@/lib/supabase/server"
 
-const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 const dateFormatter = new Intl.DateTimeFormat("en-PK", { weekday: "short", day: "numeric", month: "short" })
 
 export default async function DoctorAvailabilityPage() {
@@ -22,13 +20,11 @@ export default async function DoctorAvailabilityPage() {
   const today = isoDate(todayDate)
   const maxDate = isoDate(pakistanBookingWindowEnd())
   const minDate = today
-  const [schedulesResult, timeOffResult, overridesResult, appointmentsResult] = await Promise.all([
-    supabase.from("doctor_schedules").select("day_of_week,start_time,end_time,slot_minutes").eq("doctor_id", doctor.id),
+  const [timeOffResult, overridesResult, appointmentsResult] = await Promise.all([
     supabase.from("doctor_time_off").select("id,start_date,end_date").eq("doctor_id", doctor.id).gte("end_date", today).order("start_date"),
     supabase.from("doctor_availability_overrides").select("id,override_date,start_time,end_time,slot_minutes").eq("doctor_id", doctor.id).gte("override_date", today).lte("override_date", maxDate).order("override_date"),
     supabase.from("appointments").select("appointment_date").eq("doctor_id", doctor.id).gte("appointment_date", today).in("status", ["pending", "confirmed"] as const).order("appointment_date"),
   ])
-  const schedules = schedulesResult.data ?? []
   const timeOff = timeOffResult.data ?? []
   const overrides = overridesResult.data ?? []
   const appointments = appointmentsResult.data ?? []
@@ -41,22 +37,13 @@ export default async function DoctorAvailabilityPage() {
     const value = isoDate(date)
     const dayOff = timeOff.some((range) => range.start_date <= value && range.end_date >= value)
     const override = overrides.find((item) => item.override_date === value)
-    return { value, dayOff, override, hours: workingHoursForDate(value, schedules, overrides), appointments: appointmentsByDate.get(value) ?? 0 }
+    return { value, dayOff, override, hours: workingHoursForDate(value, overrides), appointments: appointmentsByDate.get(value) ?? 0 }
   })
-  const hasError = [schedulesResult, timeOffResult, overridesResult, appointmentsResult].some((result) => result.error)
+  const hasError = [timeOffResult, overridesResult, appointmentsResult].some((result) => result.error)
 
-  return <main className="mx-auto max-w-5xl px-5 py-7 sm:px-8 sm:py-9"><div><p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Practice availability</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Working hours and days off</h1><p className="mt-2 text-sm leading-6 text-slate-600">Set regular hours, make one-off changes, and block time away from the clinic.</p></div>{hasError ? <p role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Some availability information couldn&apos;t be loaded. Please refresh and try again.</p> : null}
-    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="regular-weekly-hours-title">
-      <details open={schedules.length === 0} className="group">
-        <summary className="flex cursor-pointer list-none items-start justify-between gap-4 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-teal-200 [&::-webkit-details-marker]:hidden">
-          <div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><CalendarRange className="size-5" aria-hidden="true" /></span><div><h2 id="regular-weekly-hours-title" className="text-lg font-semibold text-slate-900">Regular weekly hours</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">These hours repeat every week. Turn a day on, set the hours and slot length, then save.</p></div></div>
-          <span className="inline-flex min-h-10 shrink-0 items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-[#0F766E] shadow-sm transition-colors group-hover:border-teal-200 group-hover:bg-teal-50">Edit regular hours</span>
-        </summary>
-        <div className="mt-5 grid gap-3">{days.map((day, index) => <ScheduleForm key={day} action={saveDoctorSchedule} doctorId={doctor.id} day={day} index={index} schedule={schedules.find((schedule) => schedule.day_of_week === index)} />)}</div>
-      </details>
-    </section>
-    <section className="mt-8"><DoctorSpecificAvailability overrides={overrides.filter((override) => override.override_date >= minDate)} minDate={minDate} maxDate={maxDate} /></section>
+  return <main className="mx-auto max-w-5xl px-5 py-7 sm:px-8 sm:py-9"><div><p className="text-sm font-semibold uppercase tracking-[.16em] text-[#0F766E]">Practice availability</p><h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Availability and days off</h1><p className="mt-2 text-sm leading-6 text-slate-600">Choose the dates you will see patients and block time away from the clinic.</p></div>{hasError ? <p role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Some availability information couldn&apos;t be loaded. Please refresh and try again.</p> : null}
+    <section className="mt-8"><AvailabilityManager overrides={overrides} minDate={minDate} maxDate={maxDate} actions={{ add: addDoctorAvailabilityDates, update: updateDoctorAvailability, remove: removeDoctorAvailability }} /></section>
     <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]"><DoctorTimeOffForm timeOff={timeOff} /><aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><h2 className="text-lg font-semibold text-slate-900">Already booked days</h2><p className="mt-1 text-sm leading-6 text-slate-500">These future dates have pending or confirmed appointments, so they cannot be blocked as days off.</p>{bookedDays.length ? <ul className="mt-4 grid gap-2">{bookedDays.map((date) => <li key={date} className="rounded-xl bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900">{new Intl.DateTimeFormat("en-PK", { dateStyle: "medium" }).format(new Date(`${date}T12:00:00`))}</li>)}</ul> : <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No future appointments are booked.</p>}</aside></div>
-    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="upcoming-overview-title"><div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><CalendarDays className="size-5" aria-hidden="true" /></span><div><h2 id="upcoming-overview-title" className="text-lg font-semibold text-slate-900">Next 30 days</h2><p className="mt-1 text-sm text-slate-600">A quick view of regular hours, special dates, days off, and active appointments.</p></div></div><div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{overview.map((day) => { const status = day.dayOff ? "Day off" : day.override ? "Specific hours" : day.hours ? "Working day" : "Not working"; const tone = day.dayOff ? "bg-red-50 text-red-800" : day.override ? "bg-teal-50 text-[#0F766E]" : day.hours ? "bg-emerald-50 text-emerald-800" : "bg-slate-100 text-slate-600"; return <article key={day.value} className="rounded-xl border border-slate-200 p-3"><div className="flex items-center justify-between gap-2"><p className="font-semibold text-slate-900">{dateFormatter.format(new Date(`${day.value}T12:00:00`))}</p><span className={`rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{status}</span></div><p className="mt-2 text-sm text-slate-600">{day.dayOff ? "Bookings blocked" : day.hours ? `${day.hours.start_time.slice(0, 5)}–${day.hours.end_time.slice(0, 5)} · ${day.hours.slot_minutes}-minute slots` : "No hours set"}</p><p className="mt-1 text-xs font-medium text-slate-500">{day.appointments} active appointment{day.appointments === 1 ? "" : "s"}</p></article> })}</div></section>
+    <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="upcoming-overview-title"><div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><CalendarDays className="size-5" aria-hidden="true" /></span><div><h2 id="upcoming-overview-title" className="text-lg font-semibold text-slate-900">Next 30 days</h2><p className="mt-1 text-sm text-slate-600">A quick view of the dates you opened, days off, and active appointments.</p></div></div><div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{overview.map((day) => { const status = day.dayOff ? "Day off" : day.hours ? "Open for booking" : "Not open"; const tone = day.dayOff ? "bg-red-50 text-red-800" : day.hours ? "bg-teal-50 text-[#0F766E]" : "bg-slate-100 text-slate-600"; return <article key={day.value} className="rounded-xl border border-slate-200 p-3"><div className="flex items-center justify-between gap-2"><p className="font-semibold text-slate-900">{dateFormatter.format(new Date(`${day.value}T12:00:00`))}</p><span className={`rounded-full px-2 py-1 text-xs font-semibold ${tone}`}>{status}</span></div><p className="mt-2 text-sm text-slate-600">{day.dayOff ? "Bookings blocked" : day.hours ? `${day.hours.start_time.slice(0, 5)}–${day.hours.end_time.slice(0, 5)} · ${day.hours.slot_minutes}-minute slots` : "No hours set"}</p><p className="mt-1 text-xs font-medium text-slate-500">{day.appointments} active appointment{day.appointments === 1 ? "" : "s"}</p></article> })}</div></section>
   </main>
 }

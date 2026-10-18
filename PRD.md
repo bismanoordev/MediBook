@@ -44,7 +44,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 - Wait for admin approval. Until approved, the doctor is not visible to patients.
 - Use a doctor dashboard with today's appointments, pending requests, total patients, and profile completeness.
 - Confirm, decline, or complete their own appointments.
-- Set weekly working hours, specific-date hours, and block days off.
+- Choose the dates they see patients and the hours for each date (one date or a date range), and block days off. Patients can book only dates the doctor opened.
 - Edit their profile. Changes go live only after admin review.
 - Receive live notifications for new bookings, cancellations, and approval decisions.
 
@@ -90,7 +90,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 | `/doctor/onboarding` | 5-step registration form |
 | `/doctor` | Doctor dashboard |
 | `/doctor/appointments` | Pending, upcoming, completed, and cancelled appointments |
-| `/doctor/availability` | Weekly hours and days off |
+| `/doctor/availability` | Open dates, hours, and days off |
 | `/doctor/profile` | Edit public profile (sent for admin review) |
 | `/doctor/documents` | Upload and track required documents |
 | `/doctor/notifications` | Doctor notifications |
@@ -114,7 +114,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 | `specialties` | Medical specialties such as Dentist and Cardiologist |
 | `doctors` | Name, specialty, fee, photo, bio, active status, linked login user, and approval status |
 | `doctor_schedules` | Working day, start time, end time, and slot length |
-| `doctor_availability_overrides` | Specific-date hours that replace the weekly schedule for that date |
+| `doctor_availability_overrides` | The dates a doctor opens for booking, with hours and slot length. This is the only source of availability |
 | `doctor_documents` | Uploaded CNIC, PMDC license, and degree files with review status |
 | `doctor_time_off` | Days a doctor is away |
 | `doctor_profile_changes` | Profile edits waiting for admin review |
