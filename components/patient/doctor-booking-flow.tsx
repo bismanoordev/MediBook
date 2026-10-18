@@ -9,9 +9,11 @@ import * as yup from "yup"
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { workingHoursForDate } from "@/lib/slots"
 
 type Day = { date: string; label: string; day: string; slots: string[]; away?: boolean }
 type Schedule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number }
+type AvailabilityOverride = { override_date: string; start_time: string; end_time: string; slot_minutes: number }
 type TimeOff = { start_date: string; end_date: string }
 type Availability = Record<string, number>
 type BookingDoctor = { name: string; specialty: string; location?: string | null; fee?: number | null }
@@ -47,7 +49,7 @@ function monthRange(month: Date, windowStart: string, windowEnd: string) {
   }
 }
 
-export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, windowStart, windowEnd, bookingWindowDays, loggedIn, role }: { doctorId: string; doctor: BookingDoctor; days: Day[]; schedules: Schedule[]; timeOff: TimeOff[]; windowStart: string; windowEnd: string; bookingWindowDays: number; loggedIn: boolean; role?: "patient" | "doctor" | "admin" | null }) {
+export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides, timeOff, windowStart, windowEnd, bookingWindowDays, loggedIn, role }: { doctorId: string; doctor: BookingDoctor; days: Day[]; schedules: Schedule[]; overrides: AvailabilityOverride[]; timeOff: TimeOff[]; windowStart: string; windowEnd: string; bookingWindowDays: number; loggedIn: boolean; role?: "patient" | "doctor" | "admin" | null }) {
   const router = useRouter()
   const availableSection = useRef<HTMLDivElement>(null)
   const initialSlots = useMemo(() => Object.fromEntries(days.map((item) => [item.date, item.slots])), [days])
@@ -72,11 +74,11 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, timeOff, 
   const visibleMonthDates = useMemo(() => datesBetween(visibleMonth.from, visibleMonth.to), [visibleMonth.from, visibleMonth.to])
 
   const isAway = (date: string) => timeOff.some((range) => range.start_date <= date && range.end_date >= date)
-  const hasSchedule = (date: string) => schedules.some((item) => item.day_of_week === parseDate(date).getDay())
+  const hasSchedule = (date: string) => Boolean(workingHoursForDate(date, schedules, overrides))
   const disabledReason = (date: string) => {
     if (date < windowStart || date > windowEnd) return "Outside the booking window"
-    if (!hasSchedule(date)) return "Doctor does not work on this day"
     if (isAway(date)) return "Doctor is away"
+    if (!hasSchedule(date)) return "Doctor does not work on this day"
     if (Object.prototype.hasOwnProperty.call(availability, date) && availability[date] === 0) return "No availability"
     return ""
   }

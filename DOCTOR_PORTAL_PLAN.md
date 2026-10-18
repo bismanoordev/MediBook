@@ -215,6 +215,14 @@ Test: patient books → doctor bell +1 without refresh; admin approves → docto
 - Update `README.md` (doctor portal features) and tick the PRD checklist.
 - Make sure the existing patient and admin features still work.
 
+### Step 14 — Specific-date availability
+Goal: doctors can replace their regular weekly hours on a future date without changing their usual schedule.
+- Update the Supabase types and add doctor-owned create, edit, and remove actions for `doctor_availability_overrides`.
+- On `/doctor/availability`, provide accessible create/edit controls, a list of upcoming specific dates, and a 30-day overview covering weekly hours, specific hours, days off, and active appointment totals.
+- Patient booking and every slot calculation use a specific-date override when present; days off still take precedence.
+- Add the explanatory admin-schedule note and document the feature in `PRD.md`.
+- Test all availability states and run lint and build.
+
 ## Progress
 
 Tick each step when it is finished and committed.
@@ -233,3 +241,4 @@ Tick each step when it is finished and committed.
 - [x] Step 11 — Doctor documents page
 - [x] Step 12 — Notifications for doctors
 - [x] Step 13 — Final checks
+- [ ] Step 14 — Specific-date availability

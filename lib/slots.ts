@@ -3,6 +3,16 @@ export const PAKISTAN_TIME_ZONE = "Asia/Karachi"
 export const BOOKING_WINDOW_DAYS = 60
 export const MAX_UPCOMING_PER_DOCTOR = 3
 
+export type WeeklyScheduleHours = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number }
+export type SpecificDateHours = { override_date: string; start_time: string; end_time: string; slot_minutes: number }
+
+/** A date-specific entry replaces the regular weekly hours for that date. */
+export function workingHoursForDate(date: string, schedules: WeeklyScheduleHours[], overrides: SpecificDateHours[]) {
+  const override = overrides.find((item) => item.override_date === date)
+  if (override) return override
+  return schedules.find((item) => item.day_of_week === new Date(`${date}T12:00:00`).getDay()) ?? null
+}
+
 function formattedParts(options: Intl.DateTimeFormatOptions) {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: PAKISTAN_TIME_ZONE,

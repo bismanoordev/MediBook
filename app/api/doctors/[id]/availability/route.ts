@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server"
 
-import { BOOKING_WINDOW_DAYS, generateSlots, isoDate, pakistanBookingWindowEnd, pakistanMinutesNow, pakistanToday } from "@/lib/slots"
+import { BOOKING_WINDOW_DAYS, generateSlots, isoDate, pakistanBookingWindowEnd, pakistanMinutesNow, pakistanToday, workingHoursForDate } from "@/lib/slots"
 import { createClient } from "@/lib/supabase/server"
-
-type Schedule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number }
 
 function isIsoDate(value: string | null): value is string {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
@@ -67,17 +65,21 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
 
   const supabase = await createClient()
-  const [{ data: doctor }, { data: schedules }, { data: timeOff }] = await Promise.all([
+  const [{ data: doctor, error: doctorError }, { data: schedules, error: schedulesError }, { data: timeOff, error: timeOffError }, { data: overrides, error: overridesError }] = await Promise.all([
     supabase.from("doctors").select("id").eq("id", id).eq("is_active", true).eq("approval_status", "approved").maybeSingle(),
     supabase.from("doctor_schedules").select("day_of_week,start_time,end_time,slot_minutes").eq("doctor_id", id),
     supabase.from("doctor_time_off").select("start_date,end_date").eq("doctor_id", id),
+    supabase.from("doctor_availability_overrides").select("override_date,start_time,end_time,slot_minutes").eq("doctor_id", id).gte("override_date", from).lte("override_date", to),
   ])
   if (!doctor) return NextResponse.json({ error: "This doctor is not available for booking." }, { status: 404 })
+  if (doctorError || schedulesError || timeOffError || overridesError) {
+    console.error("Availability configuration lookup failed", { doctorError, schedulesError, timeOffError, overridesError })
+    return NextResponse.json({ error: "We could not load availability. Please try again." }, { status: 500 })
+  }
 
   const nowMinutes = pakistanMinutesNow()
   const availability = await withConcurrency(datesBetween(from, to), 5, async (date) => {
-    const dateObject = new Date(`${date}T12:00:00`)
-    const schedule = (schedules as Schedule[] | null)?.find((item) => item.day_of_week === dateObject.getDay())
+    const schedule = workingHoursForDate(date, schedules ?? [], overrides ?? [])
     const away = (timeOff ?? []).some((range) => range.start_date <= date && range.end_date >= date)
     if (!schedule || away) return { date, freeSlots: 0, slots: [] as string[] }
 

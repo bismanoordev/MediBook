@@ -8,7 +8,7 @@ import { DoctorPhoto } from "@/components/doctor-photo"
 import { DoctorBookingFlow } from "@/components/patient/doctor-booking-flow"
 import { buttonVariants } from "@/components/ui/button"
 import { getAuthState } from "@/lib/auth"
-import { BOOKING_WINDOW_DAYS, generateSlots, isoDate, pakistanBookingWindowEnd, pakistanMinutesNow, pakistanToday } from "@/lib/slots"
+import { BOOKING_WINDOW_DAYS, generateSlots, isoDate, pakistanBookingWindowEnd, pakistanMinutesNow, pakistanToday, workingHoursForDate } from "@/lib/slots"
 import { createClient } from "@/lib/supabase/server"
 import { cn } from "@/lib/utils"
 
@@ -19,15 +19,17 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   const { id } = await params
   const { user, profile } = await getAuthState()
   const supabase = await createClient()
-  const [{ data: doctor, error: doctorError }, { data: schedules, error: schedulesError }, { data: timeOff, error: timeOffError }] = await Promise.all([
+  const today = pakistanToday()
+  const windowEnd = isoDate(pakistanBookingWindowEnd())
+  const [{ data: doctor, error: doctorError }, { data: schedules, error: schedulesError }, { data: timeOff, error: timeOffError }, { data: overrides, error: overridesError }] = await Promise.all([
     supabase.from("doctors").select("id, full_name, bio, fee, photo_url, experience_years, languages, city, clinic_name, qualifications, specialties(name)").eq("id", id).eq("is_active", true).eq("approval_status", "approved").maybeSingle(),
     supabase.from("doctor_schedules").select("day_of_week, start_time, end_time, slot_minutes").eq("doctor_id", id),
     supabase.from("doctor_time_off").select("start_date,end_date").eq("doctor_id", id),
+    supabase.from("doctor_availability_overrides").select("override_date,start_time,end_time,slot_minutes").eq("doctor_id", id).gte("override_date", isoDate(today)).lte("override_date", windowEnd),
   ])
-  if (doctorError || schedulesError || timeOffError) throw new Error("Doctor booking details could not be loaded.")
+  if (doctorError || schedulesError || timeOffError || overridesError) throw new Error("Doctor booking details could not be loaded.")
   if (!doctor) notFound()
 
-  const today = pakistanToday()
   const nowMinutes = pakistanMinutesNow()
   const dates = Array.from({ length: 7 }, (_, offset) => {
     const date = new Date(today)
@@ -36,9 +38,9 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
   })
   const booked = await Promise.all(dates.map((date) => supabase.rpc("get_booked_slots", { p_doctor_id: id, p_date: isoDate(date) })))
   const days = dates.map((date, index) => {
-    const schedule = schedules?.find((item) => item.day_of_week === date.getDay())
-    const taken = new Set((booked[index].data ?? []).map((item) => item.start_time))
     const dateValue = isoDate(date)
+    const schedule = workingHoursForDate(dateValue, schedules ?? [], overrides ?? [])
+    const taken = new Set((booked[index].data ?? []).map((item) => item.start_time))
     const away = (timeOff ?? []).some((range) => range.start_date <= dateValue && range.end_date >= dateValue)
 
     return {
@@ -88,7 +90,7 @@ export default async function DoctorPage({ params }: { params: Promise<{ id: str
           </div>
         </section>
 
-        {profile?.role === "doctor" || profile?.role === "admin" ? <section className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/70 p-5 text-sm leading-6 text-slate-700">Booking is available for patient accounts.</section> : <DoctorBookingFlow doctorId={id} doctor={{ name: doctor.full_name, specialty, location: locationLabel || null, fee: Number.isFinite(fee) ? fee : null }} days={days} schedules={schedules ?? []} timeOff={timeOff ?? []} windowStart={isoDate(today)} windowEnd={isoDate(pakistanBookingWindowEnd())} bookingWindowDays={BOOKING_WINDOW_DAYS} loggedIn={Boolean(user)} role={profile?.role} />}
+        {profile?.role === "doctor" || profile?.role === "admin" ? <section className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/70 p-5 text-sm leading-6 text-slate-700">Booking is available for patient accounts.</section> : <DoctorBookingFlow doctorId={id} doctor={{ name: doctor.full_name, specialty, location: locationLabel || null, fee: Number.isFinite(fee) ? fee : null }} days={days} schedules={schedules ?? []} overrides={overrides ?? []} timeOff={timeOff ?? []} windowStart={isoDate(today)} windowEnd={windowEnd} bookingWindowDays={BOOKING_WINDOW_DAYS} loggedIn={Boolean(user)} role={profile?.role} />}
       </main>
     </div>
   )

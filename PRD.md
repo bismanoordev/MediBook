@@ -44,7 +44,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 - Wait for admin approval. Until approved, the doctor is not visible to patients.
 - Use a doctor dashboard with today's appointments, pending requests, total patients, and profile completeness.
 - Confirm, decline, or complete their own appointments.
-- Set weekly working hours and block days off.
+- Set weekly working hours, specific-date hours, and block days off.
 - Edit their profile. Changes go live only after admin review.
 - Receive live notifications for new bookings, cancellations, and approval decisions.
 
@@ -114,6 +114,7 @@ A patient can book an appointment in under one minute, with no double bookings.
 | `specialties` | Medical specialties such as Dentist and Cardiologist |
 | `doctors` | Name, specialty, fee, photo, bio, active status, linked login user, and approval status |
 | `doctor_schedules` | Working day, start time, end time, and slot length |
+| `doctor_availability_overrides` | Specific-date hours that replace the weekly schedule for that date |
 | `doctor_documents` | Uploaded CNIC, PMDC license, and degree files with review status |
 | `doctor_time_off` | Days a doctor is away |
 | `doctor_profile_changes` | Profile edits waiting for admin review |

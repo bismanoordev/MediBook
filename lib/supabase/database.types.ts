@@ -163,6 +163,44 @@ export type Database = {
         Update: { id?: string; doctor_id?: string; changes?: Json; status?: DoctorProfileChangeStatus; admin_note?: string | null; created_at?: string; reviewed_at?: string | null }
         Relationships: [{ foreignKeyName: "doctor_profile_changes_doctor_id_fkey"; columns: ["doctor_id"]; isOneToOne: false; referencedRelation: "doctors"; referencedColumns: ["id"] }]
       }
+      doctor_availability_overrides: {
+        Row: {
+          id: number
+          doctor_id: string
+          override_date: string
+          start_time: string
+          end_time: string
+          slot_minutes: number
+          created_at: string
+        }
+        Insert: {
+          id?: never
+          doctor_id: string
+          override_date: string
+          start_time: string
+          end_time: string
+          slot_minutes?: number
+          created_at?: string
+        }
+        Update: {
+          id?: never
+          doctor_id?: string
+          override_date?: string
+          start_time?: string
+          end_time?: string
+          slot_minutes?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_availability_overrides_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctor_schedules: {
         Row: {
           id: number

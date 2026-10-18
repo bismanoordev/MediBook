@@ -6,6 +6,7 @@ import { getDoctorRecord, requireDoctor } from "@/lib/auth"
 import { sendBookingAcceptedEmail, sendBookingCancelledByDoctorEmail, sendBookingRejectedEmail } from "@/lib/email/booking-emails"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
+import { isoDate, pakistanBookingWindowEnd, pakistanToday } from "@/lib/slots"
 
 type AppointmentMutationResult = { error?: string; success?: true }
 type AppointmentStatus = "confirmed" | "cancelled" | "completed"
@@ -224,5 +225,53 @@ export async function withdrawDoctorProfileChange(changeId: string): Promise<Pro
   if (error) return { error: "We couldn't withdraw this profile change. Please try again." }
   revalidatePath("/doctor/profile")
   revalidatePath("/admin/doctors/applications")
+  return { success: true }
+}
+
+export async function saveDoctorAvailabilityOverride(input: {
+  id?: number
+  date: string
+  start: string
+  end: string
+  minutes: number
+}): Promise<AvailabilityResult> {
+  await requireDoctor()
+  const doctor = await getDoctorRecord()
+  const date = input.date.trim()
+  const start = input.start.trim()
+  const end = input.end.trim()
+  const minutes = input.minutes
+  const today = isoDate(pakistanToday())
+  const lastAllowedDate = isoDate(pakistanBookingWindowEnd())
+  const parsedDate = new Date(`${date}T12:00:00`)
+  if (!doctor || !/^\d{4}-\d{2}-\d{2}$/.test(date) || isoDate(parsedDate) !== date || date <= today || date > lastAllowedDate || !/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || ![15, 20, 30, 60].includes(minutes) || end <= start) {
+    return { error: "Please provide valid date, time, and slot length." }
+  }
+
+  const supabase = await createClient()
+  const values = { override_date: date, start_time: start, end_time: end, slot_minutes: minutes }
+  const { error } = input.id
+    ? await supabase.from("doctor_availability_overrides").update(values).eq("id", input.id).eq("doctor_id", doctor.id)
+    : await supabase.from("doctor_availability_overrides").insert({ doctor_id: doctor.id, ...values })
+  if (error) {
+    const message = error.message.toLowerCase()
+    if (message.includes("already have appointments that do not fit these hours")) return { error: "You already have appointments outside these hours on this date. Cancel them first." }
+    if (message.includes("unique") || message.includes("duplicate")) return { error: "You already have specific hours for this date. Edit or remove them instead." }
+    return { error: "We couldn't save this specific date's availability. Please try again." }
+  }
+  revalidatePath("/doctor/availability")
+  revalidatePath(`/doctors/${doctor.id}`)
+  return { success: true }
+}
+
+export async function removeDoctorAvailabilityOverride(id: number): Promise<AvailabilityResult> {
+  await requireDoctor()
+  const doctor = await getDoctorRecord()
+  if (!doctor || !Number.isInteger(id) || id < 1) return { error: "We couldn't remove this specific date's availability. Please try again." }
+  const supabase = await createClient()
+  const { error } = await supabase.from("doctor_availability_overrides").delete().eq("id", id).eq("doctor_id", doctor.id)
+  if (error) return { error: "We couldn't remove this specific date's availability. Please try again." }
+  revalidatePath("/doctor/availability")
+  revalidatePath(`/doctors/${doctor.id}`)
   return { success: true }
 }
