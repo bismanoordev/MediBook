@@ -98,5 +98,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const response = requestedDate
     ? { date: requestedDate, slots: availability[0]?.slots ?? [], freeSlots: availability[0]?.freeSlots ?? 0 }
     : { availability: availability.map(({ date, freeSlots }) => ({ date, freeSlots })) }
-  return NextResponse.json(response, { headers: { "Cache-Control": "private, max-age=30" } })
+  return NextResponse.json(response, { headers: { "Cache-Control": "no-store" } })
 }

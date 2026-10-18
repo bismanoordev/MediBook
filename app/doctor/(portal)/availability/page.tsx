@@ -21,9 +21,7 @@ export default async function DoctorAvailabilityPage() {
   const todayDate = pakistanToday()
   const today = isoDate(todayDate)
   const maxDate = isoDate(pakistanBookingWindowEnd())
-  const firstSpecificDate = new Date(todayDate)
-  firstSpecificDate.setDate(firstSpecificDate.getDate() + 1)
-  const minDate = isoDate(firstSpecificDate)
+  const minDate = today
   const [schedulesResult, timeOffResult, overridesResult, appointmentsResult] = await Promise.all([
     supabase.from("doctor_schedules").select("day_of_week,start_time,end_time,slot_minutes").eq("doctor_id", doctor.id),
     supabase.from("doctor_time_off").select("id,start_date,end_date").eq("doctor_id", doctor.id).gte("end_date", today).order("start_date"),

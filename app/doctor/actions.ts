@@ -6,7 +6,7 @@ import { getDoctorRecord, requireDoctor } from "@/lib/auth"
 import { sendBookingAcceptedEmail, sendBookingCancelledByDoctorEmail, sendBookingRejectedEmail } from "@/lib/email/booking-emails"
 import { getSupabaseEnv } from "@/lib/supabase/env"
 import { createClient } from "@/lib/supabase/server"
-import { isoDate, pakistanBookingWindowEnd, pakistanToday } from "@/lib/slots"
+import { isoDate, pakistanBookingWindowEnd, pakistanToday, workingHoursForDate } from "@/lib/slots"
 
 type AppointmentMutationResult = { error?: string; success?: true }
 type AppointmentStatus = "confirmed" | "cancelled" | "completed"
@@ -244,7 +244,7 @@ export async function saveDoctorAvailabilityOverride(input: {
   const today = isoDate(pakistanToday())
   const lastAllowedDate = isoDate(pakistanBookingWindowEnd())
   const parsedDate = new Date(`${date}T12:00:00`)
-  if (!doctor || !/^\d{4}-\d{2}-\d{2}$/.test(date) || isoDate(parsedDate) !== date || date <= today || date > lastAllowedDate || !/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || ![15, 20, 30, 60].includes(minutes) || end <= start) {
+  if (!doctor || !/^\d{4}-\d{2}-\d{2}$/.test(date) || isoDate(parsedDate) !== date || date < today || date > lastAllowedDate || !/^\d{2}:\d{2}$/.test(start) || !/^\d{2}:\d{2}$/.test(end) || ![15, 20, 30, 60].includes(minutes) || end <= start) {
     return { error: "Please provide valid date, time, and slot length." }
   }
 
@@ -269,6 +269,17 @@ export async function removeDoctorAvailabilityOverride(id: number): Promise<Avai
   const doctor = await getDoctorRecord()
   if (!doctor || !Number.isInteger(id) || id < 1) return { error: "We couldn't remove this specific date's availability. Please try again." }
   const supabase = await createClient()
+  const { data: override, error: overrideError } = await supabase.from("doctor_availability_overrides").select("override_date").eq("id", id).eq("doctor_id", doctor.id).maybeSingle()
+  if (overrideError || !override) return { error: "We couldn't remove this specific date's availability. Please try again." }
+  const [{ data: schedules, error: schedulesError }, { data: appointments, error: appointmentsError }] = await Promise.all([
+    supabase.from("doctor_schedules").select("day_of_week,start_time,end_time,slot_minutes").eq("doctor_id", doctor.id),
+    supabase.from("appointments").select("start_time").eq("doctor_id", doctor.id).eq("appointment_date", override.override_date).in("status", ["pending", "confirmed"]),
+  ])
+  if (schedulesError || appointmentsError) return { error: "We couldn't check appointments for this date. Please try again." }
+  const weeklyHours = workingHoursForDate(override.override_date, schedules ?? [], [])
+  const minutesFor = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5))
+  const hasIncompatibleAppointment = (appointments ?? []).some((appointment) => !weeklyHours || minutesFor(appointment.start_time) < minutesFor(weeklyHours.start_time) || minutesFor(appointment.start_time) + weeklyHours.slot_minutes > minutesFor(weeklyHours.end_time) || (minutesFor(appointment.start_time) - minutesFor(weeklyHours.start_time)) % weeklyHours.slot_minutes !== 0)
+  if (hasIncompatibleAppointment) return { error: "You already have appointments on this date. Cancel them first." }
   const { error } = await supabase.from("doctor_availability_overrides").delete().eq("id", id).eq("doctor_id", doctor.id)
   if (error) return { error: "We couldn't remove this specific date's availability. Please try again." }
   revalidatePath("/doctor/availability")
