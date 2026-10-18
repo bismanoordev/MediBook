@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowRight, CalendarDays, Check, Loader2, MapPin, RotateCcw, ShieldCheck, Stethoscope, WalletCards } from "lucide-react"
+import { ArrowRight, CalendarDays, Check, ChevronLeft, ChevronRight, Loader2, MapPin, RotateCcw, ShieldCheck, Stethoscope, WalletCards } from "lucide-react"
 import { toast } from "sonner"
 import * as yup from "yup"
 
@@ -28,6 +28,7 @@ const formatTime = (time: string) => timeFormatter.format(new Date(`2000-01-01T$
 const formatDate = (value: string) => fullDateFormatter.format(parseDate(value))
 const formatVisitDate = (value: string) => visitDateFormatter.format(parseDate(value))
 const monthFormatter = new Intl.DateTimeFormat("en-PK", { month: "long", year: "numeric" })
+const shortDateFormatter = new Intl.DateTimeFormat("en-PK", { weekday: "short", day: "numeric", month: "short" })
 
 function datesBetween(from: string, to: string) {
   const dates: string[] = []
@@ -47,6 +48,25 @@ function monthRange(month: Date, windowStart: string, windowEnd: string) {
     from: iso(first) < windowStart ? windowStart : iso(first),
     to: iso(last) > windowEnd ? windowEnd : iso(last),
   }
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1, 12)
+}
+
+function monthKey(date: Date) {
+  return `${date.getFullYear()}-${date.getMonth()}`
+}
+
+function monthsBetween(start: Date, end: Date) {
+  const months: Date[] = []
+  const cursor = startOfMonth(start)
+  const lastMonth = startOfMonth(end)
+  while (cursor <= lastMonth) {
+    months.push(new Date(cursor))
+    cursor.setMonth(cursor.getMonth() + 1)
+  }
+  return months
 }
 
 export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides, timeOff, windowStart, windowEnd, bookingWindowDays, loggedIn, role }: { doctorId: string; doctor: BookingDoctor; days: Day[]; schedules: Schedule[]; overrides: AvailabilityOverride[]; timeOff: TimeOff[]; windowStart: string; windowEnd: string; bookingWindowDays: number; loggedIn: boolean; role?: "patient" | "doctor" | "admin" | null }) {
@@ -72,6 +92,9 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
   const slots = slotsByDate[selectedDate] ?? []
   const visibleMonth = useMemo(() => monthRange(month, windowStart, windowEnd), [month, windowEnd, windowStart])
   const visibleMonthDates = useMemo(() => datesBetween(visibleMonth.from, visibleMonth.to), [visibleMonth.from, visibleMonth.to])
+  const bookingMonths = useMemo(() => monthsBetween(parseDate(windowStart), parseDate(windowEnd)), [windowEnd, windowStart])
+  const firstBookingMonth = bookingMonths[0] ?? startOfMonth(parseDate(windowStart))
+  const lastBookingMonth = bookingMonths[bookingMonths.length - 1] ?? startOfMonth(parseDate(windowEnd))
 
   const isAway = (date: string) => timeOff.some((range) => range.start_date <= date && range.end_date >= date)
   const hasSchedule = (date: string) => Boolean(workingHoursForDate(date, schedules, overrides))
@@ -139,6 +162,12 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
     window.setTimeout(() => availableSection.current?.focus(), 0)
   }
 
+  function changeMonth(offset: number) {
+    const nextMonth = new Date(month.getFullYear(), month.getMonth() + offset, 1, 12)
+    if (nextMonth < firstBookingMonth || nextMonth > lastBookingMonth) return
+    setMonth(nextMonth)
+  }
+
   function continueBooking() {
     if (!selectedTime) return
     if (role && role !== "patient") { toast.error("Booking is available for patient accounts."); return }
@@ -179,6 +208,9 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
   const availableDates = Object.entries(availability).filter(([, count]) => count > 0).map(([date]) => parseDate(date))
   const visibleMonthLoaded = visibleMonthDates.every((date) => Object.prototype.hasOwnProperty.call(availability, date))
   const visibleMonthHasAvailability = visibleMonthDates.some((date) => (availability[date] ?? 0) > 0)
+  const nextAvailableInVisibleMonth = visibleMonthDates.find((date) => (availability[date] ?? 0) > 0)
+  const isFirstBookingMonth = monthKey(month) === monthKey(firstBookingMonth)
+  const isLastBookingMonth = monthKey(month) === monthKey(lastBookingMonth)
   const feeLabel = typeof doctor.fee === "number" && Number.isFinite(doctor.fee) ? `Rs. ${doctor.fee.toLocaleString()}` : "Contact clinic"
 
   return <section className="mt-7 grid gap-6 lg:grid-cols-[minmax(0,838px)_minmax(320px,389px)] lg:items-start lg:gap-8">
@@ -202,7 +234,25 @@ export function DoctorBookingFlow({ doctorId, doctor, days, schedules, overrides
           {availabilityLoading ? <span className="inline-flex items-center gap-1.5 text-xs text-slate-500"><Loader2 className="size-3.5 animate-spin" /> Checking availability</span> : null}
         </div>
         {availabilityError ? <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"><span>We could not refresh this month&apos;s availability. Please try again.</span><Button type="button" variant="ghost" onClick={() => void loadAvailability()} className="h-10 text-[#0F766E] hover:bg-white"><RotateCcw className="size-4" /> Retry</Button></div> : null}
-        {calendarOpen ? <div id="full-booking-calendar" className="mt-2 rounded-2xl border border-slate-100 bg-slate-50/70 p-3"><Calendar mode="single" selected={parseDate(selectedDate)} onSelect={(date) => date && selectDate(iso(date))} month={month} onMonthChange={setMonth} startMonth={parseDate(windowStart)} endMonth={parseDate(windowEnd)} disabled={(date) => Boolean(disabledReason(iso(date)))} modifiers={{ available: availableDates }} modifiersClassNames={{ available: "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-[#0F766E] data-[selected-single=true]:after:bg-white" }} labels={{ labelDayButton: (date) => { const key = iso(date); return `${formatDate(key)}. ${disabledReason(key) || (availability[key] === undefined ? "Checking availability" : availability[key] ? `${availability[key]} times available` : "No availability")}` } }} className="w-full justify-center p-0 [--cell-size:2.35rem] sm:[--cell-size:2.6rem]" classNames={{ root: "w-full", months: "w-full", month: "w-full", month_grid: "w-full", selected: "[&>button]:bg-[#0F766E] [&>button]:text-white", today: "[&>button]:border [&>button]:border-[#0F766E]" }} />{visibleMonthLoaded && !visibleMonthHasAvailability ? <p className="mt-3 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600">No appointments are available in {monthFormatter.format(month)}. Try another month or check again later.</p> : null}<p className="mt-2 text-xs leading-5 text-slate-500">Unavailable dates include days off, non-working days, and fully booked times.</p></div> : null}
+        {calendarOpen ? <div id="full-booking-calendar" className="mt-2 rounded-2xl border border-slate-100 bg-slate-50/70 p-3 sm:p-4" aria-busy={availabilityLoading}>
+          <div className="flex items-center justify-between gap-2">
+            <button type="button" aria-label="Previous month" disabled={isFirstBookingMonth} onClick={() => changeMonth(-1)} className="grid size-11 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-teal-300 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"><ChevronLeft className="size-5" aria-hidden="true" /></button>
+            <div className="min-w-0 text-center"><p className="truncate text-base font-semibold text-slate-900">{monthFormatter.format(month)}</p>{availabilityLoading ? <span className="mt-1 inline-flex items-center gap-1.5 text-xs text-slate-500"><Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> Updating availability</span> : null}</div>
+            <button type="button" aria-label="Next month" disabled={isLastBookingMonth} onClick={() => changeMonth(1)} className="grid size-11 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-teal-300 hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"><ChevronRight className="size-5" aria-hidden="true" /></button>
+          </div>
+          <div className="mt-3 -mx-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0" role="tablist" aria-label="Booking months">
+            <div className="flex min-w-max gap-2">
+              {bookingMonths.map((bookingMonth) => {
+                const active = monthKey(bookingMonth) === monthKey(month)
+                return <button key={monthKey(bookingMonth)} type="button" role="tab" aria-selected={active} onClick={() => setMonth(bookingMonth)} className={`min-h-11 rounded-xl border px-4 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 ${active ? "border-[#0F766E] bg-[#0F766E] text-white" : "border-slate-200 bg-white text-slate-700 hover:border-teal-300 hover:bg-teal-50"}`}>{bookingMonth.toLocaleString("en-PK", { month: "short" })}</button>
+              })}
+            </div>
+          </div>
+          <Calendar mode="single" selected={parseDate(selectedDate)} onSelect={(date) => date && selectDate(iso(date))} month={month} onMonthChange={setMonth} startMonth={parseDate(windowStart)} endMonth={parseDate(windowEnd)} disabled={(date) => Boolean(disabledReason(iso(date)))} modifiers={{ available: availableDates }} modifiersClassNames={{ available: "after:absolute after:bottom-1 after:left-1/2 after:size-1 after:-translate-x-1/2 after:rounded-full after:bg-[#0F766E] data-[selected-single=true]:after:bg-white" }} labels={{ labelDayButton: (date) => { const key = iso(date); return `${formatDate(key)}. ${disabledReason(key) || (availability[key] === undefined ? "Checking availability" : availability[key] ? `${availability[key]} times available` : "No availability")}` } }} className="mt-3 w-full justify-center p-0 [--cell-size:min(2.5rem,calc((100vw-5rem)/7))] sm:[--cell-size:2.75rem]" classNames={{ root: "w-full", months: "w-full", month: "w-full gap-2", nav: "hidden", month_caption: "hidden", month_grid: "w-full table-fixed border-separate border-spacing-y-1", weekdays: "h-7", weekday: "w-[14.285%] text-center text-[11px] font-medium text-slate-500", week: "h-[var(--cell-size)]", day: "relative h-[var(--cell-size)] w-[14.285%] p-0 text-center", selected: "[&>button]:bg-[#0F766E] [&>button]:text-white", today: "[&>button]:border [&>button]:border-[#0F766E] [&>button]:bg-transparent", disabled: "[&>button]:text-slate-400 [&>button]:opacity-45", outside: "invisible", }} />
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500" aria-label="Calendar legend"><span className="inline-flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-[#0F766E]" aria-hidden="true" /> Times available</span><span className="inline-flex items-center gap-1.5"><span className="size-3 rounded border border-slate-300 bg-slate-100" aria-hidden="true" /> Not available</span></div>
+          {visibleMonthLoaded ? visibleMonthHasAvailability && nextAvailableInVisibleMonth ? <button type="button" onClick={() => selectDate(nextAvailableInVisibleMonth)} className="mt-2 inline-flex min-h-11 items-center rounded-xl px-1 text-sm font-semibold text-[#0F766E] transition hover:text-[#0D5F59] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">Next available: {shortDateFormatter.format(parseDate(nextAvailableInVisibleMonth))}<ArrowRight className="ml-1 size-4" aria-hidden="true" /></button> : <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600"><span>No availability this month.</span>{!isLastBookingMonth ? <button type="button" onClick={() => changeMonth(1)} className="min-h-11 rounded-xl px-2 font-semibold text-[#0F766E] hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2">Go to next month</button> : null}</div> : null}
+          <p className="mt-2 text-xs leading-5 text-slate-500">Unavailable dates include days off, non-working days, and fully booked times.</p>
+        </div> : null}
       </section>
 
       <section ref={availableSection} tabIndex={-1} className="mt-6 scroll-mt-6 border-t border-slate-100 pt-6 focus:outline-none">
