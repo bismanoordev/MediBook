@@ -63,7 +63,7 @@ export function DoctorSpecificAvailability({ overrides, minDate, maxDate }: { ov
   return <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="specific-dates-title">
     <div className="flex items-start gap-3">
       <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-50 text-[#0F766E]"><CalendarClock className="size-5" aria-hidden="true" /></span>
-      <div><h2 id="specific-dates-title" className="text-lg font-semibold text-slate-900">Specific dates</h2><p className="mt-1 text-sm leading-6 text-slate-600">Set different hours or open an extra day in the next 60 days.</p></div>
+      <div><h2 id="specific-dates-title" className="text-lg font-semibold text-slate-900">Special dates</h2><p className="mt-1 text-sm leading-6 text-slate-600">Open an extra day or use different hours on one date. These hours replace your regular hours for that date only.</p></div>
     </div>
 
     <div className="mt-5 grid gap-4 rounded-2xl bg-slate-50 p-4 sm:grid-cols-2 lg:grid-cols-4">
