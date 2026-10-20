@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Bell, CheckCheck, Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useId } from "react"
 import { toast } from "sonner"
 
 import { createClient } from "@/lib/supabase/client"
@@ -16,6 +16,7 @@ type Notification = {
 }
 
 export function NotificationBell({ userId, href }: { userId: string; href: string }) {
+  const instanceId = useId()
   const [items, setItems] = useState<Notification[]>([])
   const [unread, setUnread] = useState(0)
   const [open, setOpen] = useState(false)
@@ -25,6 +26,7 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
 
   useEffect(() => {
     const supabase = createClient()
+    let active = true
 
     const load = async (showLoading = true) => {
       if (showLoading) setLoading(true)
@@ -51,7 +53,7 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
     void load()
 
     const channel = supabase
-      .channel(`notifications-${userId}`)
+      .channel(`notifications-${userId}-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
@@ -63,7 +65,12 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
           void load(false)
         },
       )
-      .subscribe()
+      .subscribe((status) => {
+        // CLOSED is normal when the component unmounts; polling below keeps the bell updated if realtime fails.
+        if (active && (status === "CHANNEL_ERROR" || status === "TIMED_OUT")) {
+          console.warn(`Realtime notifications unavailable (${status}). Falling back to polling.`)
+        }
+      })
 
     const poll = window.setInterval(() => void load(false), 5_000)
     const refreshWhenVisible = () => {
@@ -80,12 +87,13 @@ export function NotificationBell({ userId, href }: { userId: string; href: strin
 
     window.addEventListener("notifications-read", marked)
     return () => {
+      active = false
       window.removeEventListener("notifications-read", marked)
       document.removeEventListener("visibilitychange", refreshWhenVisible)
       window.clearInterval(poll)
       void supabase.removeChannel(channel)
     }
-  }, [userId])
+  }, [userId, instanceId])
 
   useEffect(() => {
     if (!open) return

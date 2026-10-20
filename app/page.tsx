@@ -27,7 +27,7 @@ export default async function Home() {
   const homeDoctors = (doctors ?? []).map((doctor) => ({ ...doctor, specialties: doctor.specialties as unknown as { name: string } | null }))
 
   return (
-    <main data-landing-page className="overflow-x-clip bg-white text-slate-950">
+    <main data-landing-page className="overflow-x-clip bg-white text-slate-950" suppressHydrationWarning>
       <LandingPageEffects />
       <section className="relative bg-[#E7F7F5]">
         <div aria-hidden className="absolute -left-28 top-28 size-80 rounded-full bg-[#B8EEE8]/70 blur-3xl" />

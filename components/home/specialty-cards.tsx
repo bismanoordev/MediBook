@@ -42,7 +42,7 @@ export async function SpecialtyCards() {
   const { data: specialties, error } = await supabase.from("specialties").select("id, name").order("name")
 
   return (
-    <section className="bg-[#0F9E96] py-16 text-white sm:py-20">
+    <section className="bg-[#0F9E96] py-16 text-white sm:py-20" suppressHydrationWarning>
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="text-center">
           <p className="text-sm font-bold uppercase tracking-[.16em] text-teal-100">Your next visit, simplified</p>
@@ -57,7 +57,7 @@ export async function SpecialtyCards() {
               const Icon = getSpecialtyIcon(specialty.name)
 
               return (
-                <article key={specialty.id} className="cursor-pointer rounded-2xl border border-white/15 bg-white/10 p-5 transition hover:-translate-y-1 hover:bg-white/20">
+                <article key={specialty.id} className="cursor-pointer rounded-2xl border border-white/15 bg-white/10 p-5 transition hover:-translate-y-1 hover:bg-white/20" suppressHydrationWarning>
                   <span className="grid size-11 place-items-center rounded-full bg-white text-[#0F9E96]">
                     <Icon className="size-5" />
                   </span>
